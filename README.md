@@ -8,17 +8,6 @@ transformers, everything needed before the core deep learning and AI courses.
 
 **Read it:** [web book](https://0xAlok.github.io/ML-Book/) · [PDF](./docs/foundations-to-deep-learning.pdf)
 
-## How to study from this book
-
-i) Read a chapter front to back: concept first, then the worked `eg` blocks.
-ii) Hard topics carry a **"Basically, ..."** line — the same idea restated as
-simply as possible.
-iii) Do the **Practice set** at the end of each chapter *before* looking at
-solutions: on the web each solution is hidden behind a click; in the PDF,
-solutions follow each chapter.
-
-There is nowhere else you need to go. Links out appear only where the book
-itself could not explain something sufficiently.
 
 ## Contents
 
@@ -49,15 +38,6 @@ itself could not explain something sufficiently.
 - `STYLE.md` — the writing style guide the book follows
 - `build.py` — one-command rebuild of the web book and PDF (needs Quarto)
 - `docs/` — built static site, served by GitHub Pages
-
-## Style
-
-- Formal but plain, never bookish. Every complex topic: standard explanation
-  first, then a **"Basically, ..."** simplification.
-- All mathematics in LaTeX. Worked `eg` blocks with full steps, `Note:`
-  callouts, punchy `=` definitions.
-- Diagrams reused from standard resources (d2l.ai, mml-book,
-  distribution-explorer) with attribution.
 
 ## License
 

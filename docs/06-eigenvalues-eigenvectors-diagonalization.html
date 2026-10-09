@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>6. Eigenvalues, eigenvectors, diagonalization – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./07-svd-positive-definite.html" rel="next">
+<link href="./05-orthogonality-projections-least-squares.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./01-sets-functions-preliminaries.html">Part I — Mathematical Foundations</a></li><li class="breadcrumb-item"><a href="./06-eigenvalues-eigenvectors-diagonalization.html"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#what-this-chapter-is-for" id="toc-what-this-chapter-is-for" class="nav-link active" data-scroll-target="#what-this-chapter-is-for">6.1 What this chapter is for</a></li>
+  <li><a href="#the-definition" id="toc-the-definition" class="nav-link" data-scroll-target="#the-definition">6.2 The definition</a></li>
+  <li><a href="#how-to-find-them-the-characteristic-equation" id="toc-how-to-find-them-the-characteristic-equation" class="nav-link" data-scroll-target="#how-to-find-them-the-characteristic-equation">6.3 How to find them: the characteristic equation</a></li>
+  <li><a href="#worked-example-eigenvalues-and-eigenvectors-of-a-2-times-2" id="toc-worked-example-eigenvalues-and-eigenvectors-of-a-2-times-2" class="nav-link" data-scroll-target="#worked-example-eigenvalues-and-eigenvectors-of-a-2-times-2">6.4 Worked example: eigenvalues and eigenvectors of a <span class="math inline">\(2 \times 2\)</span></a></li>
+  <li><a href="#a-useful-shift-and-a-warning" id="toc-a-useful-shift-and-a-warning" class="nav-link" data-scroll-target="#a-useful-shift-and-a-warning">6.5 A useful shift (and a warning)</a></li>
+  <li><a href="#eigenspaces-and-why-distinct-eigenvalues-give-independence" id="toc-eigenspaces-and-why-distinct-eigenvalues-give-independence" class="nav-link" data-scroll-target="#eigenspaces-and-why-distinct-eigenvalues-give-independence">6.6 Eigenspaces, and why distinct eigenvalues give independence</a></li>
+  <li><a href="#diagonalization-s-1as-lambda" id="toc-diagonalization-s-1as-lambda" class="nav-link" data-scroll-target="#diagonalization-s-1as-lambda">6.7 Diagonalization: <span class="math inline">\(S^{-1}AS = \Lambda\)</span></a></li>
+  <li><a href="#powers-become-easy-ak-slambdak-s-1" id="toc-powers-become-easy-ak-slambdak-s-1" class="nav-link" data-scroll-target="#powers-become-easy-ak-slambdak-s-1">6.8 Powers become easy: <span class="math inline">\(A^k = S\Lambda^k S^{-1}\)</span></a></li>
+  <li><a href="#case-study-the-fibonacci-sequence-via-diagonalization" id="toc-case-study-the-fibonacci-sequence-via-diagonalization" class="nav-link" data-scroll-target="#case-study-the-fibonacci-sequence-via-diagonalization">6.9 Case study: the Fibonacci sequence via diagonalization</a></li>
+  <li><a href="#when-diagonalization-fails-defective-matrices" id="toc-when-diagonalization-fails-defective-matrices" class="nav-link" data-scroll-target="#when-diagonalization-fails-defective-matrices">6.10 When diagonalization fails: defective matrices</a></li>
+  <li><a href="#symmetric-matrices-the-spectral-theorem" id="toc-symmetric-matrices-the-spectral-theorem" class="nav-link" data-scroll-target="#symmetric-matrices-the-spectral-theorem">6.11 Symmetric matrices: the spectral theorem</a></li>
+  <li><a href="#why-ml-cares" id="toc-why-ml-cares" class="nav-link" data-scroll-target="#why-ml-cares">6.12 Why ML cares</a></li>
+  <li><a href="#where-this-goes-next" id="toc-where-this-goes-next" class="nav-link" data-scroll-target="#where-this-goes-next">6.13 Where this goes next</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./01-sets-functions-preliminaries.html">Part I — Mathematical Foundations</a></li><li class="breadcrumb-item"><a href="./06-eigenvalues-eigenvectors-diagonalization.html"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="what-this-chapter-is-for" class="level2">
+<h2 class="anchored" data-anchor-id="what-this-chapter-is-for">6.1 What this chapter is for</h2>
+<p>A matrix <span class="math inline">\(A\)</span> is a machine that moves vectors: <span class="math inline">\(\mathbf{x} \mapsto A\mathbf{x}\)</span>. Most vectors get turned as well as stretched. But a few special vectors are only stretched — never turned. Those are the <span class="math inline">\(eigenvectors\)</span>, and the stretch factors are the <span class="math inline">\(eigenvalues\)</span>.</p>
+<p>Why care? The lecture’s motivation: a system of differential equations like <span class="math inline">\(\frac{dv}{dt} = 4v - 5w\)</span>, <span class="math inline">\(\frac{dw}{dt} = 2v - 3w\)</span> can be written <span class="math inline">\(\frac{d\mathbf{u}}{dt} = A\mathbf{u}\)</span>. Guessing solutions of the form <span class="math inline">\(\mathbf{u}(t) = e^{\lambda t}\mathbf{x}\)</span> and substituting gives <span class="math inline">\(\lambda e^{\lambda t}\mathbf{x} = A e^{\lambda t}\mathbf{x}\)</span> — and the <span class="math inline">\(e^{\lambda t}\)</span> cancels, leaving <span class="math inline">\(A\mathbf{x} = \lambda \mathbf{x}\)</span>. So solving the whole differential equation comes down to solving this one algebraic equation. The same trick will unlock the Fibonacci sequence in §6.9, matrix powers in §6.8, and — further down the road — PCA in Chapter 24.</p>
+<p>This chapter answers four questions, in order:</p>
+<ol type="i">
+<li>What are <span class="math inline">\(eigenvalues\)</span> and <span class="math inline">\(eigenvectors\)</span>?</li>
+<li>How do we <span class="math inline">\(find\)</span> them?</li>
+<li>What is <span class="math inline">\(diagonalization\)</span> — and why does it make powers trivial?</li>
+<li>What is special about <span class="math inline">\(symmetric\)</span> matrices?</li>
+</ol>
+<p><strong>Basically, …</strong> Every matrix has a few “favorite directions.” Feed it a favorite direction and it just scales it — no rotation. This chapter is about finding those directions and using them to take the matrix apart.</p>
+</section>
+<section id="the-definition" class="level2">
+<h2 class="anchored" data-anchor-id="the-definition">6.2 The definition</h2>
+<p><strong>Def.</strong> For a square matrix <span class="math inline">\(A\)</span>, a scalar <span class="math inline">\(\lambda\)</span> is an <span class="math inline">\(eigenvalue\)</span> and a nonzero vector <span class="math inline">\(\mathbf{x}\)</span> is an <span class="math inline">\(eigenvector\)</span> (for <span class="math inline">\(\lambda\)</span>) if <span class="math display">\[A\mathbf{x} = \lambda \mathbf{x}.\]</span> This is the <span class="math inline">\(eigen\)</span> <span class="math inline">\(equation\)</span>.</p>
+<p>Two things to lock in:</p>
+<ol type="i">
+<li><span class="math inline">\(\mathbf{x} \ne \mathbf{0}\)</span> is required. Without it, <span class="math inline">\(A\mathbf{0} = \lambda\mathbf{0}\)</span> would make every <span class="math inline">\(\lambda\)</span> an “eigenvalue” — meaningless.</li>
+<li>Geometrically: <span class="math inline">\(A\)</span> either <span class="math inline">\(stretches\)</span> <span class="math inline">\(\mathbf{x}\)</span> (if <span class="math inline">\(|\lambda| &gt; 1\)</span>), <span class="math inline">\(shrinks\)</span> it (if <span class="math inline">\(|\lambda| &lt; 1\)</span>), <span class="math inline">\(flips\)</span> it (if <span class="math inline">\(\lambda &lt; 0\)</span>) — but it does <strong>not change its direction</strong>.</li>
+</ol>
+<!-- Original illustration drawn with matplotlib for this chapter; no external source reused. -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/ch06-eigenvectors.png" class="img-fluid figure-img"></p>
+<figcaption>Eigenvectors under A = [[3, 1], [1, 3]]: the eigenvector x = (1, 1) is stretched by 4 and stays on its line (dashed); the non-eigenvector w is turned off its line by A</figcaption>
+</figure>
+</div>
+<p>Note the <span class="math inline">\(\lambda = 0\)</span> case: <span class="math inline">\(A\mathbf{x} = \mathbf{0}\)</span> with <span class="math inline">\(\mathbf{x} \ne \mathbf{0}\)</span> means <span class="math inline">\(\mathbf{x}\)</span> lives in the <span class="math inline">\(null\)</span> <span class="math inline">\(space\)</span> <span class="math inline">\(N(A)\)</span> (§4.7). So “<span class="math inline">\(0\)</span> is an eigenvalue” is just a fancy way of saying “<span class="math inline">\(A\)</span> kills some nonzero vector.”</p>
+<p><strong>Basically, …</strong> An eigenvector is a direction the matrix respects: it scales the arrow but refuses to turn it. The eigenvalue is the scaling number on the dial.</p>
+</section>
+<section id="how-to-find-them-the-characteristic-equation" class="level2">
+<h2 class="anchored" data-anchor-id="how-to-find-them-the-characteristic-equation">6.3 How to find them: the characteristic equation</h2>
+<p>Start from the eigen equation and rearrange: <span class="math display">\[A\mathbf{x} = \lambda \mathbf{x} \;\Longleftrightarrow\; (A - \lambda I)\mathbf{x} = \mathbf{0}.\]</span> We need a <strong>nonzero</strong> <span class="math inline">\(\mathbf{x}\)</span> satisfying this. That is possible iff <span class="math inline">\(A - \lambda I\)</span> is <span class="math inline">\(singular\)</span> — iff its determinant is zero (§3.6–3.7): <span class="math display">\[\det(A - \lambda I) = 0.\]</span> This is the <span class="math inline">\(characteristic\)</span> <span class="math inline">\(equation\)</span>. The left side is the <span class="math inline">\(characteristic\)</span> <span class="math inline">\(polynomial\)</span>: for an <span class="math inline">\(n \times n\)</span> matrix it has degree <span class="math inline">\(n\)</span>, so (counting multiplicity) there are <span class="math inline">\(n\)</span> roots — the eigenvalues.</p>
+<p>The recipe:</p>
+<ol type="i">
+<li>Solve <span class="math inline">\(\det(A - \lambda I) = 0\)</span> for the eigenvalues <span class="math inline">\(\lambda_1, \ldots, \lambda_n\)</span>.</li>
+<li>For each <span class="math inline">\(\lambda_i\)</span>, solve <span class="math inline">\((A - \lambda_i I)\mathbf{x} = \mathbf{0}\)</span> — i.e.&nbsp;find <span class="math inline">\(N(A - \lambda_i I)\)</span> (§4.7) — by elimination. Any nonzero vector there is an eigenvector.</li>
+</ol>
+<p>Note (handy 2×2 check, from the lecture): the eigenvalues satisfy <span class="math display">\[\lambda_1 + \lambda_2 = \operatorname{tr}(A) = a_{11} + a_{22}, \qquad \lambda_1 \lambda_2 = \det(A).\]</span> If your computed eigenvalues fail either, recompute.</p>
+<p><strong>eg (eyeball it).</strong> A projection <span class="math inline">\(P\)</span> onto a plane: for any <span class="math inline">\(\mathbf{x}\)</span> in the plane, <span class="math inline">\(P\mathbf{x} = \mathbf{x}\)</span> — so <span class="math inline">\(\lambda = 1\)</span> is an eigenvalue, and every in-plane <span class="math inline">\(\mathbf{x}\)</span> is an eigenvector. For <span class="math inline">\(\mathbf{x}\)</span> perpendicular to the plane, <span class="math inline">\(P\mathbf{x} = \mathbf{0}\)</span> — so <span class="math inline">\(\lambda = 0\)</span> is an eigenvalue, with every perpendicular <span class="math inline">\(\mathbf{x}\)</span> an eigenvector. No determinant needed when the geometry is this clear.</p>
+<p><strong>eg (eyeball it).</strong> The permutation matrix <span class="math inline">\(B = \begin{bmatrix} 0 &amp; 1 \\ 1 &amp; 0 \end{bmatrix}\)</span> swaps coordinates: <span class="math inline">\(B\begin{bmatrix} 1 \\ 1 \end{bmatrix} = \begin{bmatrix} 1 \\ 1 \end{bmatrix}\)</span> (so <span class="math inline">\(\lambda = 1\)</span>, eigenvector <span class="math inline">\((1,1)^T\)</span>) and <span class="math inline">\(B\begin{bmatrix} 1 \\ -1 \end{bmatrix} = \begin{bmatrix} -1 \\ 1 \end{bmatrix} = -\begin{bmatrix} 1 \\ -1 \end{bmatrix}\)</span> (so <span class="math inline">\(\lambda = -1\)</span>, eigenvector <span class="math inline">\((1,-1)^T\)</span>).</p>
+<p><strong>eg (not always real).</strong> The rotation <span class="math inline">\(R = \begin{bmatrix} 0 &amp; -1 \\ 1 &amp; 0 \end{bmatrix}\)</span> turns every vector by <span class="math inline">\(90^\circ\)</span> — no real direction survives. The algebra agrees: <span class="math inline">\(\det(R - \lambda I) = \begin{vmatrix} -\lambda &amp; -1 \\ 1 &amp; -\lambda \end{vmatrix} = \lambda^2 + 1 = 0\)</span>, so <span class="math inline">\(\lambda = \pm i\)</span>. Eigenvalues can be complex. (Symmetric matrices are the safe case — always real eigenvalues, §6.11.)</p>
+<p><strong>Basically, …</strong> Finding eigenvalues = solving <span class="math inline">\(\det(A - \lambda I) = 0\)</span>. Finding eigenvectors = solving the homogeneous system <span class="math inline">\((A - \lambda I)\mathbf{x} = \mathbf{0}\)</span> — the vectors the shifted matrix kills.</p>
+</section>
+<section id="worked-example-eigenvalues-and-eigenvectors-of-a-2-times-2" class="level2">
+<h2 class="anchored" data-anchor-id="worked-example-eigenvalues-and-eigenvectors-of-a-2-times-2">6.4 Worked example: eigenvalues and eigenvectors of a <span class="math inline">\(2 \times 2\)</span></h2>
+<p><strong>eg (full steps).</strong> <span class="math inline">\(A = \begin{bmatrix} 3 &amp; 1 \\ 1 &amp; 3 \end{bmatrix}\)</span>.</p>
+<p>Step 1 — characteristic equation: <span class="math display">\[A - \lambda I = \begin{bmatrix} 3 - \lambda &amp; 1 \\ 1 &amp; 3 - \lambda \end{bmatrix}, \qquad \det(A - \lambda I) = (3 - \lambda)^2 - 1 = \lambda^2 - 6\lambda + 8.\]</span> <span class="math display">\[\lambda^2 - 6\lambda + 8 = (\lambda - 4)(\lambda - 2) = 0 \;\Longrightarrow\; \lambda_1 = 4,\ \lambda_2 = 2.\]</span> Check: <span class="math inline">\(\lambda_1 + \lambda_2 = 6 = \operatorname{tr}(A)\)</span> ✓; <span class="math inline">\(\lambda_1\lambda_2 = 8 = \det(A)\)</span> ✓.</p>
+<p>Step 2 — eigenvector for <span class="math inline">\(\lambda_1 = 4\)</span>: <span class="math display">\[A - 4I = \begin{bmatrix} -1 &amp; 1 \\ 1 &amp; -1 \end{bmatrix}, \qquad (A - 4I)\mathbf{x} = \mathbf{0} \iff -x_1 + x_2 = 0 \iff x_2 = x_1.\]</span> Pick <span class="math inline">\(x_1 = 1\)</span>: <span class="math inline">\(\mathbf{x}_1 = \begin{bmatrix} 1 \\ 1 \end{bmatrix}\)</span>.</p>
+<p>Step 3 — eigenvector for <span class="math inline">\(\lambda_2 = 2\)</span>: <span class="math display">\[A - 2I = \begin{bmatrix} 1 &amp; 1 \\ 1 &amp; 1 \end{bmatrix}, \qquad (A - 2I)\mathbf{x} = \mathbf{0} \iff x_1 + x_2 = 0 \iff x_2 = -x_1.\]</span> Pick <span class="math inline">\(x_1 = 1\)</span>: <span class="math inline">\(\mathbf{x}_2 = \begin{bmatrix} 1 \\ -1 \end{bmatrix}\)</span>.</p>
+<p>Step 4 — verify <span class="math inline">\(A\mathbf{x} = \lambda \mathbf{x}\)</span>: <span class="math display">\[A\mathbf{x}_1 = \begin{bmatrix} 3 &amp; 1 \\ 1 &amp; 3 \end{bmatrix}\begin{bmatrix} 1 \\ 1 \end{bmatrix} = \begin{bmatrix} 4 \\ 4 \end{bmatrix} = 4\mathbf{x}_1 \;\checkmark, \qquad A\mathbf{x}_2 = \begin{bmatrix} 3 &amp; 1 \\ 1 &amp; 3 \end{bmatrix}\begin{bmatrix} 1 \\ -1 \end{bmatrix} = \begin{bmatrix} 2 \\ -2 \end{bmatrix} = 2\mathbf{x}_2 \;\checkmark.\]</span></p>
+<p>Note: any nonzero multiple is also an eigenvector — <span class="math inline">\([2, 2]^T\)</span>, <span class="math inline">\([-1, 1]^T\)</span>, etc. An eigenvector names a direction, not a length. The full solution set for <span class="math inline">\(\lambda = 4\)</span> is <span class="math inline">\(\operatorname{span}\{[1,1]^T\} = N(A - 4I)\)</span>, the <span class="math inline">\(eigenspace\)</span> (§6.6).</p>
+<p><strong>Basically, …</strong> Two systems, solved in order: first the determinant gives the stretch factors, then each stretch factor gives a small linear system whose solutions are the directions.</p>
+</section>
+<section id="a-useful-shift-and-a-warning" class="level2">
+<h2 class="anchored" data-anchor-id="a-useful-shift-and-a-warning">6.5 A useful shift (and a warning)</h2>
+<p><strong>eg (full steps).</strong> Let <span class="math inline">\(B = \begin{bmatrix} 0 &amp; 1 \\ 1 &amp; 0 \end{bmatrix}\)</span> (the permutation matrix from §6.3) and note <span class="math inline">\(B + 3I = \begin{bmatrix} 3 &amp; 1 \\ 1 &amp; 3 \end{bmatrix} = A\)</span>, the matrix of §6.4. If <span class="math inline">\(B\mathbf{x} = \mu \mathbf{x}\)</span>, then <span class="math display">\[(B + 3I)\mathbf{x} = B\mathbf{x} + 3\mathbf{x} = \mu \mathbf{x} + 3\mathbf{x} = (\mu + 3)\mathbf{x}.\]</span> So <span class="math inline">\(A\)</span> has the <strong>same eigenvectors</strong> as <span class="math inline">\(B\)</span>, with eigenvalues <strong>shifted by 3</strong>: <span class="math inline">\(B\)</span>’s <span class="math inline">\((1, [1,1]^T)\)</span> and <span class="math inline">\((-1, [1,-1]^T)\)</span> become <span class="math inline">\(A\)</span>’s <span class="math inline">\((4, [1,1]^T)\)</span> and <span class="math inline">\((2, [1,-1]^T)\)</span> — exactly what §6.4 found. Adding a multiple of <span class="math inline">\(I\)</span> slides the spectrum without touching the directions.</p>
+<p><strong>Warning (from the lecture — do not skip).</strong> It is tempting to generalize: if <span class="math inline">\(A\mathbf{x}_1 = \lambda_1 \mathbf{x}_1\)</span> and <span class="math inline">\(B\mathbf{x}_2 = \lambda_2 \mathbf{x}_2\)</span>, is <span class="math inline">\((\lambda_1 + \lambda_2)\)</span> an eigenvalue of <span class="math inline">\(A + B\)</span>? <strong>No</strong> — because <span class="math inline">\(\mathbf{x}_1\)</span> need not equal <span class="math inline">\(\mathbf{x}_2\)</span>. The shift trick above works only because one and the same <span class="math inline">\(\mathbf{x}\)</span> is an eigenvector of both <span class="math inline">\(B\)</span> and <span class="math inline">\(3I\)</span> (every vector is an eigenvector of <span class="math inline">\(I\)</span>). Sharing eigenvectors is a strong condition — it is exactly what diagonalization (§6.7) will exploit.</p>
+<p><strong>Basically, …</strong> <span class="math inline">\(A = B + cI\)</span> keeps every eigenvector of <span class="math inline">\(B\)</span> and just adds <span class="math inline">\(c\)</span> to every eigenvalue. But you can’t add eigenvalues across two arbitrary matrices — the eigenvectors have to match.</p>
+</section>
+<section id="eigenspaces-and-why-distinct-eigenvalues-give-independence" class="level2">
+<h2 class="anchored" data-anchor-id="eigenspaces-and-why-distinct-eigenvalues-give-independence">6.6 Eigenspaces, and why distinct eigenvalues give independence</h2>
+<p><strong>Def.</strong> The <span class="math inline">\(eigenspace\)</span> for <span class="math inline">\(\lambda\)</span> is <span class="math inline">\(N(A - \lambda I)\)</span>: every eigenvector for <span class="math inline">\(\lambda\)</span>, plus <span class="math inline">\(\mathbf{0}\)</span>. It is a subspace (§4.2): it is exactly “everything <span class="math inline">\(A - \lambda I\)</span> kills.”</p>
+<p><strong>Claim.</strong> Eigenvectors belonging to <span class="math inline">\(distinct\)</span> eigenvalues are <span class="math inline">\(linearly\)</span> <span class="math inline">\(independent\)</span>.</p>
+<p>Proof for two (from the lecture; the <span class="math inline">\(n\)</span>-case follows the same argument): suppose <span class="math inline">\(A\mathbf{x}_1 = \lambda_1 \mathbf{x}_1\)</span>, <span class="math inline">\(A\mathbf{x}_2 = \lambda_2 \mathbf{x}_2\)</span> with <span class="math inline">\(\lambda_1 \ne \lambda_2\)</span>, and <span class="math display">\[c_1\mathbf{x}_1 + c_2\mathbf{x}_2 = \mathbf{0} \tag{1}\]</span> Apply <span class="math inline">\(A\)</span> to both sides: <span class="math display">\[c_1\lambda_1\mathbf{x}_1 + c_2\lambda_2\mathbf{x}_2 = \mathbf{0} \tag{2}\]</span> Subtract <span class="math inline">\(\lambda_2 \times (1)\)</span> from <span class="math inline">\((2)\)</span>: <span class="math display">\[c_1(\lambda_1 - \lambda_2)\mathbf{x}_1 = \mathbf{0}.\]</span> Since <span class="math inline">\(\lambda_1 \ne \lambda_2\)</span> and <span class="math inline">\(\mathbf{x}_1 \ne \mathbf{0}\)</span>, we must have <span class="math inline">\(c_1 = 0\)</span>; similarly <span class="math inline">\(c_2 = 0\)</span>. Hence <span class="math inline">\(\{\mathbf{x}_1, \mathbf{x}_2\}\)</span> is independent (§4.4).</p>
+<p>Corollary: if an <span class="math inline">\(n \times n\)</span> matrix has <span class="math inline">\(n\)</span> <strong>distinct</strong> eigenvalues, it has <span class="math inline">\(n\)</span> independent eigenvectors — and (next section) that is all diagonalization needs.</p>
+<p><strong>Basically, …</strong> Different eigenvalues pull in genuinely different directions — no eigenvector can be built out of eigenvectors for other eigenvalues. Enough distinct eigenvalues, enough independent directions.</p>
+</section>
+<section id="diagonalization-s-1as-lambda" class="level2">
+<h2 class="anchored" data-anchor-id="diagonalization-s-1as-lambda">6.7 Diagonalization: <span class="math inline">\(S^{-1}AS = \Lambda\)</span></h2>
+<p><strong>Def.</strong> An <span class="math inline">\(n \times n\)</span> matrix <span class="math inline">\(A\)</span> is <span class="math inline">\(diagonalizable\)</span> if there is an invertible <span class="math inline">\(S\)</span> with <span class="math display">\[S^{-1}AS = \Lambda,\]</span> where <span class="math inline">\(\Lambda\)</span> is diagonal. Equivalently <span class="math inline">\(A = S\Lambda S^{-1}\)</span> and <span class="math inline">\(AS = S\Lambda\)</span>.</p>
+<p>Why independent eigenvectors are the whole game: suppose <span class="math inline">\(A\)</span> has <span class="math inline">\(n\)</span> independent eigenvectors <span class="math inline">\(\mathbf{x}_1, \ldots, \mathbf{x}_n\)</span>. Stack them as columns: <span class="math inline">\(S = [\mathbf{x}_1 \;\cdots\; \mathbf{x}_n]\)</span>. Independent columns in a square matrix <span class="math inline">\(\Rightarrow\)</span> <span class="math inline">\(S\)</span> is invertible (§4.5). Then <span class="math display">\[AS = A[\mathbf{x}_1 \;\cdots\; \mathbf{x}_n] = [A\mathbf{x}_1 \;\cdots\; A\mathbf{x}_n] = [\lambda_1\mathbf{x}_1 \;\cdots\; \lambda_n\mathbf{x}_n] = [\mathbf{x}_1 \;\cdots\; \mathbf{x}_n]\begin{bmatrix} \lambda_1 &amp; &amp; \\ &amp; \ddots &amp; \\ &amp; &amp; \lambda_n \end{bmatrix} = S\Lambda.\]</span> Left-multiply by <span class="math inline">\(S^{-1}\)</span>: <span class="math inline">\(S^{-1}AS = \Lambda\)</span>. Done. So:</p>
+<ol type="i">
+<li><span class="math inline">\(n\)</span> independent eigenvectors <span class="math inline">\(\Rightarrow\)</span> <span class="math inline">\(A\)</span> is diagonalizable;</li>
+<li>in particular, <span class="math inline">\(n\)</span> distinct eigenvalues <span class="math inline">\(\Rightarrow\)</span> <span class="math inline">\(A\)</span> is diagonalizable (§6.6).</li>
+</ol>
+<p>Two remarks from the lecture:</p>
+<ol type="i">
+<li><span class="math inline">\(S\)</span> is <strong>not unique</strong>: scaling any eigenvector still gives an eigenvector, so many <span class="math inline">\(S\)</span>’s work.</li>
+<li><span class="math inline">\(\Lambda\)</span> <strong>is</strong> (up to ordering): its diagonal entries must be the eigenvalues of <span class="math inline">\(A\)</span>. Why? From <span class="math inline">\(AS = S\Lambda\)</span>, column 1 reads <span class="math inline">\(A\mathbf{y}_1 = \lambda_1 \mathbf{y}_1\)</span> — column 1 of <span class="math inline">\(S\)</span> is forced to be an eigenvector for whatever sits at <span class="math inline">\(\Lambda_{11}\)</span>.</li>
+</ol>
+<p><strong>eg (full steps).</strong> <span class="math inline">\(A = \begin{bmatrix} 1 &amp; 4 \\ 2 &amp; 3 \end{bmatrix}\)</span>.</p>
+<p>Step 1 — eigenvalues: <span class="math display">\[\det(A - \lambda I) = \begin{vmatrix} 1 - \lambda &amp; 4 \\ 2 &amp; 3 - \lambda \end{vmatrix} = (1 - \lambda)(3 - \lambda) - 8 = \lambda^2 - 4\lambda - 5 = (\lambda - 5)(\lambda + 1).\]</span> <span class="math display">\[\lambda_1 = 5,\quad \lambda_2 = -1.\]</span> Distinct <span class="math inline">\(\Rightarrow\)</span> diagonalizable.</p>
+<p>Step 2 — eigenvectors. For <span class="math inline">\(\lambda_1 = 5\)</span>: <span class="math display">\[A - 5I = \begin{bmatrix} -4 &amp; 4 \\ 2 &amp; -2 \end{bmatrix} \;\Longrightarrow\; -4x_1 + 4x_2 = 0 \;\Longrightarrow\; \mathbf{x}_1 = \begin{bmatrix} 1 \\ 1 \end{bmatrix}.\]</span> For <span class="math inline">\(\lambda_2 = -1\)</span>: <span class="math display">\[A + I = \begin{bmatrix} 2 &amp; 4 \\ 2 &amp; 4 \end{bmatrix} \;\Longrightarrow\; 2x_1 + 4x_2 = 0 \;\Longrightarrow\; \mathbf{x}_2 = \begin{bmatrix} -2 \\ 1 \end{bmatrix}.\]</span></p>
+<p>Step 3 — assemble <span class="math inline">\(S = [\mathbf{x}_1\ \mathbf{x}_2] = \begin{bmatrix} 1 &amp; -2 \\ 1 &amp; 1 \end{bmatrix}\)</span>, <span class="math inline">\(\Lambda = \begin{bmatrix} 5 &amp; 0 \\ 0 &amp; -1 \end{bmatrix}\)</span> (order matched: column 1 <span class="math inline">\(\leftrightarrow\)</span> eigenvalue 5).</p>
+<p>Step 4 — verify <span class="math inline">\(S^{-1}AS = \Lambda\)</span>. <span class="math inline">\(\det S = 1\cdot 1 - (-2)\cdot 1 = 3\)</span>, so <span class="math inline">\(S^{-1} = \frac{1}{3}\begin{bmatrix} 1 &amp; 2 \\ -1 &amp; 1 \end{bmatrix}\)</span>. <span class="math display">\[AS = \begin{bmatrix} 1 &amp; 4 \\ 2 &amp; 3 \end{bmatrix}\begin{bmatrix} 1 &amp; -2 \\ 1 &amp; 1 \end{bmatrix} = \begin{bmatrix} 5 &amp; 2 \\ 5 &amp; -1 \end{bmatrix},\]</span> <span class="math display">\[S^{-1}(AS) = \frac{1}{3}\begin{bmatrix} 1 &amp; 2 \\ -1 &amp; 1 \end{bmatrix}\begin{bmatrix} 5 &amp; 2 \\ 5 &amp; -1 \end{bmatrix} = \frac{1}{3}\begin{bmatrix} 15 &amp; 0 \\ 0 &amp; -3 \end{bmatrix} = \begin{bmatrix} 5 &amp; 0 \\ 0 &amp; -1 \end{bmatrix} = \Lambda \;\checkmark.\]</span></p>
+<p><strong>Basically, …</strong> Diagonalization = describing the matrix in the language of its own eigenvectors. <span class="math inline">\(S\)</span> is the dictionary (its columns are the new basis); in that language <span class="math inline">\(A\)</span> is just “<span class="math inline">\(\lambda_1\)</span> along direction 1, <span class="math inline">\(\lambda_2\)</span> along direction 2, …” — pure scaling, no mixing. Same map, better basis.</p>
+</section>
+<section id="powers-become-easy-ak-slambdak-s-1" class="level2">
+<h2 class="anchored" data-anchor-id="powers-become-easy-ak-slambdak-s-1">6.8 Powers become easy: <span class="math inline">\(A^k = S\Lambda^k S^{-1}\)</span></h2>
+<p>From <span class="math inline">\(S^{-1}AS = \Lambda\)</span>: <span class="math display">\[S^{-1}A^2S = (S^{-1}AS)(S^{-1}AS) = \Lambda^2,\]</span> and the same for any <span class="math inline">\(k\)</span>: <span class="math inline">\(A^k = S\Lambda^k S^{-1}\)</span>. Since <span class="math inline">\(\Lambda\)</span> is diagonal, <span class="math inline">\(\Lambda^k\)</span> is just the diagonal entries raised to <span class="math inline">\(k\)</span>. (Also: <span class="math inline">\(A\mathbf{x} = \lambda \mathbf{x} \Rightarrow A^2\mathbf{x} = A(\lambda \mathbf{x}) = \lambda A\mathbf{x} = \lambda^2 \mathbf{x}\)</span> — the same <span class="math inline">\(S\)</span> diagonalizes <span class="math inline">\(A^2\)</span>.)</p>
+<p><strong>eg (full steps).</strong> <span class="math inline">\(A = \begin{bmatrix} 1 &amp; 4 \\ 2 &amp; 3 \end{bmatrix}\)</span> from §6.7, with <span class="math inline">\(S = \begin{bmatrix} 1 &amp; -2 \\ 1 &amp; 1 \end{bmatrix}\)</span>, <span class="math inline">\(\Lambda = \operatorname{diag}(5, -1)\)</span>, <span class="math inline">\(S^{-1} = \frac{1}{3}\begin{bmatrix} 1 &amp; 2 \\ -1 &amp; 1 \end{bmatrix}\)</span>.</p>
+<p><span class="math display">\[\Lambda^2 = \begin{bmatrix} 25 &amp; 0 \\ 0 &amp; 1 \end{bmatrix}, \qquad S\Lambda^2 = \begin{bmatrix} 1 &amp; -2 \\ 1 &amp; 1 \end{bmatrix}\begin{bmatrix} 25 &amp; 0 \\ 0 &amp; 1 \end{bmatrix} = \begin{bmatrix} 25 &amp; -2 \\ 25 &amp; 1 \end{bmatrix},\]</span> <span class="math display">\[A^2 = S\Lambda^2S^{-1} = \frac{1}{3}\begin{bmatrix} 25 &amp; -2 \\ 25 &amp; 1 \end{bmatrix}\begin{bmatrix} 1 &amp; 2 \\ -1 &amp; 1 \end{bmatrix} = \frac{1}{3}\begin{bmatrix} 27 &amp; 48 \\ 24 &amp; 51 \end{bmatrix} = \begin{bmatrix} 9 &amp; 16 \\ 8 &amp; 17 \end{bmatrix}.\]</span> Direct check: <span class="math inline">\(A^2 = \begin{bmatrix} 1 &amp; 4 \\ 2 &amp; 3 \end{bmatrix}\begin{bmatrix} 1 &amp; 4 \\ 2 &amp; 3 \end{bmatrix} = \begin{bmatrix} 9 &amp; 16 \\ 8 &amp; 17 \end{bmatrix}\)</span> ✓. For <span class="math inline">\(A^{100}\)</span> the direct route is hopeless; the diagonal route is three small multiplications.</p>
+<p><strong>Basically, …</strong> Powers of a diagonal matrix are trivial — just power each diagonal entry. Diagonalization moves that triviality over to <span class="math inline">\(A\)</span>.</p>
+</section>
+<section id="case-study-the-fibonacci-sequence-via-diagonalization" class="level2">
+<h2 class="anchored" data-anchor-id="case-study-the-fibonacci-sequence-via-diagonalization">6.9 Case study: the Fibonacci sequence via diagonalization</h2>
+<p>The Fibonacci recurrence <span class="math inline">\(F_{k+2} = F_{k+1} + F_k\)</span> with <span class="math inline">\(F_0 = 0\)</span>, <span class="math inline">\(F_1 = 1\)</span> is linear — so pack two consecutive terms into a vector and watch it evolve by one matrix.</p>
+<p>Let <span class="math inline">\(\mathbf{u}_k = \begin{bmatrix} F_k \\ F_{k+1} \end{bmatrix}\)</span>. Then <span class="math display">\[\mathbf{u}_{k+1} = \begin{bmatrix} F_{k+1} \\ F_{k+2} \end{bmatrix} = \begin{bmatrix} F_{k+1} \\ F_k + F_{k+1} \end{bmatrix} = \underbrace{\begin{bmatrix} 0 &amp; 1 \\ 1 &amp; 1 \end{bmatrix}}_{A}\begin{bmatrix} F_k \\ F_{k+1} \end{bmatrix} = A\mathbf{u}_k,\]</span> so <span class="math inline">\(\mathbf{u}_k = A^k \mathbf{u}_0\)</span> with <span class="math inline">\(\mathbf{u}_0 = \begin{bmatrix} 0 \\ 1 \end{bmatrix}\)</span>.</p>
+<p>Step 1 — diagonalize <span class="math inline">\(A\)</span>. Characteristic equation: <span class="math display">\[\det(A - \lambda I) = \begin{vmatrix} -\lambda &amp; 1 \\ 1 &amp; 1 - \lambda \end{vmatrix} = -\lambda(1 - \lambda) - 1 = \lambda^2 - \lambda - 1 = 0,\]</span> <span class="math display">\[\lambda_1 = \frac{1 + \sqrt{5}}{2}, \qquad \lambda_2 = \frac{1 - \sqrt{5}}{2}.\]</span> Distinct <span class="math inline">\(\Rightarrow\)</span> diagonalizable.</p>
+<p>Step 2 — eigenvectors. Solve <span class="math inline">\((A - \lambda I)\mathbf{x} = \mathbf{0}\)</span>: <span class="math inline">\(\begin{bmatrix} -\lambda &amp; 1 \\ 1 &amp; 1-\lambda \end{bmatrix}\begin{bmatrix} x_1 \\ x_2 \end{bmatrix} = \mathbf{0}\)</span>. Take <span class="math inline">\(x_1 = 1\)</span>, <span class="math inline">\(x_2 = \lambda\)</span>: the first row gives <span class="math inline">\(-\lambda + \lambda = 0\)</span> ✓; the second gives <span class="math inline">\(1 + (1 - \lambda)\lambda = 1 + \lambda - \lambda^2 = 0\)</span> ✓ (since <span class="math inline">\(\lambda^2 = \lambda + 1\)</span> from the characteristic equation). So <span class="math display">\[\mathbf{x}_1 = \begin{bmatrix} 1 \\ \lambda_1 \end{bmatrix}, \qquad \mathbf{x}_2 = \begin{bmatrix} 1 \\ \lambda_2 \end{bmatrix}.\]</span></p>
+<p>Step 3 — write <span class="math inline">\(\mathbf{u}_0\)</span> in the eigenbasis: <span class="math inline">\(\mathbf{u}_0 = c_1\mathbf{x}_1 + c_2\mathbf{x}_2\)</span>: <span class="math display">\[\begin{bmatrix} c_1 + c_2 \\ c_1\lambda_1 + c_2\lambda_2 \end{bmatrix} = \begin{bmatrix} 0 \\ 1 \end{bmatrix}.\]</span> From the first row <span class="math inline">\(c_2 = -c_1\)</span>; the second gives <span class="math inline">\(c_1(\lambda_1 - \lambda_2) = 1\)</span>. Since <span class="math inline">\(\lambda_1 - \lambda_2 = \sqrt{5}\)</span>: <span class="math inline">\(c_1 = \frac{1}{\sqrt{5}}\)</span>, <span class="math inline">\(c_2 = -\frac{1}{\sqrt{5}}\)</span>.</p>
+<p>Step 4 — iterate. Applying <span class="math inline">\(A\)</span> <span class="math inline">\(k\)</span> times scales each eigen-component by its eigenvalue (§6.8): <span class="math display">\[\mathbf{u}_k = c_1\lambda_1^k \mathbf{x}_1 + c_2\lambda_2^k \mathbf{x}_2.\]</span> The first component is <span class="math inline">\(F_k\)</span>: <span class="math display">\[F_k = \frac{\lambda_1^k - \lambda_2^k}{\sqrt{5}} \qquad \text{(Binet's formula)}.\]</span></p>
+<p>Step 5 — the approximation. <span class="math inline">\(|\lambda_2| = \frac{\sqrt{5} - 1}{2} \approx 0.618 &lt; 1\)</span>, so <span class="math inline">\(\lambda_2^k \to 0\)</span> as <span class="math inline">\(k\)</span> grows. For large <span class="math inline">\(k\)</span>: <span class="math display">\[F_k \approx \frac{\lambda_1^k}{\sqrt{5}}.\]</span> For <span class="math inline">\(k = 100\)</span>: <span class="math inline">\(F_{100} \approx \dfrac{\left(\frac{1+\sqrt{5}}{2}\right)^{100}}{\sqrt{5}} \approx 3.54 \times 10^{20}\)</span> (the exact value is <span class="math inline">\(354224848179261915075\)</span> — the dropped term is far below <span class="math inline">\(1\)</span>).</p>
+<p>Note the lecture’s bottom line: this works because the recurrence is <strong>linear</strong> — <span class="math inline">\(\mathbf{u}_{k+1}\)</span> is a linear function of <span class="math inline">\(\mathbf{u}_k\)</span>. A nonlinear recurrence breaks the whole analysis.</p>
+<p><strong>Basically, …</strong> Fibonacci is a little 2-D machine applied over and over. Diagonalization splits the machine into two independent 1-D scalers: one grows (the golden ratio <span class="math inline">\(\lambda_1 \approx 1.618\)</span>), one shrinks (<span class="math inline">\(\lambda_2 \approx -0.618\)</span>). After 100 steps the shrinker has vanished — the golden ratio runs the whole show.</p>
+</section>
+<section id="when-diagonalization-fails-defective-matrices" class="level2">
+<h2 class="anchored" data-anchor-id="when-diagonalization-fails-defective-matrices">6.10 When diagonalization fails: defective matrices</h2>
+<p>Not every matrix has enough independent eigenvectors. If an eigenvalue repeats but its eigenspace is too small, no invertible <span class="math inline">\(S\)</span> exists.</p>
+<p><strong>eg.</strong> <span class="math inline">\(A = \begin{bmatrix} 3 &amp; 1 \\ 0 &amp; 3 \end{bmatrix}\)</span>: <span class="math inline">\(\det(A - \lambda I) = (3 - \lambda)^2 = 0\)</span>, so <span class="math inline">\(\lambda = 3\)</span> twice. But <span class="math display">\[A - 3I = \begin{bmatrix} 0 &amp; 1 \\ 0 &amp; 0 \end{bmatrix}, \qquad (A - 3I)\mathbf{x} = \mathbf{0} \iff x_2 = 0,\]</span> so the eigenspace is just <span class="math inline">\(\operatorname{span}\{[1, 0]^T\}\)</span> — one independent eigenvector for a <span class="math inline">\(2 \times 2\)</span> matrix. No <span class="math inline">\(S\)</span> can be built; <span class="math inline">\(A\)</span> is <span class="math inline">\(defective\)</span> (not diagonalizable).</p>
+<p>Note: a repeated eigenvalue does not <em>automatically</em> break things — the identity matrix has <span class="math inline">\(\lambda = 1\)</span> twice and is perfectly diagonalizable. The problem is only when the repeated eigenvalue comes with too few independent directions.</p>
+<p><strong>Basically, …</strong> Diagonalization needs <span class="math inline">\(n\)</span> independent directions for an <span class="math inline">\(n \times n\)</span> matrix. If an eigenvalue “should” supply two directions but only supplies one, the matrix can’t be un-mixed — it’s defective.</p>
+</section>
+<section id="symmetric-matrices-the-spectral-theorem" class="level2">
+<h2 class="anchored" data-anchor-id="symmetric-matrices-the-spectral-theorem">6.11 Symmetric matrices: the spectral theorem</h2>
+<p>For a <span class="math inline">\(real\)</span> <span class="math inline">\(symmetric\)</span> matrix (<span class="math inline">\(A^T = A\)</span>) the lecture states the <span class="math inline">\(spectral\)</span> <span class="math inline">\(theorem\)</span> (the proof needs complex-matrix background, taken up later — here we take it as a fact):</p>
+<ol type="i">
+<li>all eigenvalues of <span class="math inline">\(A\)</span> are <strong>real</strong>;</li>
+<li>eigenvectors for distinct eigenvalues are linearly independent;</li>
+<li><span class="math inline">\(A\)</span> is <strong>orthogonally diagonalizable</strong>: there is an orthogonal <span class="math inline">\(Q\)</span> with <span class="math display">\[A = Q\Lambda Q^T, \qquad Q^TQ = I.\]</span></li>
+</ol>
+<p>Since <span class="math inline">\(Q^TQ = I\)</span> means <span class="math inline">\(Q^{-1} = Q^T\)</span> (§5.4), this is diagonalization with a free inverse — no <span class="math inline">\(S^{-1}\)</span> to compute. The columns of <span class="math inline">\(Q\)</span> are <strong>orthonormal</strong> eigenvectors (§5.4).</p>
+<p>Contrast with §6.10: no symmetric matrix is defective. Symmetric <span class="math inline">\(\Rightarrow\)</span> always diagonalizable, always real spectrum. (A general real matrix has no such guarantee — §6.3’s rotation and §6.10’s defective matrix.)</p>
+<p><strong>eg (full steps).</strong> <span class="math inline">\(A = \begin{bmatrix} 3 &amp; 1 \\ 1 &amp; 3 \end{bmatrix}\)</span> is symmetric (<span class="math inline">\(A^T = A\)</span>). From §6.4: eigenvalues <span class="math inline">\(4, 2\)</span> with eigenvectors <span class="math inline">\([1,1]^T\)</span>, <span class="math inline">\([1,-1]^T\)</span> — already orthogonal (<span class="math inline">\([1,1]^T[1,-1] = 1 - 1 = 0\)</span>; §5.2: orthogonal nonzero vectors are independent).</p>
+<p>Step 1 — normalize to unit eigenvectors: <span class="math display">\[\mathbf{q}_1 = \frac{1}{\sqrt{2}}\begin{bmatrix} 1 \\ 1 \end{bmatrix}, \qquad \mathbf{q}_2 = \frac{1}{\sqrt{2}}\begin{bmatrix} 1 \\ -1 \end{bmatrix}, \qquad Q = [\mathbf{q}_1\ \mathbf{q}_2] = \frac{1}{\sqrt{2}}\begin{bmatrix} 1 &amp; 1 \\ 1 &amp; -1 \end{bmatrix}.\]</span></p>
+<p>Step 2 — sanity check <span class="math inline">\(Q^TQ = I\)</span> (the check the lecture insists on): <span class="math display">\[Q^TQ = \frac{1}{2}\begin{bmatrix} 1 &amp; 1 \\ 1 &amp; -1 \end{bmatrix}\begin{bmatrix} 1 &amp; 1 \\ 1 &amp; -1 \end{bmatrix} = \frac{1}{2}\begin{bmatrix} 2 &amp; 0 \\ 0 &amp; 2 \end{bmatrix} = \begin{bmatrix} 1 &amp; 0 \\ 0 &amp; 1 \end{bmatrix} \;\checkmark.\]</span> So <span class="math inline">\(Q^{-1} = Q^T\)</span>.</p>
+<p>Step 3 — verify <span class="math inline">\(A = Q\Lambda Q^T\)</span> with <span class="math inline">\(\Lambda = \begin{bmatrix} 4 &amp; 0 \\ 0 &amp; 2 \end{bmatrix}\)</span>: <span class="math display">\[\Lambda Q^T = \begin{bmatrix} 4 &amp; 0 \\ 0 &amp; 2 \end{bmatrix}\frac{1}{\sqrt{2}}\begin{bmatrix} 1 &amp; 1 \\ 1 &amp; -1 \end{bmatrix} = \frac{1}{\sqrt{2}}\begin{bmatrix} 4 &amp; 4 \\ 2 &amp; -2 \end{bmatrix},\]</span> <span class="math display">\[Q\Lambda Q^T = \frac{1}{\sqrt{2}}\begin{bmatrix} 1 &amp; 1 \\ 1 &amp; -1 \end{bmatrix}\frac{1}{\sqrt{2}}\begin{bmatrix} 4 &amp; 4 \\ 2 &amp; -2 \end{bmatrix} = \frac{1}{2}\begin{bmatrix} 6 &amp; 2 \\ 2 &amp; 6 \end{bmatrix} = \begin{bmatrix} 3 &amp; 1 \\ 1 &amp; 3 \end{bmatrix} = A \;\checkmark.\]</span></p>
+<p>Note: stacking the <em>unnormalized</em> eigenvectors <span class="math inline">\([1,1]^T, [1,-1]^T\)</span> would still diagonalize <span class="math inline">\(A\)</span> (§6.7) but would <strong>not</strong> give <span class="math inline">\(Q^TQ = I\)</span>. The orthonormality is what makes the inverse free.</p>
+<p><strong>Basically, …</strong> Symmetric matrices are the well-behaved citizens: real eigenvalues, and you can always pick eigenvectors that are unit-length and mutually perpendicular. Then diagonalization reads <span class="math inline">\(A = Q\Lambda Q^T\)</span> — and <span class="math inline">\(Q\)</span>’s inverse is just its transpose.</p>
+</section>
+<section id="why-ml-cares" class="level2">
+<h2 class="anchored" data-anchor-id="why-ml-cares">6.12 Why ML cares</h2>
+<ol type="i">
+<li><span class="math inline">\(Covariance\)</span> <span class="math inline">\(matrices\)</span> are symmetric. Their eigendecomposition <span class="math inline">\(C = Q\Lambda Q^T\)</span> exists with real eigenvalues and orthonormal eigenvectors — this is the engine of PCA (Chapter 24): the eigenvectors are the principal directions, the eigenvalues the variances along them.</li>
+<li><span class="math inline">\(Quadratic\)</span> <span class="math inline">\(forms\)</span> <span class="math inline">\(x^TAx\)</span>: for symmetric <span class="math inline">\(A\)</span>, writing <span class="math inline">\(\mathbf{x}\)</span> in the eigenbasis decouples the form into <span class="math inline">\(\sum_i \lambda_i y_i^2\)</span> — the sign pattern of the eigenvalues tells you whether a critical point is a minimum, maximum, or saddle. Preview for the optimization chapters (10/12).</li>
+<li><span class="math inline">\(A^TA\)</span> is symmetric, so it diagonalizes as <span class="math inline">\(Q\Lambda Q^T\)</span> — and its eigenvalues turn out to be the <strong>squared</strong> <span class="math inline">\(singular\)</span> <span class="math inline">\(values\)</span> of <span class="math inline">\(A\)</span>. That fact is the bridge to the SVD in Chapter 7 (stated here as a pointer, derived there).</li>
+</ol>
+</section>
+<section id="where-this-goes-next" class="level2">
+<h2 class="anchored" data-anchor-id="where-this-goes-next">6.13 Where this goes next</h2>
+<ul>
+<li><strong>Chapter 7 (SVD):</strong> eigendecomposition needs a square matrix. The singular value decomposition <span class="math inline">\(A = U\Sigma V^T\)</span> extends the same idea — “special directions, pure scaling” — to <em>every</em> matrix, rectangular included. The eigenpairs of <span class="math inline">\(A^TA\)</span> (§6.12(iii)) are the bridge.</li>
+<li><strong>Chapter 24 (PCA):</strong> the covariance matrix is symmetric, so §6.11 applies directly: its orthonormal eigenvectors are the principal components, its eigenvalues the explained variances.</li>
+</ul>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li>For <span class="math inline">\(A = \begin{bmatrix} 4 &amp; 1 \\ 2 &amp; 3 \end{bmatrix}\)</span>: (a) find the characteristic polynomial and both eigenvalues; (b) find an eigenvector for each; (c) verify <span class="math inline">\(A\mathbf{x} = \lambda \mathbf{x}\)</span> for each pair; (d) check <span class="math inline">\(\lambda_1 + \lambda_2 = \operatorname{tr}(A)\)</span> and <span class="math inline">\(\lambda_1\lambda_2 = \det(A)\)</span>.</li>
+<li>Let <span class="math inline">\(A = \begin{bmatrix} 2 &amp; 2 \\ 1 &amp; 3 \end{bmatrix}\)</span>. Which of these claims are true? (a) <span class="math inline">\(\lambda = 4\)</span>, <span class="math inline">\(\mathbf{x} = [1,1]^T\)</span> is an eigenpair; (b) <span class="math inline">\(\lambda = 2\)</span>, <span class="math inline">\(\mathbf{x} = [1,-1]^T\)</span> is an eigenpair; (c) <span class="math inline">\(\lambda = 1\)</span>, <span class="math inline">\(\mathbf{x} = [2,-1]^T\)</span> is an eigenpair. Justify each by direct computation.</li>
+<li>Suppose <span class="math inline">\(P^2 = P\)</span> (a projection matrix, §6.3) and <span class="math inline">\(P\mathbf{x} = \lambda \mathbf{x}\)</span> with <span class="math inline">\(\mathbf{x} \ne \mathbf{0}\)</span>. Show <span class="math inline">\(\lambda\)</span> can only be <span class="math inline">\(0\)</span> or <span class="math inline">\(1\)</span>.</li>
+<li>Let <span class="math inline">\(B = \begin{bmatrix} 0 &amp; 1 \\ 1 &amp; 0 \end{bmatrix}\)</span> with eigenpairs <span class="math inline">\((1, [1,1]^T)\)</span> and <span class="math inline">\((-1, [1,-1]^T)\)</span>. (a) Without computing any determinant, find the eigenvalues and eigenvectors of <span class="math inline">\(A = B + 3I\)</span>. (b) Explain in one line why the same trick does not give the eigenvalues of <span class="math inline">\(B + C\)</span> for a general matrix <span class="math inline">\(C\)</span>.</li>
+<li>Diagonalize <span class="math inline">\(A = \begin{bmatrix} 2 &amp; 1 \\ 1 &amp; 2 \end{bmatrix}\)</span>: find eigenvalues, eigenvectors, build <span class="math inline">\(S\)</span> and <span class="math inline">\(\Lambda\)</span>, and verify <span class="math inline">\(S^{-1}AS = \Lambda\)</span> explicitly.</li>
+<li>Using your diagonalization from Problem 5, compute <span class="math inline">\(A^3 = S\Lambda^3 S^{-1}\)</span> and check the result by direct multiplication.</li>
+<li>For <span class="math inline">\(A = \begin{bmatrix} 3 &amp; 1 \\ 0 &amp; 3 \end{bmatrix}\)</span>: (a) find the eigenvalues; (b) find <span class="math inline">\(N(A - \lambda I)\)</span> and its dimension; (c) explain why <span class="math inline">\(A\)</span> is not diagonalizable.</li>
+<li>Orthogonally diagonalize <span class="math inline">\(A = \begin{bmatrix} 2 &amp; 1 \\ 1 &amp; 2 \end{bmatrix}\)</span>: give unit eigenvectors, form <span class="math inline">\(Q\)</span>, check <span class="math inline">\(Q^TQ = I\)</span>, and verify <span class="math inline">\(A = Q\Lambda Q^T\)</span>.</li>
+<li>For <span class="math inline">\(R = \begin{bmatrix} 0 &amp; -1 \\ 1 &amp; 0 \end{bmatrix}\)</span>: (a) find the eigenvalues from <span class="math inline">\(\det(R - \lambda I) = 0\)</span>; (b) verify <span class="math inline">\(\lambda_1 + \lambda_2 = \operatorname{tr}(R)\)</span> and <span class="math inline">\(\lambda_1\lambda_2 = \det(R)\)</span>; (c) why does this not contradict the spectral theorem (§6.11)?</li>
+<li><ol type="a">
+<li>Write down Binet’s formula from §6.9. (b) Use it to estimate <span class="math inline">\(F_{20}\)</span>, and bound the size of the neglected term <span class="math inline">\(|\lambda_2|^{20}/\sqrt{5}\)</span>. (c) In one line: why is the neglected term so small?</li>
+</ol></li>
+</ol>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — <span class="math inline">\(A = \begin{bmatrix} 4 &amp; 1 \\ 2 &amp; 3 \end{bmatrix}\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>1.</strong> <span class="math inline">\(A = \begin{bmatrix} 4 &amp; 1 \\ 2 &amp; 3 \end{bmatrix}\)</span>.</p>
+<ol type="a">
+<li><p><span class="math inline">\(A - \lambda I = \begin{bmatrix} 4 - \lambda &amp; 1 \\ 2 &amp; 3 - \lambda \end{bmatrix}\)</span>, <span class="math inline">\(\det = (4-\lambda)(3-\lambda) - 2 = \lambda^2 - 7\lambda + 10 = (\lambda - 5)(\lambda - 2)\)</span>. Eigenvalues: <span class="math inline">\(\lambda_1 = 5\)</span>, <span class="math inline">\(\lambda_2 = 2\)</span>.</p></li>
+<li><p><span class="math inline">\(\lambda_1 = 5\)</span>: <span class="math inline">\(A - 5I = \begin{bmatrix} -1 &amp; 1 \\ 2 &amp; -2 \end{bmatrix}\)</span>; <span class="math inline">\(-x_1 + x_2 = 0\)</span>, so <span class="math inline">\(\mathbf{x}_1 = \begin{bmatrix} 1 \\ 1 \end{bmatrix}\)</span>. <span class="math inline">\(\lambda_2 = 2\)</span>: <span class="math inline">\(A - 2I = \begin{bmatrix} 2 &amp; 1 \\ 2 &amp; 1 \end{bmatrix}\)</span>; <span class="math inline">\(2x_1 + x_2 = 0\)</span>, so <span class="math inline">\(\mathbf{x}_2 = \begin{bmatrix} 1 \\ -2 \end{bmatrix}\)</span>.</p></li>
+<li><p><span class="math inline">\(A\mathbf{x}_1 = \begin{bmatrix} 4+1 \\ 2+3 \end{bmatrix} = \begin{bmatrix} 5 \\ 5 \end{bmatrix} = 5\mathbf{x}_1\)</span> ✓. <span class="math inline">\(A\mathbf{x}_2 = \begin{bmatrix} 4-2 \\ 2-6 \end{bmatrix} = \begin{bmatrix} 2 \\ -4 \end{bmatrix} = 2\mathbf{x}_2\)</span> ✓.</p></li>
+<li><p><span class="math inline">\(5 + 2 = 7 = 4 + 3 = \operatorname{tr}(A)\)</span> ✓; <span class="math inline">\(5 \cdot 2 = 10 = 4\cdot 3 - 1\cdot 2 = \det(A)\)</span> ✓.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — <span class="math inline">\(A = \begin{bmatrix} 2 &amp; 2 \\ 1 &amp; 3 \end{bmatrix}\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>2.</strong> <span class="math inline">\(A = \begin{bmatrix} 2 &amp; 2 \\ 1 &amp; 3 \end{bmatrix}\)</span>.</p>
+<ol type="a">
+<li>True: <span class="math inline">\(A\begin{bmatrix} 1 \\ 1 \end{bmatrix} = \begin{bmatrix} 4 \\ 4 \end{bmatrix} = 4\begin{bmatrix} 1 \\ 1 \end{bmatrix}\)</span> ✓.</li>
+<li>False: <span class="math inline">\(A\begin{bmatrix} 1 \\ -1 \end{bmatrix} = \begin{bmatrix} 0 \\ -2 \end{bmatrix}\)</span>, but <span class="math inline">\(2\begin{bmatrix} 1 \\ -1 \end{bmatrix} = \begin{bmatrix} 2 \\ -2 \end{bmatrix}\)</span> ✗.</li>
+<li>True: <span class="math inline">\(A\begin{bmatrix} 2 \\ -1 \end{bmatrix} = \begin{bmatrix} 4-2 \\ 2-3 \end{bmatrix} = \begin{bmatrix} 2 \\ -1 \end{bmatrix} = 1\cdot\begin{bmatrix} 2 \\ -1 \end{bmatrix}\)</span> ✓. (Indeed the characteristic polynomial is <span class="math inline">\(\lambda^2 - 5\lambda + 4 = (\lambda-4)(\lambda-1)\)</span>, so <span class="math inline">\(2\)</span> is not even an eigenvalue.)</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — <span class="math inline">\(P\mathbf{x} = \lambda \mathbf{x}\)</span>, <span class="math inline">\(\mathbf{x} \ne \mathbf{0}\)</span>, and <span class="math inline">\(P^2 = P\)</span>. Apply <span class="math inline">\(P\)</span> to both sides of <span class="math inline">\(P\mathbf{x} = \lambda \mathbf{x}\)</span>: <span class="math inline">\(P^2\mathbf{x} = \lambda P\mathbf{x} = \lambda^2 \mathbf{x}\)</span>. But <span class="math inline">\(P^2 = P\)</span>, so <span class="math inline">\(P^2\mathbf{x} = P\mathbf{x} = \lambda \mathbf{x}\)</span>. Hence <span class="math inline">\(\lambda^2 \mathbf{x} = \lambda \mathbf{x}\)</span>, i.e.&nbsp;<span class="math inline">\((\lambda^2 - \lambda)\mathbf{x} = \mathbf{0}\)</span>. Since <span class="math inline">\(\mathbf{x} \ne \mathbf{0}\)</span>, <span class="math inline">\(\lambda^2 - \lambda = 0\)</span>, so <span class="math inline">\(\lambda = 0\)</span> or <span class="math inline">\(\lambda = 1\)</span>. (This is exactly the plane-projection example of §6.3: <span class="math inline">\(\lambda = 1\)</span> in the plane, <span class="math inline">\(\lambda = 0\)</span> perpendicular to it.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>3.</strong> <span class="math inline">\(P\mathbf{x} = \lambda \mathbf{x}\)</span>, <span class="math inline">\(\mathbf{x} \ne \mathbf{0}\)</span>, and <span class="math inline">\(P^2 = P\)</span>. Apply <span class="math inline">\(P\)</span> to both sides of <span class="math inline">\(P\mathbf{x} = \lambda \mathbf{x}\)</span>: <span class="math inline">\(P^2\mathbf{x} = \lambda P\mathbf{x} = \lambda^2 \mathbf{x}\)</span>. But <span class="math inline">\(P^2 = P\)</span>, so <span class="math inline">\(P^2\mathbf{x} = P\mathbf{x} = \lambda \mathbf{x}\)</span>. Hence <span class="math inline">\(\lambda^2 \mathbf{x} = \lambda \mathbf{x}\)</span>, i.e.&nbsp;<span class="math inline">\((\lambda^2 - \lambda)\mathbf{x} = \mathbf{0}\)</span>. Since <span class="math inline">\(\mathbf{x} \ne \mathbf{0}\)</span>, <span class="math inline">\(\lambda^2 - \lambda = 0\)</span>, so <span class="math inline">\(\lambda = 0\)</span> or <span class="math inline">\(\lambda = 1\)</span>. (This is exactly the plane-projection example of §6.3: <span class="math inline">\(\lambda = 1\)</span> in the plane, <span class="math inline">\(\lambda = 0\)</span> perpendicular to it.)</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — a) By the shift rule (§6.5): <span class="math inline">\(A = B + 3I\)</span> keeps <span class="math inline">\(B\)</span>’s eigenvectors and adds <span class="math inline">\(3\)</span> to each eigenvalue. Eigenpairs of <span class="math inline">\(A\)</span>: <span class="math inline">\((1 + 3,\ [1,1]^T) = (4,\ [1,1]^T)\)</span> and <span class="math inline">\((-1 + 3,\ [1,-1]^T) = (2,\ [1,-1]^T)\)</span> — matching the §6.4 computation.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>4.</strong> (a) By the shift rule (§6.5): <span class="math inline">\(A = B + 3I\)</span> keeps <span class="math inline">\(B\)</span>’s eigenvectors and adds <span class="math inline">\(3\)</span> to each eigenvalue. Eigenpairs of <span class="math inline">\(A\)</span>: <span class="math inline">\((1 + 3,\ [1,1]^T) = (4,\ [1,1]^T)\)</span> and <span class="math inline">\((-1 + 3,\ [1,-1]^T) = (2,\ [1,-1]^T)\)</span> — matching the §6.4 computation. (b) The rule used <span class="math inline">\((B + cI)\mathbf{x} = B\mathbf{x} + c\mathbf{x}\)</span>, which needs <span class="math inline">\(\mathbf{x}\)</span> to be an eigenvector of <strong>both</strong> <span class="math inline">\(B\)</span> and <span class="math inline">\(cI\)</span> — true since every vector is an eigenvector of <span class="math inline">\(I\)</span>. A general <span class="math inline">\(C\)</span> does not share <span class="math inline">\(B\)</span>’s eigenvectors, so <span class="math inline">\((B + C)\mathbf{x} \ne (\mu + \nu)\mathbf{x}\)</span> in general (§6.5 warning).</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — <span class="math inline">\(A = \begin{bmatrix} 2 &amp; 1 \\ 1 &amp; 2 \end{bmatrix}\)</span>: <span class="math inline">\(\det(A - \lambda I) = (2-\lambda)^2 - 1 = \lambda^2 - 4\lambda + 3 = (\lambda - 3)(\lambda - 1)\)</span>; <span class="math inline">\(\lambda_1 = 3\)</span>, <span class="math inline">\(\lambda_2 = 1\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>5.</strong> <span class="math inline">\(A = \begin{bmatrix} 2 &amp; 1 \\ 1 &amp; 2 \end{bmatrix}\)</span>: <span class="math inline">\(\det(A - \lambda I) = (2-\lambda)^2 - 1 = \lambda^2 - 4\lambda + 3 = (\lambda - 3)(\lambda - 1)\)</span>; <span class="math inline">\(\lambda_1 = 3\)</span>, <span class="math inline">\(\lambda_2 = 1\)</span>.</p>
+<p><span class="math inline">\(\lambda_1 = 3\)</span>: <span class="math inline">\(A - 3I = \begin{bmatrix} -1 &amp; 1 \\ 1 &amp; -1 \end{bmatrix}\)</span>, <span class="math inline">\(\mathbf{x}_1 = \begin{bmatrix} 1 \\ 1 \end{bmatrix}\)</span>. <span class="math inline">\(\lambda_2 = 1\)</span>: <span class="math inline">\(A - I = \begin{bmatrix} 1 &amp; 1 \\ 1 &amp; 1 \end{bmatrix}\)</span>, <span class="math inline">\(\mathbf{x}_2 = \begin{bmatrix} 1 \\ -1 \end{bmatrix}\)</span>.</p>
+<p><span class="math inline">\(S = \begin{bmatrix} 1 &amp; 1 \\ 1 &amp; -1 \end{bmatrix}\)</span>, <span class="math inline">\(\Lambda = \begin{bmatrix} 3 &amp; 0 \\ 0 &amp; 1 \end{bmatrix}\)</span>. <span class="math inline">\(\det S = -2\)</span>, <span class="math inline">\(S^{-1} = -\frac{1}{2}\begin{bmatrix} -1 &amp; -1 \\ -1 &amp; 1 \end{bmatrix} = \begin{bmatrix} 1/2 &amp; 1/2 \\ 1/2 &amp; -1/2 \end{bmatrix}\)</span>. <span class="math display">\[AS = \begin{bmatrix} 2 &amp; 1 \\ 1 &amp; 2 \end{bmatrix}\begin{bmatrix} 1 &amp; 1 \\ 1 &amp; -1 \end{bmatrix} = \begin{bmatrix} 3 &amp; 1 \\ 3 &amp; -1 \end{bmatrix},\]</span> <span class="math display">\[S^{-1}AS = \begin{bmatrix} 1/2 &amp; 1/2 \\ 1/2 &amp; -1/2 \end{bmatrix}\begin{bmatrix} 3 &amp; 1 \\ 3 &amp; -1 \end{bmatrix} = \begin{bmatrix} 3 &amp; 0 \\ 0 &amp; 1 \end{bmatrix} = \Lambda \;\checkmark.\]</span></p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — <span class="math inline">\(\Lambda^3 = \operatorname{diag}(27, 1)\)</span>. <span class="math inline">\(S\Lambda^3 = \begin{bmatrix} 1 &amp; 1 \\ 1 &amp; -1 \end{bmatrix}\begin{bmatrix} 27 &amp; 0 \\ 0 &amp; 1 \end{bmatrix} = \begin{bmatrix} 27 &amp; 1 \\ 27 &amp; -1 \end{bmatrix}\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>6.</strong> <span class="math inline">\(\Lambda^3 = \operatorname{diag}(27, 1)\)</span>. <span class="math inline">\(S\Lambda^3 = \begin{bmatrix} 1 &amp; 1 \\ 1 &amp; -1 \end{bmatrix}\begin{bmatrix} 27 &amp; 0 \\ 0 &amp; 1 \end{bmatrix} = \begin{bmatrix} 27 &amp; 1 \\ 27 &amp; -1 \end{bmatrix}\)</span>. <span class="math display">\[A^3 = S\Lambda^3 S^{-1} = \begin{bmatrix} 27 &amp; 1 \\ 27 &amp; -1 \end{bmatrix}\begin{bmatrix} 1/2 &amp; 1/2 \\ 1/2 &amp; -1/2 \end{bmatrix} = \begin{bmatrix} 14 &amp; 13 \\ 13 &amp; 14 \end{bmatrix}.\]</span> Direct: <span class="math inline">\(A^2 = \begin{bmatrix} 5 &amp; 4 \\ 4 &amp; 5 \end{bmatrix}\)</span>, <span class="math inline">\(A^3 = A^2A = \begin{bmatrix} 5 &amp; 4 \\ 4 &amp; 5 \end{bmatrix}\begin{bmatrix} 2 &amp; 1 \\ 1 &amp; 2 \end{bmatrix} = \begin{bmatrix} 14 &amp; 13 \\ 13 &amp; 14 \end{bmatrix}\)</span> ✓.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — <span class="math inline">\(A = \begin{bmatrix} 3 &amp; 1 \\ 0 &amp; 3 \end{bmatrix}\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>7.</strong> <span class="math inline">\(A = \begin{bmatrix} 3 &amp; 1 \\ 0 &amp; 3 \end{bmatrix}\)</span>.</p>
+<ol type="a">
+<li><span class="math inline">\(\det(A - \lambda I) = (3-\lambda)^2\)</span>: <span class="math inline">\(\lambda = 3\)</span> (double root).</li>
+<li><span class="math inline">\(A - 3I = \begin{bmatrix} 0 &amp; 1 \\ 0 &amp; 0 \end{bmatrix}\)</span>; <span class="math inline">\((A - 3I)\mathbf{x} = \mathbf{0}\)</span> gives <span class="math inline">\(x_2 = 0\)</span>, <span class="math inline">\(x_1\)</span> free. <span class="math inline">\(N(A - 3I) = \operatorname{span}\{[1,0]^T\}\)</span>, dimension <span class="math inline">\(1\)</span>.</li>
+<li>A <span class="math inline">\(2 \times 2\)</span> matrix needs <span class="math inline">\(2\)</span> independent eigenvectors to diagonalize; there is only one independent direction here. <span class="math inline">\(A\)</span> is defective — not diagonalizable.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 8 — <span class="math inline">\(A = \begin{bmatrix} 2 &amp; 1 \\ 1 &amp; 2 \end{bmatrix}\)</span> is symmetric; from Problem 5, eigenvalues <span class="math inline">\(3, 1\)</span> with (orthogonal) eigenvectors <span class="math inline">\([1,1]^T\)</span>, <span class="math inline">\([1,-1]^T\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>8.</strong> <span class="math inline">\(A = \begin{bmatrix} 2 &amp; 1 \\ 1 &amp; 2 \end{bmatrix}\)</span> is symmetric; from Problem 5, eigenvalues <span class="math inline">\(3, 1\)</span> with (orthogonal) eigenvectors <span class="math inline">\([1,1]^T\)</span>, <span class="math inline">\([1,-1]^T\)</span>.</p>
+<p>Unit eigenvectors: <span class="math inline">\(\mathbf{q}_1 = \frac{1}{\sqrt{2}}\begin{bmatrix} 1 \\ 1 \end{bmatrix}\)</span>, <span class="math inline">\(\mathbf{q}_2 = \frac{1}{\sqrt{2}}\begin{bmatrix} 1 \\ -1 \end{bmatrix}\)</span>; <span class="math inline">\(Q = \frac{1}{\sqrt{2}}\begin{bmatrix} 1 &amp; 1 \\ 1 &amp; -1 \end{bmatrix}\)</span>. <span class="math display">\[Q^TQ = \frac{1}{2}\begin{bmatrix} 1 &amp; 1 \\ 1 &amp; -1 \end{bmatrix}\begin{bmatrix} 1 &amp; 1 \\ 1 &amp; -1 \end{bmatrix} = \frac{1}{2}\begin{bmatrix} 2 &amp; 0 \\ 0 &amp; 2 \end{bmatrix} = I \;\checkmark.\]</span> With <span class="math inline">\(\Lambda = \operatorname{diag}(3, 1)\)</span>: <span class="math inline">\(\Lambda Q^T = \frac{1}{\sqrt{2}}\begin{bmatrix} 3 &amp; 3 \\ 1 &amp; -1 \end{bmatrix}\)</span>, <span class="math display">\[Q\Lambda Q^T = \frac{1}{2}\begin{bmatrix} 1 &amp; 1 \\ 1 &amp; -1 \end{bmatrix}\begin{bmatrix} 3 &amp; 3 \\ 1 &amp; -1 \end{bmatrix} = \frac{1}{2}\begin{bmatrix} 4 &amp; 2 \\ 2 &amp; 4 \end{bmatrix} = \begin{bmatrix} 2 &amp; 1 \\ 1 &amp; 2 \end{bmatrix} = A \;\checkmark.\]</span></p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 9 — a) <span class="math inline">\(\det(R - \lambda I) = \begin{vmatrix} -\lambda &amp; -1 \\ 1 &amp; -\lambda \end{vmatrix} = \lambda^2 + 1 = 0\)</span>: <span class="math inline">\(\lambda_1 = i\)</span>, <span class="math inline">\(\lambda_2 = -i\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>9.</strong> (a) <span class="math inline">\(\det(R - \lambda I) = \begin{vmatrix} -\lambda &amp; -1 \\ 1 &amp; -\lambda \end{vmatrix} = \lambda^2 + 1 = 0\)</span>: <span class="math inline">\(\lambda_1 = i\)</span>, <span class="math inline">\(\lambda_2 = -i\)</span>. (b) <span class="math inline">\(i + (-i) = 0 = \operatorname{tr}(R)\)</span> ✓; <span class="math inline">\(i \cdot (-i) = -i^2 = 1 = \det(R)\)</span> ✓. (The trace/determinant relations hold over <span class="math inline">\(\mathbb{C}\)</span> too.) (c) No contradiction: the spectral theorem applies to <strong>symmetric</strong> matrices, and <span class="math inline">\(R^T = \begin{bmatrix} 0 &amp; 1 \\ -1 &amp; 0 \end{bmatrix} = -R \ne R\)</span>. A non-symmetric real matrix may have complex eigenvalues — exactly what §6.3 warned about.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 10 — a) <span class="math inline">\(F_k = \dfrac{\lambda_1^k - \lambda_2^k}{\sqrt{5}}\)</span> with <span class="math inline">\(\lambda_1 = \frac{1+\sqrt{5}}{2}\)</span>, <span class="math inline">\(\lambda_2 = \frac{1-\sqrt{5}}{2}\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>10.</strong> (a) <span class="math inline">\(F_k = \dfrac{\lambda_1^k - \lambda_2^k}{\sqrt{5}}\)</span> with <span class="math inline">\(\lambda_1 = \frac{1+\sqrt{5}}{2}\)</span>, <span class="math inline">\(\lambda_2 = \frac{1-\sqrt{5}}{2}\)</span>. (b) Dropping the <span class="math inline">\(\lambda_2\)</span> term: <span class="math inline">\(F_{20} \approx \lambda_1^{20}/\sqrt{5} \approx 6765.0000296\)</span>. The neglected term is <span class="math inline">\(|\lambda_2|^{20}/\sqrt{5} \approx 2.96 \times 10^{-5}\)</span> — the estimate is correct to <span class="math inline">\(4\)</span> decimal places, and rounding gives the exact integer <span class="math inline">\(F_{20} = 6765\)</span>. (c) Because <span class="math inline">\(|\lambda_2| \approx 0.618 &lt; 1\)</span>: a number smaller than <span class="math inline">\(1\)</span> raised to the <span class="math inline">\(20\)</span>th power is tiny.</p>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./05-orthogonality-projections-least-squares.html" class="pagination-link" aria-label="5. Orthogonality, projections, least squares">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">5. Orthogonality, projections, least squares</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./07-svd-positive-definite.html" class="pagination-link" aria-label="7. SVD and positive definite matrices">
+        <span class="nav-page-text"><span class="chapter-title">7. SVD and positive definite matrices</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

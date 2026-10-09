@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Chapter 42: Backpropagation, worked end-to-end – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./43-optimization-neural-nets.html" rel="next">
+<link href="./41-neuron-mlp-scratch.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./41-neuron-mlp-scratch.html">Part VI — Bridge to Deep Learning</a></li><li class="breadcrumb-item"><a href="./42-backpropagation.html"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#the-question-backprop-answers" id="toc-the-question-backprop-answers" class="nav-link active" data-scroll-target="#the-question-backprop-answers">42.1 The question backprop answers</a></li>
+  <li><a href="#the-computational-graph-any-expression-is-a-graph-of-basic-ops" id="toc-the-computational-graph-any-expression-is-a-graph-of-basic-ops" class="nav-link" data-scroll-target="#the-computational-graph-any-expression-is-a-graph-of-basic-ops">42.2 The computational graph: any expression is a graph of basic ops</a></li>
+  <li><a href="#the-2-2-1-backward-pass-every-number-by-hand" id="toc-the-2-2-1-backward-pass-every-number-by-hand" class="nav-link" data-scroll-target="#the-2-2-1-backward-pass-every-number-by-hand">42.3 The 2-2-1 backward pass, every number by hand</a></li>
+  <li><a href="#the-general-layer-wise-rules-the-decks-derivation" id="toc-the-general-layer-wise-rules-the-decks-derivation" class="nav-link" data-scroll-target="#the-general-layer-wise-rules-the-decks-derivation">42.4 The general layer-wise rules (the deck’s derivation)</a></li>
+  <li><a href="#the-output-layer-special-case-the-pairing-cancellation" id="toc-the-output-layer-special-case-the-pairing-cancellation" class="nav-link" data-scroll-target="#the-output-layer-special-case-the-pairing-cancellation">42.5 The output-layer special case: the pairing cancellation</a></li>
+  <li><a href="#gradient-checking-trust-then-verify" id="toc-gradient-checking-trust-then-verify" class="nav-link" data-scroll-target="#gradient-checking-trust-then-verify">42.6 Gradient checking: trust, then verify</a></li>
+  <li><a href="#why-one-backward-pass-beats-perturbing-every-weight" id="toc-why-one-backward-pass-beats-perturbing-every-weight" class="nav-link" data-scroll-target="#why-one-backward-pass-beats-perturbing-every-weight">42.7 Why one backward pass beats perturbing every weight</a></li>
+  <li><a href="#where-this-goes-next" id="toc-where-this-goes-next" class="nav-link" data-scroll-target="#where-this-goes-next">42.8 Where this goes next</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./41-neuron-mlp-scratch.html">Part VI — Bridge to Deep Learning</a></li><li class="breadcrumb-item"><a href="./42-backpropagation.html"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Part VI continues. This chapter derives the one piece Chapter 41 borrowed without proof: §41.10’s <code>backward</code> — how <span class="math inline">\(\partial L/\partial W\)</span> and <span class="math inline">\(\partial L/\partial b\)</span> for <em>every</em> weight and bias are computed by flowing one error signal backwards through the network. The shape follows the GenAI Weeks 1–2 deck (“Introduction to ANN,” Balaji Srinivasan and Ganapathy Krishnamurthi, slides 59–70) — the general derivation on a computational graph (“any mathematical expression can be decomposed into a graph of basic operations”) — and the course’s XOR notebook (cells 17–18), which hand-computes the full backward pass for the same 2-2-1 net of §41.9. Cross-checked against the MLT Week-12 ANN slides, which name backprop as the trainer but add no new derivation. One idea, fully worked: <strong>backpropagation is the multivariate chain rule (§9.7) applied to the forward computation graph — one backward sweep yields every parameter’s gradient.</strong> Every number below was re-run here in numpy and is marked <strong>[verified-NumPy]</strong>; deck and notebook numbers are transcriptions, marked <strong>[recorded]</strong>.</p>
+<p><strong>Notation.</strong> The deck derives in per-example (column-vector) form, <span class="math inline">\(z^{[l]} = W^{[l]} a^{[l-1]} + b^{[l]}\)</span>; this book computes in batch form, <span class="math inline">\(Z^l = A^{l-1} W^l + b^l\)</span> (§41.4’s Note — the deck’s <span class="math inline">\(W^{[l]}\)</span> is the book’s <span class="math inline">\((W^l)^T\)</span>). Both forms appear below, pinned to each other at each step; mix them up and you get the transpose bug.</p>
+<section id="the-question-backprop-answers" class="level2">
+<h2 class="anchored" data-anchor-id="the-question-backprop-answers">42.1 The question backprop answers</h2>
+<p>Gradient descent (§10.5, §10.7) needs one number per parameter: <span class="math display">\[\theta := \theta - \eta \frac{\partial L}{\partial \theta} \qquad \text{for every weight and bias.}\]</span> The forward pass gives <span class="math inline">\(L\)</span>; the update needs the <em>gradient</em> of <span class="math inline">\(L\)</span> — how much each weight <em>caused</em> the loss. With <span class="math inline">\(39{,}760\)</span> parameters (§41.14(ii)), you cannot afford to guess each one separately.</p>
+<p><strong>Def (credit assignment).</strong> Determining, for every weight and bias, how much of the final loss it caused — the sign and size of <span class="math inline">\(\partial L/\partial\theta\)</span> for each parameter. The deck poses it as the chain-rule question: “How does a small change in an early parameter (<span class="math inline">\(w_1\)</span>) affect the final loss (<span class="math inline">\(L\)</span>) at the end of a long chain of computations?” — and answers: “The Chain Rule provides the answer by multiplying local derivatives.”</p>
+<p><strong>Basically, …</strong> “The network made an error — now who is to blame? Backprop is the blame-assigner: it walks the error signal backwards from the output, asking each layer ‘how much of this loss passed through you?’, until every weight knows its share of the blame. The tool is the multivariate chain rule (§9.7) — the machinery Chapter 10 assumed.”</p>
+</section>
+<section id="the-computational-graph-any-expression-is-a-graph-of-basic-ops" class="level2">
+<h2 class="anchored" data-anchor-id="the-computational-graph-any-expression-is-a-graph-of-basic-ops">42.2 The computational graph: any expression is a graph of basic ops</h2>
+<p>The deck’s general setup (slides 62–63), in its own words: - “Any mathematical expression can be decomposed into a graph of basic operations. This makes the flow of derivatives explicit.” - Two passes of automatic differentiation: i) <strong>Forward pass:</strong> “We start with input values <span class="math inline">\((a, b, c)\)</span> and compute the values of all nodes, flowing from left to right, until we get the final output <span class="math inline">\(L\)</span>.” Every intermediate value is <em>cached</em>. ii) <strong>Backward pass (backpropagation):</strong> “We start from the end with the gradient <span class="math inline">\(\partial L/\partial L = 1\)</span>. We then go backwards (right to left), using the chain rule at each node to compute the gradient of <span class="math inline">\(L\)</span> with respect to every input of that node.” - The slide’s rule of thumb: each node’s incoming gradient is multiplied by the node’s <em>local</em> gradient (how the node’s output changes w.r.t. each input).</p>
+<p><strong>eg 1 (the deck’s scalar example, slides 64–65).</strong> <span class="math inline">\(\mathcal{L} = (a + b) \cdot c\)</span>, inputs <span class="math inline">\(a = 2\)</span>, <span class="math inline">\(b = 3\)</span>, <span class="math inline">\(c = 6\)</span>. Break it down: <span class="math inline">\(d = a + b\)</span>, <span class="math inline">\(\mathcal{L} = d \cdot c\)</span>.</p>
+<p>Forward (green): <span class="math display">\[d = a + b = 2 + 3 = 5, \qquad \mathcal{L} = d \cdot c = 5 \cdot 6 = 30.\]</span> Backward (red), starting <span class="math inline">\(\partial\mathcal{L}/\partial\mathcal{L} = 1\)</span>: <span class="math display">\[\begin{align*}
+\frac{\partial \mathcal{L}}{\partial c} &amp;= \frac{\partial \mathcal{L}}{\partial \mathcal{L}} \cdot \frac{\partial \mathcal{L}}{\partial c} = 1 \cdot d = 5, \\
+\frac{\partial \mathcal{L}}{\partial d} &amp;= \frac{\partial \mathcal{L}}{\partial \mathcal{L}} \cdot \frac{\partial \mathcal{L}}{\partial d} = 1 \cdot c = 6, \\
+\frac{\partial \mathcal{L}}{\partial b} &amp;= \frac{\partial \mathcal{L}}{\partial d} \cdot \frac{\partial d}{\partial b} = 6 \cdot 1 = 6, \\
+\frac{\partial \mathcal{L}}{\partial a} &amp;= \frac{\partial \mathcal{L}}{\partial d} \cdot \frac{\partial d}{\partial a} = 6 \cdot 1 = 6.
+\end{align*}\]</span> The slide’s summary table (“Spreadsheet Visualization”): forward values <span class="math inline">\(a=2\)</span>, <span class="math inline">\(b=3\)</span>, <span class="math inline">\(c=6\)</span>, <span class="math inline">\(d=5\)</span>, <span class="math inline">\(\mathcal{L}=30\)</span>; local gradients <span class="math inline">\(\partial d/\partial a = \partial d/\partial b = 1\)</span>, <span class="math inline">\(\partial\mathcal{L}/\partial d = c = 6\)</span>, <span class="math inline">\(\partial\mathcal{L}/\partial c = d = 5\)</span> [recorded].</p>
+<!-- Original figure drawn for this chapter (not reused from any URL): computational graph of L=(a+b)*c with forward values in green and backward gradients in red, after the deck's slide 64 -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/42-backprop-graph.png" class="img-fluid figure-img"></p>
+<figcaption>Computational graph for L = (a+b)*c: variable circles a,b,c,d,L with values 2,3,6,5,30 in green; gradient values 6,6,5,6,1 in red below each circle; square boxes for + and x operations.</figcaption>
+</figure>
+</div>
+<p><strong>Note (deck typo, fixed here).</strong> The slide’s forward-pass bullet reads “<span class="math inline">\(\mathcal{L} = d \cdot c = 5 \cdot 4 = 30\)</span>.” Since <span class="math inline">\(c = 6\)</span>, this should be <span class="math inline">\(5 \cdot 6 = 30\)</span> (and <span class="math inline">\(5 \cdot 4 \ne 30\)</span> anyway). The numbers used above and in the figure are the corrected ones; the derivation and all gradients are unaffected.</p>
+<p><strong>Basically, …</strong> “Write any formula as a chain of tiny steps. Forward: fill in each step’s value, left to right, and remember them. Backward: start at the end with ‘the loss changes 1-per-1 with itself’ and walk right to left, multiplying each step’s <em>local</em> slope. Every node’s gradient is just (gradient from downstream) × (local slope) — four multiplications and all four gradients are done.”</p>
+</section>
+<section id="the-2-2-1-backward-pass-every-number-by-hand" class="level2">
+<h2 class="anchored" data-anchor-id="the-2-2-1-backward-pass-every-number-by-hand">42.3 The 2-2-1 backward pass, every number by hand</h2>
+<p>The notebook’s §4.3 (cell 17) runs the same two-pass idea on the 2-2-1 XOR net, input <span class="math inline">\((1, 0)\)</span>, target <span class="math inline">\(y = 1\)</span>. The forward values it inherits from §41.9 (recomputed here [verified-NumPy]): <span class="math display">\[z_1 = [1.0,\ 0.0], \quad h_1 = [0.73105858,\ 0.5], \quad z_3 = -0.0379, \quad \hat y = 0.4905, \quad L = 0.7123.\]</span> The notebook’s weight names map to the batch layout (<span class="math inline">\(W_1[i,j]\)</span> = weight from input <span class="math inline">\(i\)</span> to hidden neuron <span class="math inline">\(j\)</span>):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>hand-calc name</th>
+<th>book matrix entry</th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(w_{11}, w_{12}\)</span></td>
+<td><span class="math inline">\(W_1[0,0], W_1[0,1]\)</span> (from <span class="math inline">\(x_1\)</span> to <span class="math inline">\(h_1, h_2\)</span>)</td>
+<td><span class="math inline">\(1.0,\ -1.0\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(w_{21}, w_{22}\)</span></td>
+<td><span class="math inline">\(W_1[1,0], W_1[1,1]\)</span> (from <span class="math inline">\(x_2\)</span> to <span class="math inline">\(h_1, h_2\)</span>)</td>
+<td><span class="math inline">\(1.0,\ -1.0\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(b_1, b_2\)</span></td>
+<td><span class="math inline">\(b_1[0], b_1[1]\)</span></td>
+<td><span class="math inline">\(0.0,\ 1.0\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(w_{31}, w_{32}\)</span></td>
+<td><span class="math inline">\(W_2[0,0], W_2[1,0]\)</span> (from <span class="math inline">\(h_1, h_2\)</span> to output)</td>
+<td><span class="math inline">\(2.0,\ -1.0\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(b_3\)</span></td>
+<td><span class="math inline">\(b_2[0]\)</span></td>
+<td><span class="math inline">\(-1.0\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>eg 2 (the notebook’s backward pass, re-derived with exact arithmetic).</strong></p>
+<p>Step 1 — output layer. Loss <span class="math inline">\(L = -[y \log\hat y + (1-y)\log(1-\hat y)]\)</span>: <span class="math display">\[\frac{\partial L}{\partial \hat y} = -\frac{y}{\hat y} + \frac{1 - y}{1 - \hat y} = -\frac{1}{0.4905} = -2.0387,\]</span> <span class="math display">\[\frac{\partial \hat y}{\partial z_3} = \hat y(1 - \hat y) = 0.4905 \times 0.5095 = 0.2499,\]</span> <span class="math display">\[\frac{\partial L}{\partial z_3} = (-2.0387)(0.2499) = -0.5095.\]</span> The notebook prints <span class="math inline">\(-2.037\)</span> for <span class="math inline">\(\partial L/\partial\hat y\)</span> — a rounding artifact of writing <span class="math inline">\(\hat y\)</span> as <span class="math inline">\(0.491\)</span> first; the exact value is <span class="math inline">\(-1/0.4905 = -2.0387\)</span>. The simplification, exact to all shown digits: <span class="math display">\[\boxed{\frac{\partial L}{\partial z_3} = \hat y - y = 0.4905 - 1 = -0.5095}\]</span> (the sigmoid’s <span class="math inline">\(\hat y(1-\hat y)\)</span> cancels the loss’s denominator — §41.11(ii), §31.10). Output-layer parameter gradients (local gradient = the incoming activation): <span class="math display">\[\frac{\partial L}{\partial w_{31}} = (-0.5095)(0.7311) = -0.3725, \qquad \frac{\partial L}{\partial w_{32}} = (-0.5095)(0.5) = -0.2547, \qquad \frac{\partial L}{\partial b_3} = -0.5095.\]</span></p>
+<p>Step 2 — hidden layer. Push the error back through <span class="math inline">\(W_2\)</span> (local gradient = the weight on each path): <span class="math display">\[\frac{\partial L}{\partial h_1} = (-0.5095)(2.0) = -1.0189, \qquad \frac{\partial L}{\partial h_2} = (-0.5095)(-1.0) = 0.5095.\]</span> Through the sigmoid (local gradient <span class="math inline">\(h(1-h)\)</span>): <span class="math display">\[\frac{\partial h_1}{\partial z_1} = 0.7311 \times 0.2689 = 0.1966, \qquad \frac{\partial h_2}{\partial z_2} = 0.5 \times 0.5 = 0.25.\]</span> The hidden deltas: <span class="math display">\[\boxed{\frac{\partial L}{\partial z_1} = (-1.0189)(0.1966) = -0.2003, \qquad \frac{\partial L}{\partial z_2} = (0.5095)(0.25) = 0.1274.}\]</span> Hidden-layer parameter gradients (local gradient = the input on each path; <span class="math inline">\(x_2 = 0\)</span>): <span class="math display">\[\frac{\partial L}{\partial w_{11}} = (-0.2003)(1) = -0.2003, \quad \frac{\partial L}{\partial w_{12}} = (0.1274)(1) = 0.1274,\]</span> <span class="math display">\[\frac{\partial L}{\partial w_{21}} = (-0.2003)(0) = 0, \quad \frac{\partial L}{\partial w_{22}} = (0.1274)(0) = 0,\]</span> <span class="math display">\[\frac{\partial L}{\partial b_1} = -0.2003, \quad \frac{\partial L}{\partial b_2} = 0.1274.\]</span> Every rounded value matches the notebook’s hand calc (<span class="math inline">\(-0.509\)</span>, <span class="math inline">\(-0.200\)</span>, <span class="math inline">\(0.127\)</span>) [verified-NumPy].</p>
+<p>Step 3 — one gradient-descent update at <span class="math inline">\(\alpha = 0.1\)</span> (§10.5: <span class="math inline">\(\theta := \theta - \alpha\,\partial L/\partial\theta\)</span>): <span class="math display">\[\begin{align*}
+w_{31} &amp;= 2.0 - 0.1(-0.3725) = 2.0372, &amp; w_{32} &amp;= -1.0 - 0.1(-0.2547) = -0.9745, \\
+b_3 &amp;= -1.0 - 0.1(-0.5095) = -0.9491, \\
+w_{11} &amp;= 1.0 - 0.1(-0.2003) = 1.0200, &amp; w_{12} &amp;= -1.0 - 0.1(0.1274) = -1.0127, \\
+w_{21} &amp;= 1.0 - 0.1(0) = 1.0, &amp; w_{22} &amp;= -1.0 - 0.1(0) = -1.0, \\
+b_1 &amp;= 0.0 - 0.1(-0.2003) = 0.0200, &amp; b_2 &amp;= 1.0 - 0.1(0.1274) = 0.9873.
+\end{align*}\]</span></p>
+<p><strong>Note.</strong> <span class="math inline">\(w_{21}\)</span> and <span class="math inline">\(w_{22}\)</span> do not move: their input <span class="math inline">\(x_2 = 0\)</span>, so the chain dies at the local gradient <span class="math inline">\(\partial z/\partial w = x_2 = 0\)</span>. This is the credit-assignment logic made visible — a weight whose input is silent gets no blame, because changing it would not have changed <span class="math inline">\(z\)</span> (and the notebook’s cell 18 draws the same conclusion: “Zero gradients → no change needed”).</p>
+<p><strong>Basically, …</strong> “The error at the output is <span class="math inline">\(-0.509\)</span> (prediction below truth). It flows back: multiplied by the outgoing weights it becomes hidden errors <span class="math inline">\(-1.0189\)</span> and <span class="math inline">\(0.5095\)</span>; multiplied by each sigmoid’s local slope it becomes hidden deltas <span class="math inline">\(-0.2003\)</span> and <span class="math inline">\(0.1274\)</span>; multiplied by the inputs it becomes each weight’s gradient. Every step is (upstream error) × (local slope) — the §42.2 rule, nine times. Then subtract <span class="math inline">\(\alpha\)</span> times each gradient.”</p>
+</section>
+<section id="the-general-layer-wise-rules-the-decks-derivation" class="level2">
+<h2 class="anchored" data-anchor-id="the-general-layer-wise-rules-the-decks-derivation">42.4 The general layer-wise rules (the deck’s derivation)</h2>
+<p>The deck (slides 66–70) derives the update rules for layer <span class="math inline">\(l\)</span> in per-example form. It decomposes each weight’s gradient into three components:</p>
+<p><span class="math display">\[\underbrace{\frac{\partial L}{\partial W^{[l]}}}_{\text{our goal}} = \underbrace{\frac{\partial L}{\partial a^{[l]}}}_{\text{1. upstream}} \cdot \underbrace{\frac{\partial a^{[l]}}{\partial z^{[l]}}}_{\text{2. activation}} \cdot \underbrace{\frac{\partial z^{[l]}}{\partial W^{[l]}}}_{\text{3. local}}\]</span> i) <strong>Upstream gradient</strong> <span class="math inline">\(\partial L/\partial a^{[l]}\)</span>: “How the final loss changes with this layer’s output. This is passed back from layer <span class="math inline">\(l + 1\)</span>.” ii) <strong>Activation gradient</strong> <span class="math inline">\(\partial a^{[l]}/\partial z^{[l]} = g'(z^{[l]})\)</span>: “The derivative of the activation function.” iii) <strong>Local gradient</strong> <span class="math inline">\(\partial z^{[l]}/\partial W^{[l]}\)</span>: “How this layer’s pre-activation changes with its weights.”</p>
+<p><strong>Step 1 — the error term <span class="math inline">\(\delta\)</span>.</strong> The deck defines <span class="math display">\[\boxed{\delta^{[l]} = \frac{\partial L}{\partial z^{[l]}}},\]</span> “which represents how the loss changes with respect to the pre-activation of layer <span class="math inline">\(l\)</span>.” Combining (i) and (ii): <span class="math display">\[\delta^{[l]} = \frac{\partial L}{\partial a^{[l]}} \odot g'(z^{[l]}), \qquad \text{where } \frac{\partial L}{\partial a^{[l]}} = (W^{[l+1]})^T \delta^{[l+1]}.\]</span> The core recursion (the slide’s boxed line): <span class="math display">\[\boxed{\delta^{[l]} = \big((W^{[l+1]})^T \delta^{[l+1]}\big) \odot g'(z^{[l]})}.\]</span> “For the output layer <span class="math inline">\(L\)</span>, this is simpler: <span class="math inline">\(\delta^{[L]} = \nabla_{a^{[L]}} L \odot g'(z^{[L]})\)</span>.”</p>
+<p><strong>Step 2 — the parameter gradients.</strong> “Once we have the error <span class="math inline">\(\delta^{[l]}\)</span> for a layer, finding the gradients for its parameters is straightforward”: <span class="math display">\[\boxed{\frac{\partial L}{\partial W^{[l]}} = \delta^{[l]} (a^{[l-1]})^T}, \qquad \boxed{\frac{\partial L}{\partial b^{[l]}} = \delta^{[l]}}.\]</span></p>
+<p><strong>The same rules in this book’s batch form</strong> (<span class="math inline">\(Z^l = A^{l-1} W^l + b^l\)</span>, <span class="math inline">\(A^l = g(Z^l)\)</span>, mean loss <span class="math inline">\(L = \frac1m \sum_i L_i\)</span>). Write <span class="math inline">\(\Delta^l\)</span> for the batch error signal, one row per example: <span class="math inline">\(\Delta^l_i = \frac1m\,\partial L_i/\partial z^l_i\)</span>. Then: <span class="math display">\[\boxed{\Delta^l = \big(\Delta^{l+1} (W^{l+1})^T\big) \odot g'(Z^l)}, \qquad \boxed{\frac{\partial L}{\partial W^l} = (A^{l-1})^T \Delta^l}, \qquad \boxed{\frac{\partial L}{\partial b^l} = \sum_{\text{rows}} \Delta^l}.\]</span> The shapes: <span class="math inline">\(\Delta^{l+1}\)</span> is <span class="math inline">\(n \times S_{l+1}\)</span>, <span class="math inline">\((W^{l+1})^T\)</span> is <span class="math inline">\(S_{l+1} \times S_l\)</span> — the product fans the error back onto the <span class="math inline">\(S_l\)</span> neurons of layer <span class="math inline">\(l\)</span> (§2.10’s rule: the transpose is doing the “push the error backwards through the weights” job); <span class="math inline">\((A^{l-1})^T \Delta^l\)</span> is <span class="math inline">\(S_{l-1} \times S_l\)</span> — the shape of <span class="math inline">\(W^l\)</span> (§41.4).</p>
+<p><strong>Line-by-line map to §41.10’s <code>backward</code>.</strong> The numpy class is the batch-form rules above, written out:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><code>backward</code> line</th>
+<th>the rule it is</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>dz2 = (self.out - y).reshape(-1, 1) / m</code></td>
+<td><span class="math inline">\(\Delta^2\)</span>: output-layer error, §42.5’s <span class="math inline">\((\hat y - y)/m\)</span> pairing</td>
+</tr>
+<tr class="even">
+<td><code>dW2 = self.h1.T @ dz2</code></td>
+<td><span class="math inline">\(\partial L/\partial W^2 = (A^1)^T \Delta^2\)</span></td>
+</tr>
+<tr class="odd">
+<td><code>db2 = dz2.sum(axis=0)</code></td>
+<td><span class="math inline">\(\partial L/\partial b^2\)</span>: row sum of <span class="math inline">\(\Delta^2\)</span> (= row mean of per-example <span class="math inline">\(\delta\)</span>’s, since <span class="math inline">\(dz2\)</span> already carries <span class="math inline">\(1/m\)</span>)</td>
+</tr>
+<tr class="even">
+<td><code>dh1 = dz2 @ self.W2.T</code></td>
+<td>upstream: <span class="math inline">\(\partial L/\partial A^1 = \Delta^2 (W^2)^T\)</span></td>
+</tr>
+<tr class="odd">
+<td><code>dz1 = dh1 * self.h1 * (1 - self.h1)</code></td>
+<td><span class="math inline">\(\Delta^1 = \text{upstream} \odot g'(Z^1)\)</span>, <span class="math inline">\(g' = \sigma(1-\sigma)\)</span></td>
+</tr>
+<tr class="even">
+<td><code>dW1 = X.T @ dz1</code></td>
+<td><span class="math inline">\(\partial L/\partial W^1 = (A^0)^T \Delta^1\)</span></td>
+</tr>
+<tr class="odd">
+<td><code>db1 = dz1.sum(axis=0)</code></td>
+<td><span class="math inline">\(\partial L/\partial b^1\)</span>: row sum</td>
+</tr>
+</tbody>
+</table>
+<p>The notebook’s own <code>backward</code> (cell 11) differs only in style: it divides by <span class="math inline">\(m\)</span> once at the <code>dW</code>/<code>db</code> lines (<code>np.dot(self.h1.T, dL_dz2) / m</code>, <code>np.mean(dL_dz2, axis=0)</code>) instead of at the <span class="math inline">\(\Delta\)</span> line — same gradients, mean loss both ways [recorded].</p>
+<p><strong>Basically, …</strong> “Every layer does the same three-move dance: 1) take the error passed back from the layer above, push it through this layer’s <em>weights</em> (transpose — that is the ‘backwards through the weights’ move); 2) multiply element-wise by the <em>activation’s</em> local slope <span class="math inline">\(g'(z)\)</span> — that is <span class="math inline">\(\delta\)</span>, the layer’s error; 3) get the parameter gradients by outer-producting <span class="math inline">\(\delta\)</span> with the layer’s <em>inputs</em> (<span class="math inline">\(\delta \times\)</span> input for weights, <span class="math inline">\(\delta\)</span> alone for biases). Repeat for every layer. The whole <code>backward</code> method is these three moves, twice.”</p>
+</section>
+<section id="the-output-layer-special-case-the-pairing-cancellation" class="level2">
+<h2 class="anchored" data-anchor-id="the-output-layer-special-case-the-pairing-cancellation">42.5 The output-layer special case: the pairing cancellation</h2>
+<p>The output layer needs no push-through-weights step — its upstream gradient is the loss’s own derivative, <span class="math inline">\(\nabla_{a^{[L]}} L\)</span>. And for the two classification pairings of §41.11, that derivative times the activation’s slope collapses to prediction-minus-truth:</p>
+<p><strong>i) Sigmoid + binary cross-entropy (§41.11(ii)).</strong> <span class="math inline">\(\hat y = \sigma(z)\)</span>: <span class="math display">\[\frac{\partial L}{\partial z} = \frac{\partial L}{\partial \hat y} \cdot \frac{\partial \hat y}{\partial z} = \left(-\frac{y}{\hat y} + \frac{1-y}{1-\hat y}\right)\big(\hat y(1-\hat y)\big) = \boxed{\hat y - y}.\]</span> The notebook’s cell-17 note: “For binary cross-entropy + sigmoid: <span class="math inline">\(\partial L/\partial z_3 = \hat y - y\)</span>.” Numerically at the §42.3 values: <span class="math inline">\(-2.0387 \times 0.2499 = -0.5095\)</span> both ways [verified-NumPy]. For mean loss over <span class="math inline">\(m\)</span> points, each row’s <span class="math inline">\(\delta\)</span> carries <span class="math inline">\(1/m\)</span>: <span class="math inline">\(\Delta^2_i = (\hat y_i - y_i)/m\)</span> — verified numerically against finite differences (max difference <span class="math inline">\(5.0 \times 10^{-10}\)</span>) [verified-NumPy].</p>
+<p><strong>ii) Softmax + categorical cross-entropy (§41.11(iii)).</strong> <span class="math inline">\(\hat y_i = e^{z_i}/\sum_j e^{z_j}\)</span>, one-hot <span class="math inline">\(y\)</span>, <span class="math inline">\(L = -\sum_k y_k \log \hat y_k\)</span>: <span class="math display">\[\frac{\partial \hat y_i}{\partial z_j} = \hat y_i(\delta_{ij} - \hat y_j), \quad \text{so} \quad \frac{\partial L}{\partial z_j} = -\sum_k y_k (\delta_{kj} - \hat y_j) = \boxed{\hat y_j - y_j},\]</span> using <span class="math inline">\(\sum_k y_k = 1\)</span>. Verified numerically on a 4-class example: finite-difference <span class="math inline">\(\partial L/\partial z\)</span> matches <span class="math inline">\(\hat y - y\)</span> to <span class="math inline">\(1.2 \times 10^{-9}\)</span> [verified-NumPy]. The same “prediction minus truth” — this is why the pairings of §41.11 are chosen together: the activation’s derivative cancels the loss’s.</p>
+<p><strong>iii) Identity + squared error (§41.11(i)).</strong> <span class="math inline">\(g(z) = z\)</span>, <span class="math inline">\(L = \tfrac12(\hat y - y)^2\)</span> per example: <span class="math display">\[\frac{\partial L}{\partial z} = \boxed{\hat y - y},\]</span> the <span class="math inline">\(\tfrac12\)</span> being the convenience that cancels the squared derivative. No cancellation magic needed — the identity’s slope is <span class="math inline">\(1\)</span>.</p>
+<p><strong>Note.</strong> Pairings (i)–(iii) all end at the same slogan, but for different reasons: in (i) and (ii) the activation’s derivative <em>cancels</em> the loss’s derivative; in (iii) there is no loss derivative to cancel. An unpaired activation (e.g.&nbsp;ReLU output with cross-entropy) gets no such shortcut — §41’s problem 7 asked exactly what Chapter 42 must do there: fall back to the general <span class="math inline">\(\delta^{[L]} = \nabla_{a^{[L]}} L \odot g'(z^{[L]})\)</span>.</p>
+<p><strong>Basically, …</strong> “The last layer is special: nothing sits above it, so its error signal comes straight from the loss. And when the loss and the activation are chosen as a pair (the §41.11 pairings), their derivatives cancel into the simplest possible error: prediction minus truth. That is why <code>backward</code> opens with <code>dz2 = (out - y)</code> — the whole loss-and-sigmoid derivative collapsed into a subtraction.”</p>
+</section>
+<section id="gradient-checking-trust-then-verify" class="level2">
+<h2 class="anchored" data-anchor-id="gradient-checking-trust-then-verify">42.6 Gradient checking: trust, then verify</h2>
+<p>Backprop is a long chain of multiplications — one sign error, one missing transpose, and every gradient is wrong while the code runs without complaint. The fix predates deep learning: compare the analytic gradients against a <em>finite-difference</em> approximation (§8.3’s derivative-as-limit), <span class="math display">\[\frac{\partial L}{\partial \theta_j} \approx \frac{L(\theta + \varepsilon e_j) - L(\theta - \varepsilon e_j)}{2\varepsilon}, \qquad \varepsilon = 10^{-7},\]</span> which needs no derivation — only forward passes.</p>
+<p><strong>eg 3 (gradient check on the §42.3 hand-calc net, all 9 parameters).</strong> Analytic gradients from §42.3 vs.&nbsp;centered finite differences:</p>
+<pre><code>analytic:  [-0.200336,  0.127367,  0.0,  0.0, -0.200336,  0.127367,
+            -0.372452, -0.254735, -0.509470]
+fin-diff:  [-0.200336,  0.127367,  0.0,  0.0, -0.200336,  0.127367,
+            -0.372452, -0.254735, -0.509470]
+max |difference| = 8.18e-10</code></pre>
+<p>[verified-NumPy]. Agreement to <span class="math inline">\(\sim 10^{-9}\)</span>: the hand-derived chain in §42.3 is the true gradient.</p>
+<p><strong>Note.</strong> Gradient checking is a <em>debugging</em> tool, never a training method — see §42.7 for why. And it follows §40.5(i)’s playbook: when the gradients smell wrong, check the machine on a small net with a fixed seed (§36.6) before trusting a big one.</p>
+<p><strong>Basically, …</strong> “Don’t trust a chain of nine multiplications just because it looks right. Nudge each weight by a hair, measure how the loss actually moves, and compare with what backprop claimed. If they agree to <span class="math inline">\(10^{-9}\)</span>, your derivation is the truth. Check once while debugging; never during training.”</p>
+</section>
+<section id="why-one-backward-pass-beats-perturbing-every-weight" class="level2">
+<h2 class="anchored" data-anchor-id="why-one-backward-pass-beats-perturbing-every-weight">42.7 Why one backward pass beats perturbing every weight</h2>
+<p>The finite-difference formula above <em>is</em> a gradient estimator — so why not train with it? Count the forward passes. A net with <span class="math inline">\(P\)</span> parameters:</p>
+<ul>
+<li><strong>Finite differences:</strong> <span class="math inline">\(2P\)</span> forward passes per gradient (two per parameter).</li>
+<li><strong>Backpropagation:</strong> <span class="math inline">\(1\)</span> forward pass (caching the intermediates, §42.2) + <span class="math inline">\(1\)</span> backward pass — each roughly the cost of a forward pass.</li>
+</ul>
+<p><strong>eg 4.</strong> The MLT slides’ <span class="math inline">\(784\!-\!50\!-\!10\)</span> net: <span class="math inline">\(P = 39{,}760\)</span> (§41.14(ii)). Finite differences: <span class="math inline">\(2 \times 39{,}760 = 79{,}520\)</span> forward passes per update. Backprop: one forward, one backward. That factor of <span class="math inline">\(\sim 40{,}000\)</span> is the difference between “trains overnight” and “trains before the heat death of the universe” — and it grows with every added parameter.</p>
+<p><strong>Basically, …</strong> “Finite differences re-run the whole network twice <em>per weight</em> to ask ‘did the loss move?’. Backprop re-runs it once <em>backwards</em> and answers that question for <em>every</em> weight at the same time — because the chain rule reuses the intermediates instead of rediscovering them. That reuse is the entire trick.”</p>
+</section>
+<section id="where-this-goes-next" class="level2">
+<h2 class="anchored" data-anchor-id="where-this-goes-next">42.8 Where this goes next</h2>
+<ol type="i">
+<li><p><strong>Optimization for neural nets (Chapter 43).</strong> This chapter computed the gradients; Chapter 43 decides how to <em>use</em> them — SGD variants, Adam, and why §41.14(i)’s zero-init symmetry trap is the entry point to initialization: the scale of the starting weights controls the scale of <span class="math inline">\(g'(z)\)</span> in the <span class="math inline">\(\delta\)</span> recursion, and hence whether the error signal survives the backward trip.</p></li>
+<li><p><strong>The vanishing-gradient reading of §42.4.</strong> Look at the recursion: each layer multiplies the error by <span class="math inline">\(g'(z^{[l]})\)</span>. For sigmoid, <span class="math inline">\(g'(z) = \sigma(z)(1-\sigma(z)) \le 0.25\)</span> — every backward step through a saturated sigmoid shrinks the error to at most a quarter (§41.7’s “flat at both ends… effectively stops learning”). ReLU’s <span class="math inline">\(g' = 1\)</span> for <span class="math inline">\(z &gt; 0\)</span> is why “no vanishing gradient (for <span class="math inline">\(z &gt; 0\)</span>)” (§41.7) — the error passes through unshrunk. The activation table of §41.7 is, read backwards, a table about backprop.</p></li>
+<li><p><strong>PyTorch’s <code>loss.backward()</code>.</strong> The workflow notebook’s step 4 (<code>loss.backward()</code>, §41.13) automates §42.4: PyTorch builds the computational graph of §42.2 during the forward pass and multiplies the local gradients for you — autograd <em>is</em> this chapter, mechanized.</p></li>
+<li><p><strong>The traps ride along.</strong> §41.14’s warnings now have derivations behind them: zero-init symmetry (identical weights → identical <span class="math inline">\(\delta\)</span>’s → identical updates, forever), the parameter-count overfitting, and the surrogate-loss trade.</p></li>
+</ol>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li><strong>The deck’s scalar graph, re-derived.</strong> <span class="math inline">\(\mathcal{L} = (a + b) \cdot c\)</span> with <span class="math inline">\(a = 2\)</span>, <span class="math inline">\(b = 3\)</span>, <span class="math inline">\(c = 6\)</span>. (i) Run the forward pass and cache every node value. (ii) Run the backward pass from <span class="math inline">\(\partial\mathcal{L}/\partial\mathcal{L} = 1\)</span>; give <span class="math inline">\(\partial\mathcal{L}/\partial a\)</span>, <span class="math inline">\(\partial\mathcal{L}/\partial b\)</span>, <span class="math inline">\(\partial\mathcal{L}/\partial c\)</span>, <span class="math inline">\(\partial\mathcal{L}/\partial d\)</span> with the local gradient used at each step. (iii) Check your <span class="math inline">\(\partial\mathcal{L}/\partial c\)</span> by differentiating <span class="math inline">\(\mathcal{L} = (a+b)c\)</span> directly.</li>
+<li><strong>The three components.</strong> For a hidden layer <span class="math inline">\(l\)</span>, the deck writes <span class="math inline">\(\partial L/\partial W^{[l]} = (\partial L/\partial a^{[l]}) \cdot (\partial a^{[l]}/\partial z^{[l]}) \cdot (\partial z^{[l]}/\partial W^{[l]})\)</span>. (i) Name each factor in the deck’s words. (ii) Which factor does the <span class="math inline">\(\delta^{[l]}\)</span> definition absorb, and why is that absorption useful? (iii) Write the recursion that computes <span class="math inline">\(\delta^{[l]}\)</span> from <span class="math inline">\(\delta^{[l+1]}\)</span> (per-example form).</li>
+<li><strong>Batch-form translation.</strong> (i) Starting from the deck’s <span class="math inline">\(\partial L/\partial W^{[l]} = \delta^{[l]}(a^{[l-1]})^T\)</span> (<span class="math inline">\(S_l \times S_{l-1}\)</span> layout), derive the batch form <span class="math inline">\(\partial L/\partial W^l = (A^{l-1})^T \Delta^l\)</span>, stating the shape of every factor for <span class="math inline">\(n\)</span> points. (ii) Explain in one line why the transpose appears on the <em>other</em> matrix in the batch form. (iii) For mean loss, explain why <code>db2 = dz2.sum(axis=0)</code> in §41.10 equals the row-mean of the per-example <span class="math inline">\(\delta\)</span>’s even though it says <code>sum</code>.</li>
+<li><strong>The XOR backward pass, a second example.</strong> Take the §42.3 net and input <span class="math inline">\((0, 1)\)</span> (target <span class="math inline">\(y = 1\)</span>). (i) Forward pass: <span class="math inline">\(z_1, h_1, z_3, \hat y, L\)</span>. (ii) Backward pass: <span class="math inline">\(\partial L/\partial z_3\)</span>, both hidden deltas, all weight/bias gradients. (iii) Which input’s weights now get zero gradient, and why?</li>
+<li><strong>The <span class="math inline">\((g - y)\)</span> check.</strong> (i) Reproduce §42.5(i)’s cancellation: at <span class="math inline">\(\hat y = 0.4905\)</span>, <span class="math inline">\(y = 1\)</span>, compute <span class="math inline">\(\partial L/\partial\hat y\)</span> and <span class="math inline">\(\partial\hat y/\partial z\)</span> separately and show their product equals <span class="math inline">\(\hat y - y\)</span>. (ii) In §41.10’s <code>backward</code>, point at the exact line this produces and explain the <code>/ m</code>. (iii) Give one line for when this shortcut is <em>unavailable</em> (the §42.5 Note case).</li>
+<li><strong>Softmax pairing.</strong> (i) For a 3-class net with <span class="math inline">\(z = (1.0, 0.0, -1.0)\)</span>, <span class="math inline">\(y = [0, 1, 0]\)</span>: compute <span class="math inline">\(\hat y\)</span>, <span class="math inline">\(L\)</span>, and <span class="math inline">\(\partial L/\partial z\)</span> via <span class="math inline">\(\hat y - y\)</span>. (ii) Verify one component with the two-step chain <span class="math inline">\(\partial L/\partial\hat y_k \cdot \partial\hat y_k/\partial z_j\)</span> (use §31.12’s softmax Jacobian). (iii) In one line, say what cancels.</li>
+<li><strong>Gradient check by hand.</strong> A 1-1 net: <span class="math inline">\(z = wx + b\)</span>, <span class="math inline">\(\hat y = \sigma(z)\)</span>, BCE loss, <span class="math inline">\(w = 0.5\)</span>, <span class="math inline">\(b = 0.1\)</span>, <span class="math inline">\(x = 2.0\)</span>, <span class="math inline">\(y = 1\)</span>. (i) Compute <span class="math inline">\(\partial L/\partial w\)</span> and <span class="math inline">\(\partial L/\partial b\)</span> by backprop. (ii) Approximate both with centered finite differences at <span class="math inline">\(\varepsilon = 10^{-5}\)</span>; report the agreement. (iii) In one line: what breaks in this check if you forget to clip <span class="math inline">\(\hat y\)</span> near 0 or 1?</li>
+<li><strong>Credit where it’s due.</strong> In §42.3, <span class="math inline">\(\partial L/\partial w_{21} = \partial L/\partial w_{22} = 0\)</span> because <span class="math inline">\(x_2 = 0\)</span>. (i) Give a one-line chain-rule reason. (ii) After the <span class="math inline">\(\alpha = 0.1\)</span> update, the net sees <span class="math inline">\((0, 1)\)</span> — do <span class="math inline">\(w_{21}, w_{22}\)</span> move on <em>this</em> step? (iii) In two lines, explain what this says about which training examples teach which weights.</li>
+<li><strong>Vanishing, read backwards.</strong> A 5-hidden-layer sigmoid net; every hidden neuron sits at <span class="math inline">\(|z| \ge 3\)</span>. (i) Bound <span class="math inline">\(g'(z)\)</span> at <span class="math inline">\(|z| = 3\)</span> (<span class="math inline">\(\sigma(3) \approx 0.9526\)</span>). (ii) Bound the shrinkage of <span class="math inline">\(\|\delta^{[1]}\|\)</span> relative to <span class="math inline">\(\|\delta^{[5]}\|\)</span> through four backward steps. (iii) In two lines, connect this to §41.7’s verdict on sigmoid in deep stacks and its ReLU recommendation.</li>
+<li><strong>Map the notebook.</strong> The XOR notebook’s <code>backward</code> (cell 11) computes <code>dL_dz2 = dL_dy</code> then <code>dL_dW2 = np.dot(self.h1.T, dL_dz2) / m</code>. (i) Match each of its six gradient lines to a formula in §42.4. (ii) Explain the comment “For sigmoid, dy/dz = y(1-y), but we can simplify” in §42.5 terms. (iii) It divides by <span class="math inline">\(m\)</span> at the <code>dW</code>/<code>db</code> lines while §41.10 divides inside <code>dz2</code> — prove the two give identical gradients.</li>
+</ol>
+<hr>
+<p><em>Sources: GenAI “Introduction to ANN” deck (Balaji Srinivasan, Ganapathy Krishnamurthi), slides 59–70 (chain rule, computational graph, scalar hand example, MLP weight-update derivation); XOR Problem notebook, cells 14/17/18 (hand-calc weights, full backward pass, verification); MLT Week-12 ANN slides (backprop named as trainer, no new derivation); book chapters 2 (§2.10), 9 (§9.7), 10 (§10.5, §10.7), 31 (§31.10, §31.12), 36 (§36.2, §36.6), 41 (§§41.4, 41.9–41.11, 41.13, 41.14).</em></p>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — the deck’s scalar graph, re-derived
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i) Forward pass.</strong> Nodes: <span class="math inline">\(d = a + b\)</span>, <span class="math inline">\(\mathcal{L} = d \cdot c\)</span>. <span class="math display">\[d = 2 + 3 = 5, \qquad \mathcal{L} = 5 \cdot 6 = 30.\]</span> Cached: <span class="math inline">\(a=2,\ b=3,\ c=6,\ d=5,\ \mathcal{L}=30\)</span>.</p>
+<p><strong>(ii) Backward pass.</strong> Start <span class="math inline">\(\partial\mathcal{L}/\partial\mathcal{L} = 1\)</span> (“by definition,” slide 63). - At the <span class="math inline">\(\times\)</span> node: local gradients <span class="math inline">\(\partial\mathcal{L}/\partial d = c = 6\)</span>, <span class="math inline">\(\partial\mathcal{L}/\partial c = d = 5\)</span>. So <span class="math inline">\(\partial\mathcal{L}/\partial c = 1 \cdot 5 = 5\)</span>, <span class="math inline">\(\partial\mathcal{L}/\partial d = 1 \cdot 6 = 6\)</span>. - At the <span class="math inline">\(+\)</span> node: local gradients <span class="math inline">\(\partial d/\partial a = \partial d/\partial b = 1\)</span>. So <span class="math inline">\(\partial\mathcal{L}/\partial a = 6 \cdot 1 = 6\)</span>, <span class="math inline">\(\partial\mathcal{L}/\partial b = 6 \cdot 1 = 6\)</span>.</p>
+<p><strong>(iii) Direct check.</strong> <span class="math inline">\(\mathcal{L} = (a+b)c\)</span>, so <span class="math inline">\(\partial\mathcal{L}/\partial c = a + b = 5\)</span> — matches. (Similarly <span class="math inline">\(\partial\mathcal{L}/\partial a = c = 6\)</span>.)</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — the three components
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> <span class="math inline">\(\partial L/\partial a^{[l]}\)</span> = <strong>1. Upstream Gradient</strong> — “How the final loss changes with this layer’s output. This is passed back from layer <span class="math inline">\(l+1\)</span>.” <span class="math inline">\(\partial a^{[l]}/\partial z^{[l]} = g'(z^{[l]})\)</span> = <strong>2. Activation Gradient</strong> — “The derivative of the activation function.” <span class="math inline">\(\partial z^{[l]}/\partial W^{[l]}\)</span> = <strong>3. Local Gradient</strong> — “How this layer’s pre-activation changes with its weights.”</p>
+<p><strong>(ii)</strong> <span class="math inline">\(\delta^{[l]} = \partial L/\partial z^{[l]}\)</span> absorbs (i) and (ii): <span class="math inline">\(\delta^{[l]} = (\partial L/\partial a^{[l]}) \odot g'(z^{[l]})\)</span>. Useful because <span class="math inline">\(\delta^{[l]}\)</span> is the <em>single</em> quantity each layer needs — it is computed once per layer and then reused for both <span class="math inline">\(\partial L/\partial W^{[l]}\)</span> and <span class="math inline">\(\partial L/\partial b^{[l]}\)</span>, and it is what gets passed one step further back.</p>
+<p><strong>(iii)</strong> <span class="math inline">\(\delta^{[l]} = \big((W^{[l+1]})^T \delta^{[l+1]}\big) \odot g'(z^{[l]})\)</span> (the deck’s boxed recursion; for the output layer, <span class="math inline">\(\delta^{[L]} = \nabla_{a^{[L]}} L \odot g'(z^{[L]})\)</span>).</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — batch-form translation
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> Per-example: <span class="math inline">\(\partial L/\partial W^{[l]} = \delta^{[l]}(a^{[l-1]})^T\)</span> with <span class="math inline">\(\delta^{[l]}\)</span> <span class="math inline">\(S_l \times 1\)</span>, <span class="math inline">\(a^{[l-1]}\)</span> <span class="math inline">\(S_{l-1} \times 1\)</span>. The batch layout stores examples as rows: <span class="math inline">\(A^{l-1}\)</span> is <span class="math inline">\(n \times S_{l-1}\)</span>, <span class="math inline">\(\Delta^l\)</span> is <span class="math inline">\(n \times S_l\)</span>. Summing the per-example outer products over the batch: <span class="math display">\[\frac{\partial L}{\partial W^l} = \sum_{i=1}^n \Delta^l_i (A^{l-1}_i)^T = (A^{l-1})^T \Delta^l,\]</span> an <span class="math inline">\(S_{l-1} \times S_l\)</span> matrix — the shape of <span class="math inline">\(W^l\)</span>.</p>
+<p><strong>(ii)</strong> In per-example form the weights left-multiply (<span class="math inline">\(W^{[l]} a^{[l-1]}\)</span>), so the outer product is <span class="math inline">\(\delta (a)^T\)</span>; in batch form they right-multiply rows (<span class="math inline">\(A^{l-1} W^l\)</span>), so the sum-of-outer-products assembles as <span class="math inline">\((A^{l-1})^T \Delta^l\)</span> — the transpose moves to keep each factor’s rows/columns aligned with <span class="math inline">\(W^l\)</span>’s <span class="math inline">\((S_{l-1} \times S_l)\)</span> layout (§41.4’s Note).</p>
+<p><strong>(iii)</strong> In §41.10, <code>dz2</code> already carries the <span class="math inline">\(1/m\)</span>: <code>dz2 = (out - y)/m</code>. So <code>dz2.sum(axis=0)</code> <span class="math inline">\(= \sum_i \delta_i / m\)</span> = the row-<em>mean</em> of the per-example <span class="math inline">\(\delta\)</span>’s. It says <code>sum</code> but computes a mean, because the <span class="math inline">\(1/m\)</span> was applied one line earlier. (The notebook does it the other way: unscaled <span class="math inline">\(\Delta\)</span>, then <code>/ m</code> at the <code>dW</code>/<code>db</code> lines — identical result.)</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — the XOR backward pass, a second example
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Weights as in §42.3. Input <span class="math inline">\((0, 1)\)</span>, target <span class="math inline">\(y = 1\)</span>.</p>
+<p><strong>(i) Forward.</strong> <span class="math display">\[z_1 = [0(1)+1(1)+0,\ 0(-1)+1(-1)+1] = [1.0,\ 0.0], \quad h_1 = [0.7311,\ 0.5],\]</span> <span class="math display">\[z_3 = 2(0.7311) - 1(0.5) - 1 = -0.0379, \quad \hat y = 0.4905, \quad L = -\log(0.4905) = 0.7123.\]</span> <em>Coincidence worth noting:</em> the forward values are identical to the <span class="math inline">\((1,0)\)</span> case — with these hand-picked weights, <span class="math inline">\(x_1 + x_2\)</span> always equals <span class="math inline">\(1\)</span> on the two <span class="math inline">\(y=1\)</span> corners. The gradients will differ only through the <span class="math inline">\(x\)</span> factor.</p>
+<p><strong>(ii) Backward.</strong> <span class="math display">\[\frac{\partial L}{\partial z_3} = \hat y - y = -0.5095, \quad \frac{\partial L}{\partial z_1} = -0.2003,\ \frac{\partial L}{\partial z_2} = 0.1274\]</span> (same deltas as §42.3 — same <span class="math inline">\(\hat y\)</span>, same <span class="math inline">\(h_1\)</span>). Weight gradients now use <span class="math inline">\(x = (0, 1)\)</span>: <span class="math display">\[\frac{\partial L}{\partial W_1} = x^T \delta = \begin{bmatrix} 0 &amp; 0 \\ -0.2003 &amp; 0.1274 \end{bmatrix}, \quad \frac{\partial L}{\partial b_1} = [-0.2003,\ 0.1274],\]</span> <span class="math display">\[\frac{\partial L}{\partial W_2} = [-0.3725,\ -0.2547]^T, \quad \frac{\partial L}{\partial b_2} = -0.5095.\]</span></p>
+<p><strong>(iii)</strong> Now <span class="math inline">\(x_1 = 0\)</span>, so <span class="math inline">\(w_{11}\)</span> and <span class="math inline">\(w_{12}\)</span> (the weights fed by <span class="math inline">\(x_1\)</span>) get zero gradient — the mirror image of §42.3’s Note, where <span class="math inline">\(x_2 = 0\)</span> froze <span class="math inline">\(w_{21}, w_{22}\)</span>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — the <span class="math inline">\((g - y)\)</span> check
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> At <span class="math inline">\(\hat y = 0.4905\)</span>, <span class="math inline">\(y = 1\)</span>: <span class="math display">\[\frac{\partial L}{\partial \hat y} = -\frac{1}{0.4905} = -2.0387, \qquad \frac{\partial \hat y}{\partial z} = 0.4905(1 - 0.4905) = 0.2499,\]</span> <span class="math display">\[(-2.0387)(0.2499) = -0.5095 = 0.4905 - 1 = \hat y - y \quad \checkmark\]</span> [verified-NumPy].</p>
+<p><strong>(ii)</strong> <code>dz2 = (self.out - y).reshape(-1, 1) / m</code> — the entire sigmoid-derivative-times-loss-derivative two-step collapses to the subtraction. The <code>/ m</code> is there because the loss is the <em>mean</em> over the batch: each example’s <span class="math inline">\(\delta\)</span> is its share <span class="math inline">\(1/m\)</span> of the mean.</p>
+<p><strong>(iii)</strong> The shortcut is unavailable whenever the output activation and loss are <em>not</em> a cancelling pair — e.g.&nbsp;a ReLU (or tanh) output with cross-entropy, or sigmoid with squared error: then use the general <span class="math inline">\(\delta^{[L]} = \nabla_{a^{[L]}} L \odot g'(z^{[L]})\)</span> with no cancellation.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — softmax pairing
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> <span class="math inline">\(z = (1.0, 0.0, -1.0)\)</span>: <span class="math inline">\(e^z = (2.7183, 1.0, 0.3679)\)</span>, sum <span class="math inline">\(= 4.0862\)</span>, <span class="math display">\[\hat y = (0.6652,\ 0.2447,\ 0.0900), \quad L = -\log(0.2447) = 1.4076,\]</span> <span class="math display">\[\frac{\partial L}{\partial z} = \hat y - y = (0.6652,\ -0.7553,\ 0.0900) \quad [verified-NumPy].\]</span></p>
+<p><strong>(ii)</strong> Two-step for <span class="math inline">\(j = 1\)</span> (the true class): <span class="math inline">\(\partial L/\partial \hat y_k = -y_k/\hat y_k\)</span> is nonzero only at <span class="math inline">\(k = 1\)</span>: <span class="math inline">\(-1/0.2447 = -4.0862\)</span>. <span class="math inline">\(\partial \hat y_1/\partial z_1 = \hat y_1(1 - \hat y_1) = 0.2447 \times 0.7553 = 0.1848\)</span>. Product: <span class="math inline">\((-4.0862)(0.1848) = -0.7553\)</span> — matches <span class="math inline">\(\hat y_1 - y_1\)</span> <span class="math inline">\(\checkmark\)</span>.</p>
+<p><strong>(iii)</strong> What cancels: the softmax Jacobian’s <span class="math inline">\(\hat y_i(\delta_{ij} - \hat y_j)\)</span> structure against the log-loss’s <span class="math inline">\(1/\hat y_k\)</span> — every term with <span class="math inline">\(k \ne j\)</span> folds into <span class="math inline">\(-\hat y_j \sum_k y_k = -\hat y_j\)</span>, leaving <span class="math inline">\(\hat y_j - y_j\)</span>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — gradient check by hand
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> <span class="math inline">\(z = 0.5(2.0) + 0.1 = 1.1\)</span>; <span class="math inline">\(\hat y = \sigma(1.1) = 0.75026\)</span>; <span class="math inline">\(L = -\log(0.75026) = 0.28734\)</span>. <span class="math display">\[\frac{\partial L}{\partial z} = \hat y - y = -0.24974, \quad \frac{\partial L}{\partial w} = (-0.24974)(2.0) = -0.49948, \quad \frac{\partial L}{\partial b} = -0.24974.\]</span></p>
+<p><strong>(ii)</strong> <span class="math inline">\(\varepsilon = 10^{-5}\)</span>: <span class="math display">\[\text{FD}_w = -0.499479789,\ \text{FD}_b = -0.249739894 \quad \Rightarrow \quad \text{agreement to } \sim 10^{-10} \ \checkmark \ [verified-NumPy].\]</span></p>
+<p><strong>(iii)</strong> If <span class="math inline">\(\hat y\)</span> hits exactly <span class="math inline">\(0\)</span> or <span class="math inline">\(1\)</span>, <span class="math inline">\(\log \hat y\)</span> (or <span class="math inline">\(\log(1-\hat y)\)</span>) is undefined/<span class="math inline">\(-\infty\)</span> and the finite-difference evaluation explodes — hence the <code>np.clip(yhat, 1e-15, 1 - 1e-15)</code> in every loss implementation (§41.10).</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 8 — credit where it’s due
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> <span class="math inline">\(\partial L/\partial w_{21} = (\partial L/\partial z_1)(\partial z_1/\partial w_{21}) = (\partial L/\partial z_1) \cdot x_2\)</span>, and <span class="math inline">\(x_2 = 0\)</span> — the chain multiplies by the local gradient, which is the input value itself.</p>
+<p><strong>(ii)</strong> Yes — on input <span class="math inline">\((0, 1)\)</span> we have <span class="math inline">\(x_2 = 1\)</span>, so <span class="math inline">\(\partial L/\partial w_{21} = (\partial L/\partial z_1) \cdot 1 \ne 0\)</span> and <span class="math inline">\(w_{21}\)</span> moves (with the pre-update weights the numbers are Problem 4’s: <span class="math inline">\(-0.2003\)</span>; after the update the deltas shift slightly but stay nonzero).</p>
+<p><strong>(iii)</strong> A weight only learns from examples where its input is nonzero: each weight’s gradient is its delta times its input, so an example teaches exactly the weights on its own active input paths. Sparse/zero inputs mean sparse updates — the same logic behind embedding layers only updating the looked-up rows.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 9 — vanishing, read backwards
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> <span class="math inline">\(\sigma(3) \approx 0.9526\)</span>, <span class="math inline">\(g'(3) = 0.9526 \times 0.0474 \approx 0.0452\)</span>.</p>
+<p><strong>(ii)</strong> Each backward step multiplies by <span class="math inline">\(g' \le 0.0452\)</span>, so over four steps <span class="math inline">\(\|\delta^{[1]}\| \lesssim (0.0452)^4 \|\delta^{[5]}\| \approx 4.2 \times 10^{-6}\,\|\delta^{[5]}\|\)</span> — the error signal is attenuated by a factor of <span class="math inline">\(\sim 240{,}000\)</span> [verified-NumPy].</p>
+<p><strong>(iii)</strong> This is §41.7’s “flat at both ends… gradient near zero for large inputs, effectively stops learning,” now with a number on it: saturated sigmoids don’t just slow learning, they shrink the gradient <em>exponentially</em> in depth. ReLU’s <span class="math inline">\(g' = 1\)</span> for <span class="math inline">\(z &gt; 0\)</span> passes the error through unshrunk — hence “start with ReLU.”</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 10 — map the notebook
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> Notebook cell-11 <code>backward</code>, with <span class="math inline">\(m\)</span> = batch size: | notebook line | §42.4 formula | |—|—| | <code>dL_dy = self.y_pred - y_true</code> | per-example <span class="math inline">\(\delta\)</span> for the sigmoid+BCE pairing (§42.5(i)) | | <code>dL_dz2 = dL_dy</code> (+ reshape) | <span class="math inline">\(\Delta^2\)</span> (unscaled; the <span class="math inline">\(/m\)</span> comes later) | | <code>dL_dW2 = np.dot(self.h1.T, dL_dz2) / m</code> | <span class="math inline">\(\partial L/\partial W^2 = (A^1)^T \Delta^2\)</span>, mean over batch | | <code>dL_db2 = np.mean(dL_dz2, axis=0)</code> | <span class="math inline">\(\partial L/\partial b^2\)</span> = row-mean of <span class="math inline">\(\Delta^2\)</span> | | <code>dL_dh1 = np.dot(dL_dz2, self.W2.T)</code> | upstream <span class="math inline">\(\partial L/\partial A^1 = \Delta^2 (W^2)^T\)</span> | | <code>dL_dz1 = dL_dh1 * self.sigmoid_derivative(self.z1)</code> | <span class="math inline">\(\Delta^1 = \text{upstream} \odot g'(Z^1)\)</span> | | <code>dL_dW1 = np.dot(X.T, dL_dz1) / m</code> | <span class="math inline">\(\partial L/\partial W^1 = (A^0)^T \Delta^1\)</span>, mean over batch | | <code>dL_db1 = np.mean(dL_dz1, axis=0)</code> | <span class="math inline">\(\partial L/\partial b^1\)</span> = row-mean of <span class="math inline">\(\Delta^1\)</span> |</p>
+<p><strong>(ii)</strong> For sigmoid output + BCE, the true <span class="math inline">\(\partial L/\partial z_2 = (\partial L/\partial\hat y)\,\hat y(1-\hat y)\)</span> <em>would</em> need the <span class="math inline">\(y(1-y)\)</span> factor — but the product collapses to <span class="math inline">\(\hat y - y\)</span>, so the code skips the two-step and writes the answer directly (§42.5(i)).</p>
+<p><strong>(iii)</strong> Notebook: <span class="math inline">\(\Delta\)</span> unscaled, gradients <span class="math inline">\(= (1/m) \sum_i\)</span>. §41.10: <span class="math inline">\(\Delta\)</span> pre-scaled by <span class="math inline">\(1/m\)</span> at <code>dz2</code>, gradients <span class="math inline">\(= \sum_i\)</span>. Since <span class="math inline">\(\sum_i (\delta_i/m) = (1/m)\sum_i \delta_i\)</span>, the two are algebraically identical — the <span class="math inline">\(1/m\)</span> commutes with the sum. (Note §41.10’s <code>dh1 = dz2 @ W2.T</code> then carries the <span class="math inline">\(1/m\)</span> through the whole backward pass consistently.)</p>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./41-neuron-mlp-scratch.html" class="pagination-link" aria-label="Chapter 41: The artificial neuron and MLPs from scratch">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./43-optimization-neural-nets.html" class="pagination-link" aria-label="Chapter 43: Optimization for neural nets — SGD variants, init, normalization">
+        <span class="nav-page-text"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>30. Naive Bayes: generative vs discriminative models – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./31-perceptron-logistic.html" rel="next">
+<link href="./29-knn-trees.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./26-k-means.html">Part IV — Machine Learning Techniques</a></li><li class="breadcrumb-item"><a href="./30-naive-bayes.html"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#two-philosophies-model-py-mid-x-or-model-px-y" id="toc-two-philosophies-model-py-mid-x-or-model-px-y" class="nav-link active" data-scroll-target="#two-philosophies-model-py-mid-x-or-model-px-y">30.1 Two philosophies: model <span class="math inline">\(P(y \mid x)\)</span>, or model <span class="math inline">\(P(x, y)\)</span></a></li>
+  <li><a href="#bayes-rule-for-classification" id="toc-bayes-rule-for-classification" class="nav-link" data-scroll-target="#bayes-rule-for-classification">30.2 Bayes’ rule for classification</a></li>
+  <li><a href="#the-naive-bayes-assumption" id="toc-the-naive-bayes-assumption" class="nav-link" data-scroll-target="#the-naive-bayes-assumption">30.3 The Naive Bayes assumption</a></li>
+  <li><a href="#modelling-px_j-mid-y_c-one-distribution-per-feature-type" id="toc-modelling-px_j-mid-y_c-one-distribution-per-feature-type" class="nav-link" data-scroll-target="#modelling-px_j-mid-y_c-one-distribution-per-feature-type">30.4 Modelling <span class="math inline">\(p(x_j \mid y_c)\)</span>: one distribution per feature type</a></li>
+  <li><a href="#inference-decide-in-log-space" id="toc-inference-decide-in-log-space" class="nav-link" data-scroll-target="#inference-decide-in-log-space">30.5 Inference: decide in log space</a></li>
+  <li><a href="#training-maximizing-the-log-likelihood" id="toc-training-maximizing-the-log-likelihood" class="nav-link" data-scroll-target="#training-maximizing-the-log-likelihood">30.6 Training = maximizing the log-likelihood</a></li>
+  <li><a href="#the-mle-estimates-training-is-counting" id="toc-the-mle-estimates-training-is-counting" class="nav-link" data-scroll-target="#the-mle-estimates-training-is-counting">30.7 The MLE estimates: training is counting</a></li>
+  <li><a href="#the-zero-count-problem-and-laplace-smoothing" id="toc-the-zero-count-problem-and-laplace-smoothing" class="nav-link" data-scroll-target="#the-zero-count-problem-and-laplace-smoothing">30.8 The zero-count problem and Laplace smoothing</a></li>
+  <li><a href="#worked-example-six-emails-three-words-every-number-recomputed" id="toc-worked-example-six-emails-three-words-every-number-recomputed" class="nav-link" data-scroll-target="#worked-example-six-emails-three-words-every-number-recomputed">30.9 Worked example: six emails, three words (every number recomputed)</a></li>
+  <li><a href="#worked-example-gaussian-nb-on-one-continuous-feature" id="toc-worked-example-gaussian-nb-on-one-continuous-feature" class="nav-link" data-scroll-target="#worked-example-gaussian-nb-on-one-continuous-feature">30.10 Worked example: Gaussian NB on one continuous feature</a></li>
+  <li><a href="#strengths-and-limits-as-the-sources-list-them" id="toc-strengths-and-limits-as-the-sources-list-them" class="nav-link" data-scroll-target="#strengths-and-limits-as-the-sources-list-them">30.11 Strengths and limits (as the sources list them)</a></li>
+  <li><a href="#where-this-goes-next" id="toc-where-this-goes-next" class="nav-link" data-scroll-target="#where-this-goes-next">30.12 Where this goes next</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./26-k-means.html">Part IV — Machine Learning Techniques</a></li><li class="breadcrumb-item"><a href="./30-naive-bayes.html"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Two roads to the same destination. A <strong>discriminative</strong> classifier models <span class="math inline">\(P(y \mid x)\)</span> directly — “given this email, how likely is it spam?” A <strong>generative</strong> classifier takes the long way round: it models how each class <em>generates</em> its data, <span class="math inline">\(P(x \mid y)\)</span> and <span class="math inline">\(P(y)\)</span>, and then flips the conditioning with Bayes’ rule (§14.11) to get <span class="math inline">\(P(y \mid x)\)</span>. Naive Bayes is the lecture’s flagship generative classifier — the intro slide calls it the <strong>“generative counterpart of logistic regression”</strong> (Chapter 31 is the discriminative half of that pair). It makes one strong, usually-false assumption — features are independent given the class — and works shockingly well anyway, especially on text (document classification, spam filtering).</p>
+<p>Everything in §§30.1–30.8 comes from the MLT Naive Bayes slides (Dr.&nbsp;Ashish Tendulkar; the shared materials’ “Week 6” folder — actual Naive Bayes content, week numbering notwithstanding) and the Week 8 TA-notes summary, which adds the generative-vs-discriminative framing, the parameter-counting argument, Laplace smoothing, and the linear-boundary derivation. The worked example in §30.9 is the course notes’ six-email dataset (“Get Your Concepts Right” notes, IITM BS MLT SEP 2022 Week 8), with every number recomputed independently — one of its printed lines has an arithmetic slip, corrected here and flagged in the review log. §30.10’s Gaussian example is the chapter’s own.</p>
+<p><strong>Notation.</strong> The <span class="math inline">\(i\)</span>-th example is <span class="math inline">\(x^{(i)}\)</span> (superscript, §22’s convention) with label <span class="math inline">\(y^{(i)} \in \{1, \ldots, k\}\)</span> for <span class="math inline">\(k\)</span> classes; <span class="math inline">\(x_j^{(i)}\)</span> is feature <span class="math inline">\(j\)</span> of example <span class="math inline">\(i\)</span>. <span class="math inline">\(D = \{(x^{(i)}, y^{(i)})\}_{i=1}^n\)</span>. The binary case (<span class="math inline">\(y \in \{0, 1\}\)</span>, <span class="math inline">\(x_j \in \{0, 1\}\)</span> — word present/absent) carries all the examples; the formulas are stated for <span class="math inline">\(k\)</span> classes.</p>
+<section id="two-philosophies-model-py-mid-x-or-model-px-y" class="level2">
+<h2 class="anchored" data-anchor-id="two-philosophies-model-py-mid-x-or-model-px-y">30.1 Two philosophies: model <span class="math inline">\(P(y \mid x)\)</span>, or model <span class="math inline">\(P(x, y)\)</span></h2>
+<p><strong>Setup.</strong> Same as §22.9: instances <span class="math inline">\(x^{(i)} \in \mathbb{R}^d\)</span>, discrete labels <span class="math inline">\(y^{(i)}\)</span>. The running example (from the TA notes): each <span class="math inline">\(x^{(i)}\)</span> is an email, each feature <span class="math inline">\(x_j^{(i)} \in \{0, 1\}\)</span> says whether word <span class="math inline">\(j\)</span> of a dictionary appears, <span class="math inline">\(y^{(i)} \in \{0, 1\}\)</span> says spam or not. The algorithm outputs <span class="math inline">\(\boxed{f: \mathbb{R}^d \to \{1, \ldots, k\}}\)</span>, judged by §22.9’s misclassification fraction.</p>
+<p>The joint distribution of a (point, label) pair factors two ways (TA notes): <span class="math display">\[\boxed{P(x, y) = P(y \mid x)\,P(x) = P(x \mid y)\,P(y)}.\]</span></p>
+<ol type="i">
+<li><strong>Discriminative: model <span class="math inline">\(P(y \mid x)\)</span> directly.</strong> “We just need <span class="math inline">\(P(y \mid x)\)</span> for prediction” (TA notes) — so model exactly that and nothing else. Given the email, what is the probability it is spam? No need to model what emails look like in general (<span class="math inline">\(P(x)\)</span> is never estimated). The TA notes’ examples: <strong>decision trees</strong> (§29.9) and <strong>KNN</strong> (§29.2).</li>
+<li><strong>Generative: model the pair <span class="math inline">\(P(x, y) = P(x \mid y)\,P(y)\)</span>.</strong> Learn two things: <strong><span class="math inline">\(P(y)\)</span></strong> — how often each label occurs (the <strong>class prior</strong>), and <strong><span class="math inline">\(P(x \mid y)\)</span></strong> — for each class, what its data looks like (the <strong>class-conditional density</strong>). Then obtain <span class="math inline">\(P(y \mid x)\)</span> from Bayes’ rule at prediction time (§30.2). The examples: <strong>Naive Bayes</strong> and <strong>Gaussian Naive Bayes</strong>.</li>
+</ol>
+<p><strong>Basically, …</strong> “Discriminative = learn the boundary straight: ‘given these features, which class?’ Generative = learn each class’s portrait first — ‘what does a spam email look like, what does a ham email look like, and how common is each?’ — then use Bayes’ rule to pick the class whose portrait matches the new point best.”</p>
+</section>
+<section id="bayes-rule-for-classification" class="level2">
+<h2 class="anchored" data-anchor-id="bayes-rule-for-classification">30.2 Bayes’ rule for classification</h2>
+<p>Naive Bayes predicts <span class="math inline">\(P(y \mid x)\)</span> — the <strong>posterior probability</strong> of the label — using §14.11’s theorem (the slides’ four names, verbatim): <span class="math display">\[\boxed{P(y \mid x) = \frac{P(x, y)}{P(x)} = \frac{P(x \mid y)\,P(y)}{P(x)}},\]</span> where <span class="math inline">\(P(x \mid y)\)</span> is the <strong>class-conditional density</strong>, <span class="math inline">\(P(y)\)</span> the <strong>class prior</strong>, and <span class="math inline">\(P(x)\)</span> the <strong>evidence</strong>.</p>
+<p>The denominator is expanded by the law of total probability over the <span class="math inline">\(k\)</span> classes (the slides do this via the chain rule): <span class="math display">\[\boxed{P(x) = \sum_{r=1}^{k} P(x \mid y_r)\,P(y_r)}.\]</span></p>
+<p><strong>The decision rule.</strong> Predict the class with the largest posterior (the slides’ inference rule): <span class="math display">\[\boxed{\hat y = \operatorname*{argmax}_{y_c}\; P(y_c \mid x; w) = \operatorname*{argmax}_{y_c}\; P(x \mid y_c; w)\,P(y_c; w)},\]</span> because <span class="math inline">\(P(x; w)\)</span> is the same for every candidate class and drops out of the <span class="math inline">\(\operatorname*{argmax}\)</span>. This is the <strong>MAP decision rule</strong> — §20.10 maximized the posterior over <em>parameters</em>; here we maximize it over <em>classes</em>. §20.12(iv) promised the Bayesian story continues wherever priors appear: this is it — the class priors <span class="math inline">\(P(y_c)\)</span> play exactly the prior’s role, weighting each class by its base rate before the evidence is weighed (§14.11’s “base rates dominate” lesson, now inside a classifier).</p>
+<p><strong>Basically, …</strong> “Posterior = (how well this class explains the point) × (how common this class is), divided by (how common such points are overall). To <em>decide</em>, the denominator is shared by all classes, so just compare numerator × prior per class and take the biggest — that is MAP, with the class as the hypothesis.”</p>
+</section>
+<section id="the-naive-bayes-assumption" class="level2">
+<h2 class="anchored" data-anchor-id="the-naive-bayes-assumption">30.3 The Naive Bayes assumption</h2>
+<p><strong>Def (the naive assumption).</strong> Features are <strong>conditionally independent given the label</strong>: <span class="math display">\[\boxed{P(x_1, x_2, \ldots, x_m \mid y) = P(x_1 \mid y)\,P(x_2 \mid y)\,\cdots\,P(x_m \mid y) = \prod_{j=1}^{m} P(x_j \mid y)}.\]</span></p>
+<ol type="i">
+<li><strong>Why “naive”.</strong> It is a strong assumption and usually false. In the spam story: the presence/absence of one word is assumed to have no impact on any other word — it “does not model the grammatical, semantic and other structures present in a language” (TA notes). Words obviously do correlate (“Viagra” and “cheap” travel together).</li>
+<li><strong>Why it is worth it.</strong> Without it, the generative story must estimate a probability for <em>every</em> (feature-vector, label) combination: <span class="math inline">\(k \cdot 2^d - 1\)</span> parameters for <span class="math inline">\(d\)</span> binary features (<span class="math inline">\(2^{d+1} - 1\)</span> in the TA notes’ binary case) — exponential in <span class="math inline">\(d\)</span>, “computationally infeasible”. With the assumption, each feature needs only its per-class probability: <span class="math inline">\(2d\)</span> conditional probabilities plus one prior — <span class="math inline">\(2d + 1\)</span> numbers (the TA notes’ count) — linear in <span class="math inline">\(d\)</span>. The assumption buys tractability.</li>
+<li><strong>Why it works anyway.</strong> Classification only needs the <em>argmax</em> to be right, not the probabilities to be accurate — even a crude factorization often ranks the classes correctly. (The slides say only that it is “simple yet very powerful”; the argmax-forgiveness is the standard explanation of the empirical success.)</li>
+</ol>
+<p>With the assumption, the posterior becomes (the slides’ compact form): <span class="math display">\[\boxed{P(y = y_c \mid x) = \frac{\,p(y_c)\prod_{j=1}^{m} p(x_j \mid y_c)\,}{\,\sum_{r=1}^{k} p(y_r)\prod_{j=1}^{m} p(x_j \mid y_r)\,} }.\]</span></p>
+<p><strong>Parameters.</strong> <span class="math inline">\(k\)</span> prior probabilities (one redundant — they sum to <span class="math inline">\(1\)</span>) plus <span class="math inline">\(k \times m\)</span> class-conditional densities — “<span class="math inline">\(m\)</span> conditional densities per class and there are <span class="math inline">\(k\)</span> such classes” (slides). How many numbers each density needs “depends on its mathematical form” (§30.4).</p>
+<p><strong>Basically, …</strong> “Full generative modelling tries to learn a probability for every possible email — exponentially many, impossible. Naive Bayes cheats: assume words occur independently given the class, and you only need one number per word per class. The assumption is false, but the classifier only needs to pick the winner, and the cheat usually picks right.”</p>
+<!-- Original matplotlib illustration drawn for this chapter (not reused from any URL): per-class per-feature Bernoulli bars from the §30.9 worked example, combined by Bayes' rule into posteriors for x_test = [1,0,1] -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/30-nb-schematic.png" class="img-fluid figure-img"></p>
+<figcaption>Generative-story schematic: bar charts of P(F_j = 1 | y) for class y = 1 (bars 1.00, 0.67, 0.33) and class y = 0 (bars 0.33, 0.67, 0.67), each with prior 1/2; then Bayes’ rule combines them for x_test = [1,0,1] into scores 1/18 vs 1/27, posteriors 0.6 vs 0.4, predicting y = 1.</figcaption>
+</figure>
+</div>
+</section>
+<section id="modelling-px_j-mid-y_c-one-distribution-per-feature-type" class="level2">
+<h2 class="anchored" data-anchor-id="modelling-px_j-mid-y_c-one-distribution-per-feature-type">30.4 Modelling <span class="math inline">\(p(x_j \mid y_c)\)</span>: one distribution per feature type</h2>
+<p>The distribution used for <span class="math inline">\(p(x_j \mid y_c)\)</span> depends on the feature’s nature (the slides’ four cases, verbatim):</p>
+<ol type="i">
+<li><strong>Binary feature</strong> (word present/absent) → <strong>Bernoulli</strong> (<span class="math inline">\(\mu_{jc}\)</span>). <span class="math inline">\(p(x_j = 1 \mid y_c) = \mu_{jc}\)</span>, <span class="math inline">\(p(x_j = 0 \mid y_c) = 1 - \mu_{jc}\)</span>, combined compactly (§15.11’s distribution): <span class="math display">\[\boxed{p(x_j \mid y_c; \mu_{jc}) = \mu_{jc}^{x_j}(1 - \mu_{jc})^{1 - x_j}}.\]</span> Check: <span class="math inline">\(x_j = 1\)</span> gives <span class="math inline">\(\mu_{jc}^1(1-\mu_{jc})^0 = \mu_{jc}\)</span>; <span class="math inline">\(x_j = 0\)</span> gives <span class="math inline">\(\mu_{jc}^0(1-\mu_{jc})^1 = 1 - \mu_{jc}\)</span>. For <span class="math inline">\(s\)</span> binary features and <span class="math inline">\(k\)</span> classes: <span class="math inline">\(k \times s\)</span> Bernoulli parameters.</li>
+<li><strong>Categorical feature</strong> (<span class="math inline">\(e &gt; 2\)</span> values, e.g.&nbsp;<span class="math inline">\(\{\text{red}, \text{green}, \text{blue}\}\)</span>) → <strong>Categorical</strong> <span class="math inline">\(\mathrm{Cat}(\mu_{j1c}, \ldots, \mu_{jec})\)</span>, <span class="math inline">\(\sum_q \mu_{jqc} = 1\)</span>. For <span class="math inline">\(x_j = v_q\)</span>: <span class="math inline">\(p(x_j = v_q \mid y_c) = \mu_{jqc}\)</span>; compactly <span class="math inline">\(\prod_q \mu_{jqc}^{\mathbf{1}(x_j = v_q)}\)</span>.</li>
+<li><strong>Counts</strong> (word-count vector, <span class="math inline">\(\sum_j x_j = l\)</span>) → <strong>Multinomial</strong> <span class="math inline">\((l, \mu_{1c}, \ldots, \mu_{mc})\)</span>: <span class="math display">\[\boxed{p(x \mid y_c; l, \mu_{1c}, \ldots, \mu_{mc}) = \frac{l!}{x_1!\cdots x_m!}\prod_{j=1}^{m} \mu_{jc}^{x_j}}, \qquad \sum_j x_j = l.\]</span> Used for documents represented by word counts — the classic spam-filter setup.</li>
+<li><strong>Continuous feature</strong> (e.g.&nbsp;area in sq. feet) → <strong>Gaussian</strong> <span class="math inline">\(\mathcal{N}(\mu_{jc}, \sigma_{jc}^2)\)</span>: <span class="math display">\[\boxed{p(x_j \mid y_c; \mu_{jc}, \sigma_{jc}^2) = \frac{1}{\sqrt{2\pi}\,\sigma_{jc}}\exp\!\left(-\frac{(x_j - \mu_{jc})^2}{2\sigma_{jc}^2}\right)}.\]</span> Alternately a <strong>multivariate Gaussian</strong> for the whole vector — but under conditional independence every off-diagonal of the covariance is zero, <span class="math inline">\(\Sigma_{jj} = \sigma_j^2\)</span>, so it factorizes into the same per-feature Gaussians (slides).</li>
+</ol>
+<p><strong>Basically, …</strong> “Pick the distribution that matches the feature’s shape: coin-flip (Bernoulli) for yes/no, die-roll (categorical) for one-of-many, word-counts (multinomial) for bags of words, bell curve (Gaussian) for measurements. One such distribution per feature per class — that is the whole model.”</p>
+</section>
+<section id="inference-decide-in-log-space" class="level2">
+<h2 class="anchored" data-anchor-id="inference-decide-in-log-space">30.5 Inference: decide in log space</h2>
+<p>Prediction is the MAP rule from §30.2, expanded with the naive factorization: <span class="math display">\[\hat y = \operatorname*{argmax}_{y_c}\left(\prod_{j=1}^{m} p(x_j \mid y_c; w)\right) p(y_c; w).\]</span> Products of many small probabilities <strong>underflow</strong> — so compute in log space (the slides’ fix): <span class="math display">\[\boxed{\hat y = \operatorname*{argmax}_{y_c}\left[\sum_{j=1}^{m} \log p(x_j \mid y_c; w) + \log p(y_c; w)\right]}.\]</span></p>
+<p><strong>Note (the slides’ warning).</strong> The <span class="math inline">\(\operatorname*{argmax}\)</span> equation gives the <em>label</em>, not a probability. If actual probabilities are wanted, use the normalized posterior (§30.3’s fraction) — also computed in log space.</p>
+<p><strong>The boundary is linear.</strong> For binary <span class="math inline">\(y\)</span>, the log-odds telescopes into a linear function (TA notes): <span class="math display">\[\log\frac{P(y = 1 \mid x)}{P(y = 0 \mid x)} = \sum_{j=1}^{d} f_j w_j + b, \qquad w_j = \log\frac{p_{j1}(1 - p_{j0})}{p_{j0}(1 - p_{j1})},\]</span> so Naive Bayes decides by <span class="math inline">\(\boxed{w^T x + b &gt; 0}\)</span> — a <strong>linear decision boundary</strong>, the same shape §22.9 drew. This is the precise content of “generative counterpart of logistic regression”: logistic regression (Chapter 31) learns that linear boundary <em>discriminatively</em>, straight from <span class="math inline">\(P(y \mid x)\)</span>; Naive Bayes arrives at the same shape via the generative detour.</p>
+<p><strong>Basically, …</strong> “Multiplying hundreds of tiny probabilities underflows to zero, so take logs — products become sums, the argmax is unchanged, and the computer survives. Bonus: in log space the spam/ham decision is just ‘weighted word-score plus bias, check the sign’ — a straight-line boundary, exactly what logistic regression will learn the direct way in Chapter 31.”</p>
+</section>
+<section id="training-maximizing-the-log-likelihood" class="level2">
+<h2 class="anchored" data-anchor-id="training-maximizing-the-log-likelihood">30.6 Training = maximizing the log-likelihood</h2>
+<p><strong>Def (likelihood).</strong> The joint probability of the observed data <span class="math inline">\(D\)</span> under parameters <span class="math inline">\(w\)</span> (the slides’ Part 3): <span class="math display">\[\boxed{L(w) = p(D; w) = \prod_{i=1}^{n} p(x^{(i)}, y^{(i)}; w)},\]</span> since examples are i.i.d. Take logs for convenience: <span class="math display">\[\boxed{\ell(w) = \sum_{i=1}^{n} \log p(x^{(i)}, y^{(i)}; w)}, \qquad J(w) = -\ell(w)\]</span> — minimize the <strong>negative log-likelihood</strong> (NLL) “to maintain uniformity with other algorithms” (slides).</p>
+<p>With the naive factorization, the log-likelihood splits into a prior term and a per-feature term: <span class="math display">\[\boxed{\ell(w) = \sum_{i=1}^{n} \log p(y^{(i)}; w) + \sum_{i=1}^{n}\sum_{j=1}^{m} \log p(x_j^{(i)} \mid y^{(i)}; w)}.\]</span></p>
+<p><strong>Basically, …</strong> “Training = choose the parameters that make the observed (email, label) pairs most probable. Log it, negate it, minimize it — the same NLL ritual every model from here on follows (§20.12(i)).”</p>
+</section>
+<section id="the-mle-estimates-training-is-counting" class="level2">
+<h2 class="anchored" data-anchor-id="the-mle-estimates-training-is-counting">30.7 The MLE estimates: training is counting</h2>
+<p>The slides’ three-step recipe: differentiate <span class="math inline">\(\ell(w)\)</span> w.r.t. each parameter, set to <span class="math inline">\(0\)</span> (maxima condition), solve. The solutions are all fractions of counts:</p>
+<ol type="i">
+<li><strong>Priors</strong> — class fractions: <span class="math display">\[\boxed{\hat p(y = y_c) = \frac{\sum_{i=1}^{n}\mathbf{1}(y^{(i)} = y_c)}{n}}.\]</span></li>
+<li><strong>Bernoulli</strong> — fraction of class-<span class="math inline">\(y_r\)</span> examples with feature <span class="math inline">\(j\)</span> equal to <span class="math inline">\(1\)</span>: <span class="math display">\[\boxed{\hat w_{jyr} = \frac{\sum_{i=1}^{n}\mathbf{1}(y^{(i)} = y_r)\,x_j^{(i)}}{\sum_{i=1}^{n}\mathbf{1}(y^{(i)} = y_r)}}.\]</span> In words: among the training examples labelled <span class="math inline">\(y_r\)</span>, what fraction have <span class="math inline">\(x_j = 1\)</span>. (The slides derive this by differentiating the Bernoulli log-likelihood — the standard <span class="math inline">\(\frac{x}{w} - \frac{1-x}{1-w}\)</span> derivative, set to zero.)</li>
+<li><strong>Categorical</strong> — fraction of class-<span class="math inline">\(y_r\)</span> examples with <span class="math inline">\(x_j = v\)</span>: <span class="math display">\[\boxed{\hat w_{jvyr} = \frac{\sum_{i=1}^{n}\mathbf{1}(y^{(i)} = y_r)\,\mathbf{1}(x_j^{(i)} = v)}{\sum_{i=1}^{n}\mathbf{1}(y^{(i)} = y_r)}}.\]</span></li>
+<li><strong>Multinomial</strong> — share of feature <span class="math inline">\(j\)</span>’s total count inside class <span class="math inline">\(y_r\)</span>: <span class="math display">\[\boxed{\hat w_{jyr} = \frac{\sum_{i=1}^{n}\mathbf{1}(y^{(i)} = y_r)\,x_j^{(i)}}{\sum_{i=1}^{n}\mathbf{1}(y^{(i)} = y_r)\sum_{j=1}^{m}x_j^{(i)}}}.\]</span></li>
+<li><strong>Gaussian</strong> — class-conditional mean and variance (<span class="math inline">\(n_r\)</span> = number of class-<span class="math inline">\(y_r\)</span> examples; the MLE divides by <span class="math inline">\(n_r\)</span>): <span class="math display">\[\boxed{\hat\mu_{jr} = \frac{1}{n_r}\sum_{i=1}^{n}\mathbf{1}(y^{(i)} = y_r)\,x_j^{(i)}, \qquad \hat\sigma_{jr}^2 = \frac{1}{n_r}\sum_{i=1}^{n}\mathbf{1}(y^{(i)} = y_r)\,(x_j^{(i)} - \hat\mu_{jr})^2}.\]</span></li>
+</ol>
+<p><strong>Basically, …</strong> “No gradients, no iterations: training Naive Bayes is counting. Priors = class fractions; each conditional = the fraction of that class’s examples showing the feature value. The calculus just confirms what the fractions already say.”</p>
+</section>
+<section id="the-zero-count-problem-and-laplace-smoothing" class="level2">
+<h2 class="anchored" data-anchor-id="the-zero-count-problem-and-laplace-smoothing">30.8 The zero-count problem and Laplace smoothing</h2>
+<p><strong>The problem.</strong> If no training example of class <span class="math inline">\(y_r\)</span> has <span class="math inline">\(x_j = 1\)</span>, the MLE says <span class="math inline">\(\hat w_{jyr} = 0\)</span> — so <span class="math inline">\(p(x_j \mid y_r) = 0\)</span>, and the <em>entire</em> posterior <span class="math inline">\(P(y_r \mid x)\)</span> collapses to <span class="math inline">\(0\)</span> for any test point with <span class="math inline">\(x_j = 1\)</span>. One unseen combination vetoes the whole class. The TA notes’ version: both posteriors can become <span class="math inline">\(0\)</span> and “prediction becomes difficult”. This is §20.4’s <strong>zero-count warning</strong> relocated into a classifier — MLE’s overconfidence again — and §20.11’s Beta prior is its conceptual cousin (a prior “keeps the estimate sane”).</p>
+<p><strong>The fix: smoothing.</strong> Pretend we saw a few extra pseudo-examples. The slides’ <strong>Laplace smoothing</strong> adds <span class="math inline">\(+c\)</span> to the numerator and the matching pseudo-total to the denominator (binary case, <span class="math inline">\(x_j \in \{0, 1\}\)</span> — one pseudo-count per value): <span class="math display">\[\boxed{\hat w_{jyr} = \frac{\sum_{i=1}^{n}\mathbf{1}(y^{(i)} = y_r)\,x_j^{(i)} + c}{\sum_{i=1}^{n}\mathbf{1}(y^{(i)} = y_r) + 2c}},\]</span> with <span class="math inline">\(+ce\)</span> for categorical (<span class="math inline">\(e\)</span> values) and <span class="math inline">\(+cm\)</span> for multinomial (<span class="math inline">\(m\)</span> words). <span class="math inline">\(c = 1\)</span> is <strong>Laplace smoothing</strong> proper; <span class="math inline">\(c\)</span> is a hyperparameter — “too high a value of <span class="math inline">\(c\)</span> leads to underfitting” (slides), i.e.&nbsp;the pseudo-data drowns the real data.</p>
+<p><strong>Basically, …</strong> “MLE says ‘never seen it, impossible’ — one zero poisons the whole product. Smoothing pads every count with a little fake data (<span class="math inline">\(c = 1\)</span>: pretend you saw each outcome once), so no probability is ever exactly zero. Too much padding and the fake data runs the show — that is underfitting.”</p>
+</section>
+<section id="worked-example-six-emails-three-words-every-number-recomputed" class="level2">
+<h2 class="anchored" data-anchor-id="worked-example-six-emails-three-words-every-number-recomputed">30.9 Worked example: six emails, three words (every number recomputed)</h2>
+<p>The course notes’ dataset (“Get Your Concepts Right”, MLT SEP 2022 Week 8). Three binary features <span class="math inline">\(F_1, F_2, F_3\)</span> (word present <span class="math inline">\(= 1\)</span>), label <span class="math inline">\(y = 1\)</span> (spam) / <span class="math inline">\(0\)</span>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>example</th>
+<th><span class="math inline">\(F_1\)</span></th>
+<th><span class="math inline">\(F_2\)</span></th>
+<th><span class="math inline">\(F_3\)</span></th>
+<th><span class="math inline">\(y\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(x^{(1)}\)</span></td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(x^{(2)}\)</span></td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(x^{(3)}\)</span></td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(x^{(4)}\)</span></td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(x^{(5)}\)</span></td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(x^{(6)}\)</span></td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Step 1 — priors (§30.7(i)).</strong> Three of six labels are <span class="math inline">\(1\)</span>: <span class="math inline">\(\boxed{\hat p(y{=}1) = 3/6 = 1/2}\)</span>, <span class="math inline">\(\boxed{\hat p(y{=}0) = 1/2}\)</span>.</p>
+<p><strong>Step 2 — conditionals (§30.7(ii)).</strong> Class <span class="math inline">\(1\)</span> = examples <span class="math inline">\(2, 5, 6\)</span>; class <span class="math inline">\(0\)</span> = examples <span class="math inline">\(1, 3, 4\)</span>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th><span class="math inline">\(\hat p(F_j{=}1 \mid y{=}1)\)</span></th>
+<th><span class="math inline">\(\hat p(F_j{=}1 \mid y{=}0)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(F_1\)</span></td>
+<td><span class="math inline">\(3/3 = 1\)</span></td>
+<td><span class="math inline">\(1/3\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(F_2\)</span></td>
+<td><span class="math inline">\(2/3\)</span></td>
+<td><span class="math inline">\(2/3\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(F_3\)</span></td>
+<td><span class="math inline">\(1/3\)</span></td>
+<td><span class="math inline">\(2/3\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>(<span class="math inline">\(F_1\)</span> for class <span class="math inline">\(1\)</span>: examples <span class="math inline">\(2,5,6\)</span> all have <span class="math inline">\(F_1 = 1\)</span>; <span class="math inline">\(F_2\)</span> for class <span class="math inline">\(0\)</span>: examples <span class="math inline">\(1,3\)</span> have <span class="math inline">\(1\)</span>, example <span class="math inline">\(4\)</span> has <span class="math inline">\(0\)</span> — <span class="math inline">\(2/3\)</span>; etc.)</p>
+<p><strong>Step 3 — classify <span class="math inline">\(x_{\text{test}} = [1, 0, 1]\)</span>.</strong> For each feature take <span class="math inline">\(\hat p_j\)</span> if the value is <span class="math inline">\(1\)</span>, <span class="math inline">\((1 - \hat p_j)\)</span> if <span class="math inline">\(0\)</span> (the Bernoulli compact form, §30.4(i)): <span class="math display">\[P(x_{\text{test}} \mid y{=}1) = \underbrace{1}_{F_1=1}\cdot\underbrace{\left(1 - \tfrac23\right)}_{F_2=0}\cdot\underbrace{\tfrac13}_{F_3=1} = 1\cdot\tfrac13\cdot\tfrac13 = \boxed{\tfrac19 \approx 0.111},\]</span> <span class="math display">\[P(x_{\text{test}} \mid y{=}0) = \underbrace{\tfrac13}_{F_1=1}\cdot\underbrace{\left(1 - \tfrac23\right)}_{F_2=0}\cdot\underbrace{\tfrac23}_{F_3=1} = \tfrac13\cdot\tfrac13\cdot\tfrac23 = \boxed{\tfrac{2}{27} \approx 0.074}.\]</span></p>
+<p><strong>Step 4 — posteriors.</strong> Unnormalized scores (<span class="math inline">\(\times\)</span> prior <span class="math inline">\(1/2\)</span>): <span class="math inline">\(y{=}1\)</span>: <span class="math inline">\(1/18 \approx 0.0556\)</span>; <span class="math inline">\(y{=}0\)</span>: <span class="math inline">\(1/27 \approx 0.0370\)</span>. Normalizing (evidence <span class="math inline">\(= 1/18 + 1/27 = 5/54\)</span>): <span class="math display">\[\boxed{P(y{=}1 \mid x_{\text{test}}) = \frac{1/18}{5/54} = \frac{3}{5} = 0.6}, \qquad \boxed{P(y{=}0 \mid x_{\text{test}}) = \frac{2}{5} = 0.4}.\]</span> <span class="math inline">\(\boxed{\text{Predict } y = 1.}\)</span></p>
+<p><strong>Note (source slip, corrected).</strong> The notes print the <span class="math inline">\(y{=}1\)</span> likelihood as “<span class="math inline">\(1.00 \times 0.33 \times 0.67 = 0.22\)</span>” — the third factor should be <span class="math inline">\(\hat p_3^1 = 0.33\)</span> (<span class="math inline">\(F_3 = 1\)</span>), not <span class="math inline">\(1 - \hat p_3^1 = 0.67\)</span>. Correct: <span class="math inline">\(1.00 \times 0.33 \times 0.33 \approx 0.11 = 1/9\)</span>. The verdict (predict <span class="math inline">\(1\)</span>) is unchanged, since <span class="math inline">\(1/9 &gt; 2/27\)</span> either way. Flagged in the review log.</p>
+<p><strong>Step 5 — smoothing demo.</strong> Note <span class="math inline">\(\hat p(F_1{=}1 \mid y{=}1) = 1\)</span>, i.e.&nbsp;<span class="math inline">\(\hat p(F_1{=}0 \mid y{=}1) = 0\)</span>: any test point with <span class="math inline">\(F_1 = 0\)</span> gets <span class="math inline">\(P(x \mid y{=}1) = 0\)</span> — §30.8’s pathology, live. With Laplace <span class="math inline">\(c = 1\)</span>: <span class="math inline">\(\hat p_1^1 = 4/5 = 0.8\)</span>, <span class="math inline">\(\hat p_2^1 = 3/5 = 0.6\)</span>, <span class="math inline">\(\hat p_3^1 = 2/5 = 0.4\)</span>; <span class="math inline">\(\hat p_1^0 = 2/5 = 0.4\)</span>, <span class="math inline">\(\hat p_2^0 = \hat p_3^0 = 3/5 = 0.6\)</span>. Then <span class="math inline">\(P(x_{\text{test}} \mid y{=}1) = 0.8 \cdot 0.4 \cdot 0.4 = 0.128\)</span>, <span class="math inline">\(P(x_{\text{test}} \mid y{=}0) = 0.4 \cdot 0.4 \cdot 0.6 = 0.096\)</span> — still predict <span class="math inline">\(1\)</span>, but no zero vetoes remain.</p>
+<p><strong>Basically, …</strong> “Count: half the emails are spam; among spam, word 1 always appears, word 2 appears two-thirds of the time, word 3 one-third. New email <span class="math inline">\([1,0,1]\)</span>: multiply the matching numbers per class, weight by the half-half prior, normalize — spam wins <span class="math inline">\(0.6\)</span> to <span class="math inline">\(0.4\)</span>. And the <span class="math inline">\(1.00\)</span> for word-1-in-spam is a warning: one zero anywhere in the product kills the class, which is why smoothing exists.”</p>
+</section>
+<section id="worked-example-gaussian-nb-on-one-continuous-feature" class="level2">
+<h2 class="anchored" data-anchor-id="worked-example-gaussian-nb-on-one-continuous-feature">30.10 Worked example: Gaussian NB on one continuous feature</h2>
+<p>Class <span class="math inline">\(0\)</span>: <span class="math inline">\(x \in \{1, 2, 3\}\)</span>; class <span class="math inline">\(1\)</span>: <span class="math inline">\(x \in \{4, 5, 6\}\)</span>; priors <span class="math inline">\(1/2\)</span> each. By §30.7(v): <span class="math display">\[\hat\mu_0 = 2,\quad \hat\mu_1 = 5,\quad \hat\sigma_0^2 = \hat\sigma_1^2 = \frac{(1-2)^2 + 0 + (3-2)^2}{3} = \frac{2}{3}.\]</span></p>
+<p><strong>Decision boundary.</strong> Equal priors and equal variances: <span class="math inline">\(p(x \mid 1) = p(x \mid 0)\)</span> iff the exponents match, <span class="math display">\[-\frac{(x-5)^2}{2\sigma^2} = -\frac{(x-2)^2}{2\sigma^2} \iff (x-5)^2 = (x-2)^2 \iff \boxed{x = 3.5},\]</span> the midpoint of the means — a (one-point) linear boundary, as §30.5 promised.</p>
+<p><strong>Classify.</strong> <span class="math inline">\(x = 4\)</span>: <span class="math inline">\((4-5)^2 = 1 &lt; (4-2)^2 = 4\)</span> → nearer class <span class="math inline">\(1\)</span>’s centre → <span class="math inline">\(\boxed{\text{predict } 1}\)</span>. <span class="math inline">\(x = 3\)</span>: <span class="math inline">\((3-5)^2 = 4 &gt; (3-2)^2 = 1\)</span> → <span class="math inline">\(\boxed{\text{predict } 0}\)</span>.</p>
+<!-- Original matplotlib illustration drawn for this chapter (not reused from any URL): the two class-conditional Gaussians N(2, 2/3) and N(5, 2/3) with the decision boundary at x = 3.5 -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/30-gaussian-nb-boundary.png" class="img-fluid figure-img"></p>
+<figcaption>Two Gaussian curves: class 0 centred at 2 and class 1 centred at 5, both variance 2/3; a dashed vertical line at x = 3.5 marks the decision boundary, the midpoint of the means.</figcaption>
+</figure>
+</div>
+<p><strong>Basically, …</strong> “Per class, fit a bell curve (mean and variance of that class’s numbers). New point: whichever bell is taller there wins. Same spread on both bells → the boundary is exactly halfway between the humps.”</p>
+</section>
+<section id="strengths-and-limits-as-the-sources-list-them" class="level2">
+<h2 class="anchored" data-anchor-id="strengths-and-limits-as-the-sources-list-them">30.11 Strengths and limits (as the sources list them)</h2>
+<p><strong>Strengths.</strong> i) <strong>Simple and fast</strong> — training is counting (§30.7); prediction is a product of table lookups. ii) <strong>Few parameters</strong> — <span class="math inline">\(2d + 1\)</span> instead of <span class="math inline">\(2^{d+1} - 1\)</span> (§30.3(ii)); works on small data. iii) <strong>Surprisingly strong on text</strong> — “simple yet very powerful … used extensively in applications like document classification and spam filtering” (intro slide). iv) <strong>Mixed feature types</strong> — binary, categorical, counts, continuous each get their own distribution (§30.4).</p>
+<p><strong>Limits.</strong> i) <strong>The independence assumption is usually false</strong> — words do correlate; the model “does not model the grammatical, semantic and other structures present in a language” (TA notes). It cannot learn feature interactions at all. ii) <strong>Zero counts veto classes</strong> — needs Laplace smoothing (§30.8), whose strength <span class="math inline">\(c\)</span> is another hyperparameter to tune. iii) <strong>Gaussian NB assumes normality</strong> — skewed or multimodal features per class break the bell-curve model.</p>
+<p><strong>Evaluation</strong> (the slides’ closing list, brief): confusion matrix, precision/recall/F1, AUC ROC/PR curve, with cross-validation and a held-out test set — §22.10’s discipline. Classification losses get their own chapter (Chapter 35).</p>
+<p><strong>Basically, …</strong> “Naive Bayes: cheap to train, few knobs, great first try on text. The bill: it pretends features don’t interact (often false), one unseen combo can zero a class (smooth it), and the Gaussian version believes every class is bell-shaped.”</p>
+</section>
+<section id="where-this-goes-next" class="level2">
+<h2 class="anchored" data-anchor-id="where-this-goes-next">30.12 Where this goes next</h2>
+<ol type="i">
+<li><strong>The discriminative twin.</strong> Chapter 31 (logistic regression) is the intro slide’s “generative counterpart” in reverse: same linear boundary <span class="math inline">\(w^T x + b\)</span>, learned by modelling <span class="math inline">\(P(y \mid x)\)</span> directly instead of the <span class="math inline">\(P(x \mid y)P(y)\)</span> detour. Comparing the two is the cleanest way to feel what “generative vs discriminative” buys and costs.</li>
+<li><strong>The Part IV toolbox continues</strong> (§25.12(iv)’s list): SVMs (Chapters 32–33), ensembles (Chapter 34) — heavier machinery for when the naive assumption costs too much accuracy.</li>
+</ol>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li><strong>Classify <span class="math inline">\([0, 0, 1]\)</span> on §30.9’s data.</strong> Using the §30.9 estimates (no smoothing): (i) compute <span class="math inline">\(P(x \mid y{=}1)\)</span> and <span class="math inline">\(P(x \mid y{=}0)\)</span>; (ii) give the unnormalized scores and the posteriors; (iii) state the prediction; (iv) point to the exact factor that makes one likelihood <span class="math inline">\(0\)</span> and name the §30.8 concept it illustrates.</li>
+<li><strong>Parameter counting.</strong> <span class="math inline">\(k = 4\)</span> classes, <span class="math inline">\(d = 5\)</span> binary features. (i) How many parameters does the full generative story need (TA notes’ <span class="math inline">\(k2^d - 1\)</span> form)? (ii) How many does Naive Bayes need, counting priors straight (TA-notes style)? (iii) One of those priors is redundant — why, and what is the exact free-parameter count? (iv) In one line each: how do the two totals scale with <span class="math inline">\(d\)</span>?</li>
+<li><strong>Laplace smoothing in action.</strong> On §30.9’s data, test point <span class="math inline">\(x = [0, 1, 1]\)</span>: (i) show the unsmoothed <span class="math inline">\(P(x \mid y{=}1) = 0\)</span> and give the (forced) prediction; (ii) recompute all six conditionals with <span class="math inline">\(c = 1\)</span>; (iii) recompute both likelihoods, the posteriors, and the prediction.</li>
+<li><strong>Spam posterior (practice-assignment numbers).</strong> <span class="math inline">\(P(\text{spam}) = 0.2\)</span>; word likelihoods — spam: Hurray! <span class="math inline">\(0.7\)</span>, win <span class="math inline">\(0.2\)</span>, exciting <span class="math inline">\(0.01\)</span>, prizes <span class="math inline">\(0.3\)</span>; non-spam: <span class="math inline">\(0.01\)</span>, <span class="math inline">\(0.02\)</span>, <span class="math inline">\(0.01\)</span>, <span class="math inline">\(0.1\)</span>. Mail: “Hurray! win exciting prizes” (these four words are the only features). Compute <span class="math inline">\(P(\text{spam} \mid \text{mail})\)</span> to two decimal places.</li>
+<li><strong>Gaussian NB boundary.</strong> Class <span class="math inline">\(0\)</span>: <span class="math inline">\(\{1, 2, 3\}\)</span>; class <span class="math inline">\(1\)</span>: <span class="math inline">\(\{5, 6, 7\}\)</span>; equal priors. (i) Estimate <span class="math inline">\(\hat\mu_0, \hat\mu_1, \hat\sigma_0^2, \hat\sigma_1^2\)</span>. (ii) Find the decision boundary. (iii) Classify <span class="math inline">\(x = 3\)</span> and <span class="math inline">\(x = 5\)</span>.</li>
+<li><strong>Generative or discriminative?</strong> From the TA notes’ classification: for each of {decision trees, KNN, Naive Bayes, Gaussian Naive Bayes}, state whether it models <span class="math inline">\(P(y \mid x)\)</span> or <span class="math inline">\(P(x, y)\)</span>, with a one-line justification.</li>
+<li><strong>Why log space.</strong> (i) Prove the §30.5 claim: <span class="math inline">\(\operatorname*{argmax}_{y_c} P(y_c \mid x)\)</span> equals <span class="math inline">\(\operatorname*{argmax}_{y_c}[\sum_j \log p(x_j \mid y_c) + \log p(y_c)]\)</span>. (ii) In one line: why is the log version used in practice?</li>
+</ol>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — Classify <span class="math inline">\([0, 0, 1]\)</span> (§30.9’s data, no smoothing)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Estimates from §30.9: <span class="math inline">\(\hat p(y{=}1) = \hat p(y{=}0) = 1/2\)</span>; <span class="math inline">\(\hat p^1 = (1, 2/3, 1/3)\)</span>; <span class="math inline">\(\hat p^0 = (1/3, 2/3, 2/3)\)</span>.</p>
+<ol type="i">
+<li><p>For <span class="math inline">\(x = [0, 0, 1]\)</span>, take <span class="math inline">\((1 - \hat p_j)\)</span> for the <span class="math inline">\(0\)</span>-valued features and <span class="math inline">\(\hat p_j\)</span> for the <span class="math inline">\(1\)</span>-valued one: <span class="math display">\[P(x \mid y{=}1) = \underbrace{(1 - 1)}_{F_1=0}\cdot\underbrace{\left(1 - \tfrac23\right)}_{F_2=0}\cdot\underbrace{\tfrac13}_{F_3=1} = 0\cdot\tfrac13\cdot\tfrac13 = \boxed{0},\]</span> <span class="math display">\[P(x \mid y{=}0) = \underbrace{\left(1 - \tfrac13\right)}_{F_1=0}\cdot\underbrace{\left(1 - \tfrac23\right)}_{F_2=0}\cdot\underbrace{\tfrac23}_{F_3=1} = \tfrac23\cdot\tfrac13\cdot\tfrac23 = \boxed{\tfrac{4}{27} \approx 0.148}.\]</span></p></li>
+<li><p>Unnormalized scores (<span class="math inline">\(\times\)</span> prior <span class="math inline">\(1/2\)</span>): <span class="math inline">\(y{=}1\)</span>: <span class="math inline">\(0\)</span>; <span class="math inline">\(y{=}0\)</span>: <span class="math inline">\(\tfrac12\cdot\tfrac{4}{27} = \tfrac{2}{27} \approx 0.074\)</span>. Evidence <span class="math inline">\(= 2/27\)</span>. Posteriors: <span class="math inline">\(\boxed{P(y{=}1 \mid x) = 0}\)</span>, <span class="math inline">\(\boxed{P(y{=}0 \mid x) = 1}\)</span>.</p></li>
+<li><p><span class="math inline">\(\boxed{\text{Predict } y = 0.}\)</span></p></li>
+<li><p>The zero factor is <span class="math inline">\((1 - \hat p_1^1) = 1 - 1 = 0\)</span>: <span class="math inline">\(F_1 = 0\)</span> never occurs with class <span class="math inline">\(1\)</span> in training, so the MLE declares it impossible and the whole product dies. This is §30.8’s <strong>zero-count problem</strong> — one unseen (feature, class) combination vetoes the class entirely, which is why Laplace smoothing exists.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — Parameter counting (<span class="math inline">\(k = 4\)</span>, <span class="math inline">\(d = 5\)</span> binary features)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>The full generative story needs one probability per (feature-vector, label) pair: <span class="math inline">\(k\cdot 2^d - 1 = 4\cdot 2^5 - 1 = 4\cdot 32 - 1 = \boxed{127}\)</span>.</p></li>
+<li><p>Naive Bayes (TA-notes style, priors counted straight): <span class="math inline">\(k\)</span> priors <span class="math inline">\(+ k\cdot d\)</span> conditionals <span class="math inline">\(= 4 + 4\cdot 5 = \boxed{24}\)</span>.</p></li>
+<li><p>The <span class="math inline">\(k\)</span> priors sum to <span class="math inline">\(1\)</span>, so one is redundant: exact free parameters <span class="math inline">\(= (k - 1) + kd = 3 + 20 = \boxed{23}\)</span>. (Each Bernoulli conditional is one free number — <span class="math inline">\(\hat p\)</span> determines <span class="math inline">\(1 - \hat p\)</span> — so no further redundancy.)</p></li>
+<li><p>Full generative: <span class="math inline">\(\boxed{\text{exponential in } d}\)</span> — doubles with each added feature. Naive Bayes: <span class="math inline">\(\boxed{\text{linear in } d}\)</span> — <span class="math inline">\(k\)</span> more numbers per feature. That exponential-to-linear collapse is what the independence assumption buys (§30.3(ii)).</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — Laplace smoothing on <span class="math inline">\(x = [0, 1, 1]\)</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>Unsmoothed, from §30.9’s estimates: <span class="math display">\[P(x \mid y{=}1) = \underbrace{(1-1)}_{F_1=0}\cdot\underbrace{\tfrac23}_{F_2=1}\cdot\underbrace{\tfrac13}_{F_3=1} = \boxed{0}.\]</span> The <span class="math inline">\(y{=}1\)</span> score is <span class="math inline">\(0\)</span> no matter what the other features say; <span class="math inline">\(P(x \mid y{=}0) = \tfrac23\cdot\tfrac23\cdot\tfrac23 = 8/27\)</span>, so the prediction is forced to <span class="math inline">\(\boxed{0}\)</span> (posteriors <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>).</p></li>
+<li><p>With <span class="math inline">\(c = 1\)</span> (§30.8): class <span class="math inline">\(1\)</span> (<span class="math inline">\(n = 3\)</span>): <span class="math inline">\(\hat p_1^1 = \frac{3+1}{3+2} = \frac45 = 0.8\)</span>, <span class="math inline">\(\hat p_2^1 = \frac{2+1}{5} = \frac35 = 0.6\)</span>, <span class="math inline">\(\hat p_3^1 = \frac{1+1}{5} = \frac25 = 0.4\)</span>. Class <span class="math inline">\(0\)</span> (<span class="math inline">\(n = 3\)</span>): <span class="math inline">\(\hat p_1^0 = \frac{1+1}{5} = \frac25 = 0.4\)</span>, <span class="math inline">\(\hat p_2^0 = \frac{2+1}{5} = \frac35 = 0.6\)</span>, <span class="math inline">\(\hat p_3^0 = \frac{2+1}{5} = \frac35 = 0.6\)</span>.</p></li>
+<li><p>Smoothed likelihoods: <span class="math display">\[P(x \mid y{=}1) = 0.2\cdot 0.6\cdot 0.4 = \boxed{0.048}, \qquad P(x \mid y{=}0) = 0.6\cdot 0.6\cdot 0.6 = \boxed{0.216}.\]</span> Scores (<span class="math inline">\(\times\)</span> prior <span class="math inline">\(1/2\)</span>): <span class="math inline">\(0.024\)</span> vs <span class="math inline">\(0.108\)</span>; evidence <span class="math inline">\(= 0.132\)</span>. Posteriors: <span class="math inline">\(\boxed{P(y{=}1\mid x) = 0.024/0.132 \approx 0.182}\)</span>, <span class="math inline">\(\boxed{P(y{=}0\mid x) = 0.108/0.132 \approx 0.818}\)</span>. <span class="math inline">\(\boxed{\text{Predict } 0}\)</span> — same verdict as unsmoothed here, but now class <span class="math inline">\(1\)</span> keeps a nonzero <span class="math inline">\(18\%\)</span> instead of being vetoed outright.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — Spam posterior (practice-assignment numbers)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Numerator (spam, prior <span class="math inline">\(0.2\)</span>): <span class="math display">\[0.2 \times 0.7 \times 0.2 \times 0.01 \times 0.3 = 0.2 \times 0.00042 = 0.000084.\]</span> Non-spam term (prior <span class="math inline">\(0.8\)</span>): <span class="math display">\[0.8 \times 0.01 \times 0.02 \times 0.01 \times 0.1 = 0.8 \times 2\times 10^{-7} = 1.6\times 10^{-7}.\]</span> Evidence <span class="math inline">\(= 0.000084 + 0.00000016 = 0.00008416\)</span>. <span class="math display">\[P(\text{spam} \mid \text{mail}) = \frac{0.000084}{0.00008416} \approx 0.99810 = \boxed{1.00}\ \text{(two decimals)}.\]</span> Every one of the four “spammy” words multiplies the spam case up and the ham case down; the <span class="math inline">\(0.2\)</span> prior is swamped by the likelihood ratio.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — Gaussian NB boundary
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>Class <span class="math inline">\(0\)</span>: <span class="math inline">\(\hat\mu_0 = \frac{1+2+3}{3} = \boxed{2}\)</span>; <span class="math inline">\(\hat\sigma_0^2 = \frac{(1-2)^2 + 0 + (3-2)^2}{3} = \boxed{\tfrac23}\)</span>. Class <span class="math inline">\(1\)</span>: <span class="math inline">\(\hat\mu_1 = \frac{5+6+7}{3} = \boxed{6}\)</span>; <span class="math inline">\(\hat\sigma_1^2 = \frac{(5-6)^2 + 0 + (7-6)^2}{3} = \boxed{\tfrac23}\)</span>.</p></li>
+<li><p>Equal priors and equal variances: <span class="math inline">\(p(x\mid 1) = p(x\mid 0) \iff (x-6)^2 = (x-2)^2\)</span>. Expanding: <span class="math inline">\(x^2 - 12x + 36 = x^2 - 4x + 4\)</span>, so <span class="math inline">\(-12x + 36 = -4x + 4\)</span>, <span class="math inline">\(-8x = -32\)</span>, <span class="math inline">\(\boxed{x = 4}\)</span> — again the midpoint of the means.</p></li>
+<li><p><span class="math inline">\(x = 3\)</span>: <span class="math inline">\((3-6)^2 = 9 &gt; (3-2)^2 = 1\)</span> → class <span class="math inline">\(0\)</span>’s density is taller → <span class="math inline">\(\boxed{\text{predict } 0}\)</span>. <span class="math inline">\(x = 5\)</span>: <span class="math inline">\((5-6)^2 = 1 &lt; (5-2)^2 = 9\)</span> → <span class="math inline">\(\boxed{\text{predict } 1}\)</span>.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — Generative or discriminative?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>Decision trees</strong> — <strong>discriminative</strong>: model <span class="math inline">\(P(y \mid x)\)</span> directly (TA notes: <span class="math inline">\(P(y{=}1 \mid x) = 1\)</span> if <span class="math inline">\(x\)</span>’s leaf is <span class="math inline">\(1\)</span>).</li>
+<li><strong>KNN</strong> — <strong>discriminative</strong>: the majority vote of the neighbours estimates <span class="math inline">\(P(y \mid x)\)</span> straight from the data, no model of <span class="math inline">\(P(x, y)\)</span>.</li>
+<li><strong>Naive Bayes</strong> — <strong>generative</strong>: models the pair <span class="math inline">\(P(x, y) = P(x \mid y)P(y)\)</span> — class priors plus per-class feature distributions — then flips with Bayes’ rule.</li>
+<li><strong>Gaussian Naive Bayes</strong> — <strong>generative</strong>: same as NB, with Gaussian class-conditional densities.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — Why log space
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><span class="math inline">\(P(y_c \mid x) = \dfrac{P(x \mid y_c)P(y_c)}{P(x)}\)</span>. For the <span class="math inline">\(\operatorname*{argmax}\)</span> over <span class="math inline">\(y_c\)</span>, the denominator <span class="math inline">\(P(x)\)</span> is constant, so <span class="math display">\[\operatorname*{argmax}_{y_c} P(y_c \mid x) = \operatorname*{argmax}_{y_c}\big[P(x \mid y_c)P(y_c)\big].\]</span> With the naive factorization <span class="math inline">\(P(x \mid y_c) = \prod_j p(x_j \mid y_c)\)</span> and <span class="math inline">\(\log\)</span> strictly increasing (so it preserves argmax): <span class="math display">\[= \operatorname*{argmax}_{y_c}\left[\log\!\left(\prod_j p(x_j \mid y_c)P(y_c)\right)\right] = \operatorname*{argmax}_{y_c}\left[\sum_{j=1}^{m}\log p(x_j \mid y_c) + \log p(y_c)\right]. \qquad \blacksquare\]</span></p></li>
+<li><p>Because a product of hundreds of small probabilities underflows to floating-point zero, while a sum of logs stays in a safe range — same argmax, no underflow.</p></li>
+</ol>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./29-knn-trees.html" class="pagination-link" aria-label="29. KNN and decision trees">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">29. KNN and decision trees</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./31-perceptron-logistic.html" class="pagination-link" aria-label="31. Perceptron and logistic regression">
+        <span class="nav-page-text"><span class="chapter-title">31. Perceptron and logistic regression</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

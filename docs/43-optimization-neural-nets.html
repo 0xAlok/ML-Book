@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Chapter 43: Optimization for neural nets — SGD variants, init, normalization – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./44-cnns.html" rel="next">
+<link href="./42-backpropagation.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./41-neuron-mlp-scratch.html">Part VI — Bridge to Deep Learning</a></li><li class="breadcrumb-item"><a href="./43-optimization-neural-nets.html"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#why-plain-gradient-descent-needs-help-in-deep-nets" id="toc-why-plain-gradient-descent-needs-help-in-deep-nets" class="nav-link active" data-scroll-target="#why-plain-gradient-descent-needs-help-in-deep-nets">43.1 Why plain gradient descent needs help in deep nets</a></li>
+  <li><a href="#the-three-gradient-descents-batch-stochastic-mini-batch" id="toc-the-three-gradient-descents-batch-stochastic-mini-batch" class="nav-link" data-scroll-target="#the-three-gradient-descents-batch-stochastic-mini-batch">43.2 The three gradient descents: batch, stochastic, mini-batch</a></li>
+  <li><a href="#momentum-remember-where-you-were-going" id="toc-momentum-remember-where-you-were-going" class="nav-link" data-scroll-target="#momentum-remember-where-you-were-going">43.3 Momentum: remember where you were going</a></li>
+  <li><a href="#nesterov-look-before-you-leap-notebook-only" id="toc-nesterov-look-before-you-leap-notebook-only" class="nav-link" data-scroll-target="#nesterov-look-before-you-leap-notebook-only">43.4 Nesterov: look before you leap (notebook-only)</a></li>
+  <li><a href="#adaptive-methods-i-adagrad-rmsprop-adadelta" id="toc-adaptive-methods-i-adagrad-rmsprop-adadelta" class="nav-link" data-scroll-target="#adaptive-methods-i-adagrad-rmsprop-adadelta">43.5 Adaptive methods I: AdaGrad, RMSProp, AdaDelta</a></li>
+  <li><a href="#adam-momentum-rmsprop-with-bias-correction" id="toc-adam-momentum-rmsprop-with-bias-correction" class="nav-link" data-scroll-target="#adam-momentum-rmsprop-with-bias-correction">43.6 Adam: momentum + RMSProp, with bias correction</a></li>
+  <li><a href="#weight-decay-the-lambda-that-rides-inside-the-optimizer" id="toc-weight-decay-the-lambda-that-rides-inside-the-optimizer" class="nav-link" data-scroll-target="#weight-decay-the-lambda-that-rides-inside-the-optimizer">43.7 Weight decay: the <span class="math inline">\(\lambda\)</span> that rides inside the optimizer</a></li>
+  <li><a href="#learning-rate-schedules-shrink-the-steps-as-you-settle" id="toc-learning-rate-schedules-shrink-the-steps-as-you-settle" class="nav-link" data-scroll-target="#learning-rate-schedules-shrink-the-steps-as-you-settle">43.8 Learning-rate schedules: shrink the steps as you settle</a></li>
+  <li><a href="#normalization-fix-the-scale-before-the-optimizer-has-to" id="toc-normalization-fix-the-scale-before-the-optimizer-has-to" class="nav-link" data-scroll-target="#normalization-fix-the-scale-before-the-optimizer-has-to">43.9 Normalization: fix the scale before the optimizer has to</a></li>
+  <li><a href="#initialization-where-the-weights-start" id="toc-initialization-where-the-weights-start" class="nav-link" data-scroll-target="#initialization-where-the-weights-start">43.10 Initialization: where the weights start</a></li>
+  <li><a href="#the-optimizers-traced-numpy-on-the-decks-own-problem" id="toc-the-optimizers-traced-numpy-on-the-decks-own-problem" class="nav-link" data-scroll-target="#the-optimizers-traced-numpy-on-the-decks-own-problem">43.11 The optimizers, traced: numpy on the deck’s own problem</a></li>
+  <li><a href="#the-practitioners-cheat-sheet-notebook-recorded" id="toc-the-practitioners-cheat-sheet-notebook-recorded" class="nav-link" data-scroll-target="#the-practitioners-cheat-sheet-notebook-recorded">43.12 The practitioner’s cheat sheet (notebook, [recorded])</a></li>
+  <li><a href="#where-this-goes-next" id="toc-where-this-goes-next" class="nav-link" data-scroll-target="#where-this-goes-next">43.13 Where this goes next</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./41-neuron-mlp-scratch.html">Part VI — Bridge to Deep Learning</a></li><li class="breadcrumb-item"><a href="./43-optimization-neural-nets.html"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Chapter 42 derived the gradients: one backward sweep, every <span class="math inline">\(\partial L/\partial\theta\)</span> in hand. This chapter decides what to <em>do</em> with them — the optimizers, the learning-rate dial, the starting point, and the input scale. It is the piece §41.15(ii) promised (“§41.14(i)’s symmetry trap is the entry point: <em>how</em> to sample the initial weights, why scale matters for deep stacks, and the optimizers (SGD variants, Adam) the notebooks already name”). The spine is the GenAI Week 5 deck (“Optimization Strategies,” Balaji Srinivasan and Ganapathy Krishnamurthi, 78 slides — convex primer, GD algorithms, LR scheduling, momentum, AdaGrad, RMSProp, AdaDelta, Adam) plus its two companion notebooks, <em>Gradient_Descent.ipynb</em> (batch/SGD/mini-batch, LR sensitivity, batch-size experiments) and <em>Advanced_Optimization.ipynb</em> (momentum, Nesterov, AdaGrad, RMSProp, AdaDelta, Adam, AdamW, with torch implementations and a Rosenbrock/Beale/neural-net comparison). Every number in §43.11 was re-run here in numpy and is marked <strong>[verified-NumPy]</strong>; deck, notebook, and torch numbers are transcriptions, marked <strong>[recorded]</strong>.</p>
+<p><strong>Notation.</strong> The deck writes the learning rate as <span class="math inline">\(\eta\)</span>; Chapters 10, 41, and 42 wrote <span class="math inline">\(\alpha\)</span> — the same number, different letter. Subscripts <span class="math inline">\(t\)</span> count update steps: <span class="math inline">\(g_t = \nabla_\theta J(\theta_t)\)</span>.</p>
+<section id="why-plain-gradient-descent-needs-help-in-deep-nets" class="level2">
+<h2 class="anchored" data-anchor-id="why-plain-gradient-descent-needs-help-in-deep-nets">43.1 Why plain gradient descent needs help in deep nets</h2>
+<p>Backprop (§42.4) hands the optimizer a gradient vector. The optimizer’s job is to turn gradients into parameter moves. Vanilla GD (§10.5: <span class="math inline">\(\theta_{t+1} = \theta_t - \eta g_t\)</span>) has one global step size and no memory — and the deck’s Week 5 material says exactly why that is not enough:</p>
+<ol type="i">
+<li><strong>Ravines.</strong> The deck’s own word, and its own example: <span class="math inline">\(f(x_1, x_2) = 0.1x_1^2 + 2x_2^2\)</span> — a long narrow valley. The gradient is <span class="math inline">\(20\times\)</span> larger in the <span class="math inline">\(x_2\)</span> direction (<span class="math inline">\(\nabla f = (0.2x_1, 4x_2)\)</span>). One <span class="math inline">\(\eta\)</span> cannot serve both: a large <span class="math inline">\(\eta\)</span> diverges across the steep direction, a small one crawls along the flat direction. “The optimization path oscillates across the narrow valley instead of moving along it.”</li>
+<li><strong>Saddle points.</strong> The deck’s definition: “A saddle point is a location where all gradients of a function vanish (i.e., <span class="math inline">\(\nabla f(x) = 0\)</span>), but which is neither a local minimum nor a local maximum.” And the deck’s warning, in full caps: “Saddle Points are More Common than Minima in High Dimensions!” Plain GD has no momentum to roll through them.</li>
+<li><strong>Local minima.</strong> §41.14(iv) already settled this: the net “converges to <strong>local minima</strong>” — but “typically works very well in practice.” The deck agrees: the landscape is non-convex, full of minima and saddles, and nobody panics.</li>
+</ol>
+<p><strong>The goal line (deck’s summary, worth keeping).</strong> “Optimization in deep learning aims to minimize generalization error, not just training error.” The optimizer that overfits the training loss fastest is not automatically the best optimizer.</p>
+<p><strong>Basically, …</strong> “Backprop tells you which way is downhill; it doesn’t tell you how big a step to take, and one step size can’t serve a valley that is steep in one direction and flat in another. This chapter is about smarter stepping: memory (momentum), per-parameter step sizes (adaptive methods), shrinking steps over time (schedules), and not starting in a bad spot (initialization and scaling).”</p>
+</section>
+<section id="the-three-gradient-descents-batch-stochastic-mini-batch" class="level2">
+<h2 class="anchored" data-anchor-id="the-three-gradient-descents-batch-stochastic-mini-batch">43.2 The three gradient descents: batch, stochastic, mini-batch</h2>
+<p>The <em>Gradient_Descent</em> notebook’s framing: “The primary distinction between gradient descent variants lies in how many training samples are used to compute the gradient at each iteration.” The deck adds the geometry: vectorization — CPUs and GPUs are parallel processors; computing gradients block-by-block (mini-batch) beats one-by-one (SGD-like) because it keeps data in fast cache, while full-matrix (batch-like) is fastest per pass but touches everything.</p>
+<p><strong>Def (the three).</strong> - <strong>Batch GD:</strong> gradient over the <em>entire</em> dataset each step. Exact gradient of the full loss. Smooth, deterministic — and <span class="math inline">\(O(n)\)</span> per step, “inefficient for redundant data,” “does not leverage modern parallel hardware.” - <strong>Stochastic GD:</strong> gradient from <em>one</em> randomly drawn sample per step. Cheap (<span class="math inline">\(O(1)\)</span>), noisy, “can escape shallow local minima,” enables online learning — but fluctuates and needs careful LR scheduling. - <strong>Mini-batch GD:</strong> gradient over a batch of <span class="math inline">\(b\)</span> samples. “The Solution: Minibatch Stochastic Gradient Descent. Instead of one example or all examples, we use a small batch of examples. This is the de facto standard for training deep neural networks.”</p>
+<p><strong>The mini-batch theorem (deck).</strong> With batch <span class="math inline">\(B_t \subset \{1,\dots,n\}\)</span>, <span class="math inline">\(|B_t| = b\)</span>, sampled typically without replacement: <span class="math display">\[\boxed{\nabla f_{B_t}(x_t) = \frac{1}{b}\sum_{i \in B_t} \nabla f_i(x_t), \qquad x_{t+1} = x_t - \eta\, \nabla f_{B_t}(x_t)}.\]</span> “The Best of Both Worlds: Computational Efficiency — significantly faster than one-by-one SGD due to vectorization. Statistical Efficiency — averaging gradients over a minibatch reduces [noise].”</p>
+<p>The noise-reduction half is simple: each sample’s gradient is an unbiased estimate of the true gradient, and averaging <span class="math inline">\(b\)</span> independent ones divides the variance by <span class="math inline">\(b\)</span> (§21’s logic in miniature). That is the entire statistical argument for <span class="math inline">\(b &gt; 1\)</span>.</p>
+<p><strong>eg 1 (the notebook’s batch-size experiment, [recorded]).</strong> On the notebook’s synthetic linear regression (<span class="math inline">\(n = 1000\)</span>, <span class="math inline">\(y = 3.5x + 2 + \varepsilon\)</span>), batch sizes <span class="math inline">\(1, 8, 32, 64, 128, 256\)</span> with the same <span class="math inline">\(\eta = 0.01\)</span>: - Small batches (<span class="math inline">\(1\)</span>–<span class="math inline">\(32\)</span>): more frequent updates, more noise, “better generalization (more noise can help escape local minima),” memory-light. - Large batches (<span class="math inline">\(128\)</span>–<span class="math inline">\(256\)</span>): fewer updates per epoch, stabler gradients, better hardware use — but “may converge to sharp minima (worse generalization),” more memory. - Common choices: <span class="math inline">\(32, 64, 128, 256\)</span>. The notebook’s rule of thumb: “Larger batch sizes need larger learning rates.”</p>
+<p><strong>PyTorch vocabulary (notebook, [recorded]).</strong> In PyTorch, <code>torch.optim.SGD</code> is the algorithm and the <em>DataLoader’s</em> <code>batch_size</code> picks the variant: <code>batch_size = 1</code> is stochastic, <code>batch_size = n</code> is batch, <span class="math inline">\(32\)</span>–<span class="math inline">\(128\)</span> is mini-batch. One optimizer, three regimes.</p>
+<p><strong>Basically, …</strong> “How many examples per gradient? All of them (accurate but slow), one (fast but jumpy), or a batch (the sweet spot). Mini-batch wins because averaging <span class="math inline">\(b\)</span> noisy gradients divides the noise by <span class="math inline">\(b\)</span>, and hardware does batches in parallel anyway.”</p>
+</section>
+<section id="momentum-remember-where-you-were-going" class="level2">
+<h2 class="anchored" data-anchor-id="momentum-remember-where-you-were-going">43.3 Momentum: remember where you were going</h2>
+<p><strong>The physical analogy (deck).</strong> “Imagine a ball rolling down a hill. The ball accumulates velocity as it rolls down.” In steep directions the velocity keeps changing sign and the oscillations “tend to cancel out”; in flat directions it “consistently accelerates, building up speed.” Momentum dampens the ravine’s zig-zag and speeds the crawl along the valley floor — §43.1(i)’s fix.</p>
+<p><strong>Theorem (momentum, deck).</strong> With <span class="math inline">\(g_t = \nabla f(x_t)\)</span>, velocity <span class="math inline">\(v_t\)</span>, momentum <span class="math inline">\(\beta \in [0, 1)\)</span>: <span class="math display">\[\boxed{v_t = \beta v_{t-1} + g_t \quad \text{(accumulate velocity)}, \qquad x_{t+1} = x_t - \eta v_t \quad \text{(update with velocity)}}.\]</span> Typical <span class="math inline">\(\beta = 0.9\)</span>; the notebook also lists <span class="math inline">\(0.99\)</span> for smooth landscapes.</p>
+<p><strong>What the velocity really is (deck’s “leaky averages” slide).</strong> Expand the recurrence: <span class="math display">\[v_t = \beta v_{t-1} + g_t = \beta^2 v_{t-2} + \beta g_{t-1} + g_t = \cdots = \sum_{\tau=0}^{t} \beta^{\,t-\tau} g_\tau.\]</span> <span class="math inline">\(v_t\)</span> is a weighted average of all past gradients, weights <span class="math inline">\(\beta^{t-\tau}\)</span> decaying exponentially — “giving more importance to recent gradients.” The weight sum converges: <span class="math inline">\(\sum_{i=0}^{\infty} \beta^i = 1/(1-\beta)\)</span>, so the update step is roughly <span class="math inline">\(\eta/(1-\beta)\)</span> times the averaged gradient. For <span class="math inline">\(\beta = 0.9\)</span> that is <span class="math inline">\(10\times\eta\)</span> — a momentum-<span class="math inline">\(\!0.9\)</span> optimizer with nominal rate <span class="math inline">\(\eta\)</span> moves, on average, like plain GD with rate <span class="math inline">\(10\eta\)</span> [verified-NumPy: <span class="math inline">\(\sum_{k=0}^{60} 0.9^k = 9.984 \approx 10\)</span>].</p>
+<p><strong>Note.</strong> “A larger <span class="math inline">\(\beta\)</span> (e.g., <span class="math inline">\(0.95\)</span>) means a longer ‘memory’ of past gradients. A smaller <span class="math inline">\(\beta\)</span> means a shorter memory.” Longer memory = more smoothing = slower to react when the slope reverses; that is the trade.</p>
+<p><strong>Basically, …</strong> “Plain GD has amnesia — every step trusts only the current slope, so it zig-zags across the ravine. Momentum keeps a running average of past slopes (recent ones count most). Consistent directions build up speed; contradictory ones cancel out. The math is a leaky average, the physics is a rolling ball.”</p>
+</section>
+<section id="nesterov-look-before-you-leap-notebook-only" class="level2">
+<h2 class="anchored" data-anchor-id="nesterov-look-before-you-leap-notebook-only">43.4 Nesterov: look before you leap (notebook-only)</h2>
+<p>Classical momentum computes the gradient at the <em>current</em> position, then steps. Nesterov computes the gradient at the <em>approximate future</em> position — where the accumulated velocity is about to take you: <span class="math display">\[\boxed{v_t = \beta v_{t-1} + \nabla_\theta J(\theta_t - \eta\beta v_{t-1}), \qquad \theta_{t+1} = \theta_t - \eta v_t} \quad \text{[recorded]}.\]</span> “Classical Momentum: ‘I’m going in this direction with this velocity, let me check the gradient.’ Nesterov Momentum: ‘I’m about to go in this direction, let me check the gradient there first.’” The look-ahead is a form of error correction — it notices the slope reversing <em>before</em> stepping into it, so it overshoots less.</p>
+<p>Two facts from the notebook, kept as stated: it converges at <span class="math inline">\(O(1/t^2)\)</span> vs classical momentum’s <span class="math inline">\(O(1/t)\)</span> <em>for convex functions</em>, and “for non-convex deep learning, benefits over classical momentum are often marginal.” The notebook’s torch implementation uses the efficient reformulation (equivalent, one gradient evaluation): <span class="math display">\[v_t = \beta v_{t-1} + g_t, \qquad \theta_{t+1} = \theta_t - \eta(\beta v_t + g_t) \quad \text{[recorded]}.\]</span></p>
+<p><strong>Note.</strong> Nesterov does not appear in the deck — it is notebook-only. In PyTorch it is a flag on SGD (<code>nesterov=True</code>), not a separate optimizer [recorded].</p>
+<p><strong>Basically, …</strong> “Momentum looks at the slope where you stand; Nesterov looks at the slope where you’re <em>about to</em> stand. Same memory, smarter aim — at the price of one extra conceptual gradient.”</p>
+</section>
+<section id="adaptive-methods-i-adagrad-rmsprop-adadelta" class="level2">
+<h2 class="anchored" data-anchor-id="adaptive-methods-i-adagrad-rmsprop-adadelta">43.5 Adaptive methods I: AdaGrad, RMSProp, AdaDelta</h2>
+<p>Momentum fixes the <em>direction</em> problem. The adaptive family fixes a different one: one global <span class="math inline">\(\eta\)</span> cannot fit parameters whose gradients live on wildly different scales (§43.1(i) again). Their answer: give every parameter its own learning rate, derived from its own gradient history.</p>
+<p><strong>i) AdaGrad.</strong> Keep a per-parameter accumulator of squared gradients, <span class="math inline">\(s_t = s_{t-1} + g_t \odot g_t\)</span>, and divide the global rate by it (deck’s theorem): <span class="math display">\[\boxed{x_{t+1} = x_t - \frac{\eta}{\sqrt{s_t + \epsilon}} \odot g_t} \quad \text{[recorded]}.\]</span> Intuition (deck): “If a parameter has consistently large gradients, its entry in <span class="math inline">\(s_t\)</span> will grow quickly, rapidly decreasing its effective learning rate. If a parameter has small or zero gradients (like for a sparse feature), its entry in <span class="math inline">\(s_t\)</span> grows slowly, keeping its effective learning rate high.” On the deck’s ill-conditioned problem, AdaGrad “acts as a preconditioner. It automatically corrects for the different scales of the gradients” — the <span class="math inline">\(x_2\)</span> accumulator grows faster than the <span class="math inline">\(x_1\)</span> one, scaling the steep direction down harder, “as if the problem were better conditioned.”</p>
+<p><strong>The fatal flaw (deck):</strong> “The accumulator <span class="math inline">\(s_t\)</span> only ever increases. After enough time, the learning rate for all parameters will approach zero, stopping training prematurely.” The sum of squared gradients is a one-way ratchet: <span class="math inline">\(\lim_{t\to\infty} \eta/\sqrt{s_t} = 0\)</span>. Fine for short, sparse problems (NLP word embeddings — the notebook’s recommended use); bad for long training runs.</p>
+<p><strong>ii) RMSProp.</strong> “Fixing AdaGrad’s decaying learning rate”: replace the ever-growing sum with an <em>exponentially decaying</em> average, <span class="math inline">\(E[g^2]_t = \beta E[g^2]_{t-1} + (1-\beta)g_t^2\)</span> (the deck and notebook; the notebook notes it was “developed by Geoff Hinton in his Coursera lecture (never formally published!)”): <span class="math display">\[\boxed{x_{t+1} = x_t - \frac{\eta}{\sqrt{E[g^2]_t + \epsilon}} \odot g_t}, \qquad \beta \approx 0.9 \quad \text{[recorded]}.\]</span> Old gradients decay away, so the rate stops shrinking — “recent gradients have more influence,” and training “maintains learning capability throughout.” The notebook’s insight: with <span class="math inline">\(\beta = 0.9\)</span>, roughly the last <span class="math inline">\(10\)</span> gradient updates set the learning rate. Defaults: <span class="math inline">\(\eta = 0.001\)</span>, <span class="math inline">\(\beta = 0.9\)</span> [recorded].</p>
+<p><strong>iii) AdaDelta.</strong> Same decaying averages, but no learning rate at all — the update size comes from the ratio of the RMS of <em>past parameter updates</em> to the RMS of <em>gradients</em> (deck’s theorem, condensed): <span class="math display">\[\boxed{s_t = \rho s_{t-1} + (1-\rho)(g_t \odot g_t), \quad \Delta x_t = -\frac{\sqrt{\Delta x_{t-1} + \epsilon}}{\sqrt{s_t + \epsilon}} \odot g_t, \quad x_{t+1} = x_t + \Delta x_t} \quad \text{[recorded]}.\]</span> “The term <span class="math inline">\(\sqrt{\Delta x_{t-1}}/\sqrt{s_t}\)</span> approximates a learning rate, effectively self-adjusting based on the recent dynamics.” The selling point is unit-correctness: the step has the same units as the parameter. The cost: “can be slower to converge than Adam,” extra memory for the update history.</p>
+<p><strong>Basically, …</strong> “AdaGrad: each parameter’s step size = global rate divided by (root of its total past squared gradients) — big-history parameters get small steps, rare ones keep big steps; but the denominator only grows, so training eventually freezes. RMSProp: use a <em>decaying</em> average instead — old history fades, the freeze never comes. AdaDelta: drop the global rate entirely — let the ratio of past <em>updates</em> to past <em>gradients</em> set the step.”</p>
+</section>
+<section id="adam-momentum-rmsprop-with-bias-correction" class="level2">
+<h2 class="anchored" data-anchor-id="adam-momentum-rmsprop-with-bias-correction">43.6 Adam: momentum + RMSProp, with bias correction</h2>
+<p>“Adam is arguably the most popular ‘go-to’ optimization algorithm. It combines the best of two worlds: Momentum + RMSProp” (deck). Keep the deck’s two-moment notation: <span class="math inline">\(v_t\)</span> = exponentially weighted average of gradients (the momentum part), <span class="math inline">\(s_t\)</span> = exponentially weighted average of squared gradients (the RMSProp part).</p>
+<p><strong>Theorem (Adam, deck).</strong> With decay rates <span class="math inline">\(\beta_1, \beta_2\)</span>: <span class="math display">\[\begin{align*}
+v_t &amp;= \beta_1 v_{t-1} + (1-\beta_1)g_t \quad \text{(first moment: direction)} \tag{1}\\
+s_t &amp;= \beta_2 s_{t-1} + (1-\beta_2)(g_t \odot g_t) \quad \text{(second moment: scale)} \tag{2}\\
+\hat v_t &amp;= \frac{v_t}{1-\beta_1^t}, \qquad \hat s_t = \frac{s_t}{1-\beta_2^t} \quad \text{(bias correction)} \tag{3}\\
+x_{t+1} &amp;= x_t - \eta\,\frac{\hat v_t}{\sqrt{\hat s_t} + \epsilon} \quad \text{[recorded]} \tag{4}
+\end{align*}\]</span> Defaults: <span class="math inline">\(\beta_1 = 0.9\)</span>, <span class="math inline">\(\beta_2 = 0.999\)</span>, <span class="math inline">\(\eta = 0.001\)</span>, <span class="math inline">\(\epsilon = 10^{-8}\)</span> [recorded].</p>
+<p><strong>Why the bias correction (3).</strong> Both moments start at <span class="math inline">\(0\)</span>, so early on they underestimate the truth — they are “biased towards zero.” The notebook spells out the fix: divide by <span class="math inline">\(1-\beta^t\)</span>, which starts small and approaches <span class="math inline">\(1\)</span>.</p>
+<p><strong>eg 2 (one Adam step, by hand — [verified-NumPy]).</strong> Scalar parameter, first step, <span class="math inline">\(g_1 = 0.5\)</span>: <span class="math display">\[v_1 = (1-0.9)(0.5) = 0.05, \qquad s_1 = (1-0.999)(0.5^2) = 0.00025,\]</span> <span class="math display">\[\hat v_1 = \frac{0.05}{1-0.9} = 0.5, \qquad \hat s_1 = \frac{0.00025}{1-0.999} = 0.25,\]</span> <span class="math display">\[\text{step} = \eta \cdot \frac{0.5}{\sqrt{0.25}} = \eta \cdot 1.0.\]</span> The correction restores the step to <span class="math inline">\(\eta \cdot \mathrm{sign}(g)\)</span> on the very first iteration. Without it, the step would be <span class="math inline">\(\eta \cdot 0.05/\sqrt{0.00025} \approx 3.16\,\eta\)</span> — a directionless <span class="math inline">\(3.16\times\)</span> overshoot cooked up from zero-initialization, not from the data. That is what (3) deletes.</p>
+<p><strong>The notebook’s honest caveats.</strong> Adam “may not converge to optimal solution in some convex optimization problems,” “can generalize worse than SGD with momentum in some cases,” and “standard L2 regularization doesn’t work as intended” — the last of which gets its own section next.</p>
+<p><strong>Basically, …</strong> “Adam = momentum’s running-average direction divided by RMSProp’s running-average scale, per parameter. The direction comes from the average gradient, the step size from the average <em>squared</em> gradient, and the bias correction just undoes the zero-start so the first steps aren’t nonsense. Defaults (<span class="math inline">\(\beta_1{=}0.9\)</span>, <span class="math inline">\(\beta_2{=}0.999\)</span>, <span class="math inline">\(\eta{=}0.001\)</span>) work out of the box — which is why it is the default.”</p>
+</section>
+<section id="weight-decay-the-lambda-that-rides-inside-the-optimizer" class="level2">
+<h2 class="anchored" data-anchor-id="weight-decay-the-lambda-that-rides-inside-the-optimizer">43.7 Weight decay: the <span class="math inline">\(\lambda\)</span> that rides inside the optimizer</h2>
+<p>Chapter 28’s ridge penalty and the optimizer’s weight decay are the same idea wearing two hats. The deck’s convex-primer slide gives the penalty view: “Weight decay is a penalty method. Adding <span class="math inline">\(\tfrac{\lambda}{2}\lVert w\rVert^2\)</span> to the loss is equivalent to enforcing a constraint <span class="math inline">\(\lVert w\rVert^2 - r^2 \le 0\)</span> for some radius <span class="math inline">\(r\)</span>.” The <span class="math inline">\(\lambda\)</span> is the same <span class="math inline">\(\lambda\)</span> as §28’s <span class="math inline">\(J(w) = \tfrac12 (Xw-y)^T(Xw-y) + \tfrac{\lambda}{2}\lVert w\rVert_2^2\)</span>, whose gradient picks up <span class="math inline">\(+\lambda w\)</span> (§28: <span class="math inline">\(\nabla_w J = X^TXw - X^Ty + \lambda w\)</span>).</p>
+<p><strong>In plain SGD the two views coincide.</strong> Put the penalty in the loss: the gradient becomes <span class="math inline">\(g_t + \lambda\theta_t\)</span>, and the update is <span class="math display">\[\theta_{t+1} = \theta_t - \eta(g_t + \lambda\theta_t) = (1-\eta\lambda)\theta_t - \eta g_t.\]</span> Each step shrinks the weights by the fraction <span class="math inline">\(\eta\lambda\)</span> <em>before</em> stepping downhill — literally “decay the weights.” Adding <span class="math inline">\(\tfrac{\lambda}{2}\lVert w\rVert^2\)</span> to the loss and multiplying the weights by <span class="math inline">\((1-\eta\lambda)\)</span> are the same update.</p>
+<p><strong>In Adam they come apart (the notebook’s key point, [recorded]).</strong> If you add the penalty to Adam’s loss, the <span class="math inline">\(\lambda\theta_t\)</span> term enters the <em>gradient</em>, and the adaptive scaling divides it by <span class="math inline">\(\sqrt{\hat s_t}\)</span> — so different parameters get different effective regularization, “not equivalent to L2 regularization.” <strong>AdamW</strong> (the notebook, [recorded]) applies the decay <em>after</em> the adaptive update instead: <span class="math display">\[\boxed{\theta_{t+1} = \theta_t - \eta\left(\frac{\hat v_t}{\sqrt{\hat s_t} + \epsilon} + \lambda\theta_t\right) = (1-\eta\lambda)\theta_t - \eta\frac{\hat v_t}{\sqrt{\hat s_t} + \epsilon}}.\]</span> The second form shows it: true weight decay — every parameter shrinks by the constant fraction <span class="math inline">\(\eta\lambda\)</span> per step, independent of its gradient history. “With AdamW, the effective update becomes <span class="math inline">\(\theta_{t+1} = (1-\eta\lambda)\theta_t - \eta\hat v_t/(\sqrt{\hat s_t}+\epsilon)\)</span>.”</p>
+<p>The notebook’s verdict: AdamW “consistently outperforms Adam in transformer models (BERT, GPT, etc.), computer vision (ResNets, Vision Transformers), fine-tuning pre-trained models” — and the 2025 default is “AdamW (lr=0.001, weight_decay=0.01)” [recorded]. Typical weight-decay values: <span class="math inline">\(0.01\)</span>–<span class="math inline">\(0.1\)</span> for vision, <span class="math inline">\(0.001\)</span>–<span class="math inline">\(0.01\)</span> for NLP, <span class="math inline">\(0.0001\)</span>–<span class="math inline">\(0.001\)</span> for fine-tuning [recorded].</p>
+<p><strong>Basically, …</strong> “Weight decay = shrink the weights a little every step (<span class="math inline">\(1-\eta\lambda\)</span>), the optimizer’s version of Chapter 28’s <span class="math inline">\(\lambda\)</span> tax. In plain SGD, putting the tax in the loss is identical. In Adam, the tax goes through the adaptive divider and comes out uneven — so AdamW applies the shrink <em>after</em> the adaptive step, the same fraction for every parameter.”</p>
+</section>
+<section id="learning-rate-schedules-shrink-the-steps-as-you-settle" class="level2">
+<h2 class="anchored" data-anchor-id="learning-rate-schedules-shrink-the-steps-as-you-settle">43.8 Learning-rate schedules: shrink the steps as you settle</h2>
+<p>“Adjusting the learning rate <span class="math inline">\(\eta\)</span> during training is often as important as the choice of optimizer” (deck). Three reasons, the deck’s own list:</p>
+<ol type="i">
+<li><strong>Magnitude:</strong> “If <span class="math inline">\(\eta\)</span> is too large, the optimizer diverges. If too small, it converges too slowly.”</li>
+<li><strong>Decay:</strong> “As we approach a minimum, we need to take smaller steps to avoid overshooting and to settle into the minimum.”</li>
+<li><strong>Warmup:</strong> “At the start of training, parameters are random. Large steps might be harmful. A ‘warmup’ period with a small initial learning rate that gradually increases can improve stability.”</li>
+</ol>
+<p><strong>The five common schedules (deck, <span class="math inline">\(t\)</span> = update step; [recorded]).</strong> - <strong>Piecewise constant:</strong> <span class="math inline">\(\eta(t) = \eta_i\)</span> for <span class="math inline">\(t_i \le t &lt; t_{i+1}\)</span> — e.g.&nbsp;“reduce LR by <span class="math inline">\(10\times\)</span> every <span class="math inline">\(30\)</span> epochs.” - <strong>Exponential decay:</strong> <span class="math inline">\(\eta(t) = \eta_0 e^{-\lambda t}\)</span>. - <strong>Polynomial decay:</strong> <span class="math inline">\(\eta(t) = \eta_0 (\beta t + 1)^{-\alpha}\)</span> — “a popular choice is <span class="math inline">\(\alpha = 0.5\)</span>, which gives a decay rate of <span class="math inline">\(O(1/\sqrt{t})\)</span>,” with “good theoretical convergence properties for convex problems.” - <strong>Inverse time decay:</strong> <span class="math inline">\(\eta(t) = \eta_0/(1 + kt)\)</span>. - <strong>Cosine annealing:</strong> <span class="math inline">\(\eta(t) = \eta_{\min} + \tfrac12(\eta_{\max} - \eta_{\min})(1 + \cos(\pi t/T_{\max}))\)</span>.</p>
+<p><strong>eg 3 (the five, side by side — [verified-NumPy]).</strong> <span class="math inline">\(\eta_0 = 0.2\)</span>, <span class="math inline">\(\lambda = 0.01\)</span>, <span class="math inline">\(\alpha = 0.5\)</span>, <span class="math inline">\(\beta = 1\)</span>, <span class="math inline">\(k = 0.01\)</span>, <span class="math inline">\(\eta_{\max} = 0.2\)</span>, <span class="math inline">\(\eta_{\min} = 0\)</span>, <span class="math inline">\(T_{\max} = 1000\)</span>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(t\)</span></th>
+<th>piecewise</th>
+<th>exponential</th>
+<th>polynomial (<span class="math inline">\(\alpha{=}0.5\)</span>)</th>
+<th>inverse time</th>
+<th>cosine</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>0.2000</td>
+<td>0.2000</td>
+<td>0.2000</td>
+<td>0.2000</td>
+<td>0.2000</td>
+</tr>
+<tr class="even">
+<td>100</td>
+<td>0.2000</td>
+<td>0.0736</td>
+<td>0.0199</td>
+<td>0.1000</td>
+<td>0.1951</td>
+</tr>
+<tr class="odd">
+<td>500</td>
+<td>0.2000</td>
+<td>0.0013</td>
+<td>0.0089</td>
+<td>0.0333</td>
+<td>0.1000</td>
+</tr>
+<tr class="even">
+<td>1000</td>
+<td>0.2000</td>
+<td>0.0000</td>
+<td>0.0063</td>
+<td>0.0182</td>
+<td>0.0000</td>
+</tr>
+</tbody>
+</table>
+<p>Exponential dies fastest; cosine stays high longest then lands exactly on <span class="math inline">\(\eta_{\min}\)</span> at <span class="math inline">\(T_{\max}\)</span>; inverse time and polynomial sit in the middle.</p>
+<p><strong>Note (the §37.3 connection).</strong> sklearn’s <code>'invscaling'</code> — the stated default of <code>SGDRegressor</code> — is the inverse-time shape: <span class="math inline">\(\eta(t) = \eta_0/t^{\text{power\_t}}\)</span> (§37.3). It differs from the deck’s <span class="math inline">\(\eta_0/(1+kt)\)</span> only in the <span class="math inline">\(+1\)</span> in the denominator (sklearn indexes its steps so the division is safe). Same family, same idea — §37.3 was already scheduling; this chapter names the relatives.</p>
+<p><strong>Basically, …</strong> “Start bold, finish careful. Big steps early cross the landscape fast; small steps late settle into the minimum without bouncing out. Pick a decay curve (or steps, or cosine), and give training a gentle warmup first — random starting weights plus big steps is how explosions happen.”</p>
+</section>
+<section id="normalization-fix-the-scale-before-the-optimizer-has-to" class="level2">
+<h2 class="anchored" data-anchor-id="normalization-fix-the-scale-before-the-optimizer-has-to">43.9 Normalization: fix the scale before the optimizer has to</h2>
+<p>The adaptive methods of §43.5 are a <em>reactive</em> fix for bad scale: they notice the gradient scales differ and compensate. The proactive fix is to never hand the optimizer badly scaled inputs in the first place — and this book already met it.</p>
+<p><strong>§37.3’s sermon returns.</strong> “SGD is sensitive to feature scaling, so it is highly recommended to scale input feature matrix.” The slide’s fix: <code>StandardScaler</code> before <code>SGDRegressor</code> (§37.3). Why it matters is now visible in optimizer terms: if feature <span class="math inline">\(x_1\)</span> lives in <span class="math inline">\([0,1]\)</span> and <span class="math inline">\(x_2\)</span> in <span class="math inline">\([0,1000]\)</span>, the loss surface is exactly the deck’s ill-conditioned valley — one direction steep, one flat, one <span class="math inline">\(\eta\)</span> serving both. Standardizing (<span class="math inline">\(x' = (x-\mu)/\sigma\)</span>) re-rounds the valley at the source instead of asking AdaGrad to precondition it at runtime.</p>
+<p><strong>What the sources don’t cover (flagged).</strong> The <em>Advanced_Optimization</em> notebook’s classifier stacks <code>nn.BatchNorm1d</code> after every hidden layer — but never explains batch normalization: no formula, no derivation, no discussion. The deck is silent too. So: batch normalization is <strong>not derived in this chapter</strong>; the GenAI W5 materials use it without explaining it. What the course <em>does</em> support, fully, is the input-scaling story above. Batch norm is a natural candidate for a later pass over Chapter 44 or a dedicated normalization note.</p>
+<p><strong>Basically, …</strong> “Don’t make the optimizer fight your units. If one feature is <span class="math inline">\(1000\times\)</span> another, the loss landscape is a ravine and you’re paying adaptive-optimizer rent to cross it. Scale the features first (<span class="math inline">\(z\)</span>-scores, §37.3) and the valley gets round — the cheapest preconditioner is the one you never need.”</p>
+</section>
+<section id="initialization-where-the-weights-start" class="level2">
+<h2 class="anchored" data-anchor-id="initialization-where-the-weights-start">43.10 Initialization: where the weights start</h2>
+<p><strong>The trap you already know (§41.14(i)).</strong> “Why did we not initialize all parameters to zero?” — because “since the incoming weights are the same for all neurons in a layer, there is nothing to differentiate between two neurons… they will evolve identically.” The MLT slides’ fix: sample <span class="math inline">\(\theta \sim \mathcal{N}(0, 1)\)</span>; the §41.10 class uses <span class="math inline">\(\mathcal{N}(0, 0.5^2)\)</span> (§36.6 on seeding). Randomness breaks the symmetry; that part is settled.</p>
+<p><strong>The scale question — what the sources actually support.</strong> The deck never names an initialization <em>scheme</em> (no Xavier, no He — see the review log). But the scale of the starting weights controls two quantities this book has already derived, so the reasoning below is book-internal, not course-sourced:</p>
+<ol type="i">
+<li><strong>The forward scale.</strong> <span class="math inline">\(z = Wx + b\)</span>: if the weights are too large, <span class="math inline">\(|z|\)</span> is large and sigmoid/tanh saturate — the neuron sits on a flat end where nothing changes (§41.7).</li>
+<li><strong>The backward scale (§42.8(ii)).</strong> The <span class="math inline">\(\delta\)</span> recursion multiplies the error by <span class="math inline">\(g'(z^{[l]})\)</span> at every layer. For sigmoid, <span class="math inline">\(g'(z) \le 0.25\)</span>, and at saturation (<span class="math inline">\(|z| \ge 3\)</span>) it is <span class="math inline">\(\le 0.045\)</span> — every backward step shrinks the error to at most a twentieth. Too-large initial weights therefore <em>strangle the gradient before training starts</em>: the error signal of §42.4 cannot survive the trip back. Too-small weights keep every neuron in the linear region, which survives but learns nothing distinctive — and deep stacks of tiny weights shrink the forward activations layer by layer.</li>
+</ol>
+<p>So the initialization problem, in this book’s terms: <strong>pick a random scale that keeps <span class="math inline">\(z\)</span> in the region where <span class="math inline">\(g'(z)\)</span> is healthy — neither saturated nor dead — given the fan-in of the layer.</strong> The GenAI W5 materials do not give the formula for that scale; the notebook’s troubleshooting table lists “poor initialization” as a cause of “training loss not decreasing” and prescribes “proper initialization” without defining it [recorded]. This is a genuine gap in the course materials, flagged in the review log rather than filled from memory.</p>
+<p><strong>Basically, …</strong> “Zero-init is banned (§41.14(i)) — random it is. But <em>how</em> random? Too big: neurons saturate, and the §42.8(ii) <span class="math inline">\(\delta\)</span> recursion shrinks the error signal to nothing before the first update. Too small: everything stays tiny and timid. The right scale keeps each neuron’s <span class="math inline">\(z\)</span> where the activation’s slope is alive — the course never writes down the formula, so this chapter states the criterion and flags the gap.”</p>
+</section>
+<section id="the-optimizers-traced-numpy-on-the-decks-own-problem" class="level2">
+<h2 class="anchored" data-anchor-id="the-optimizers-traced-numpy-on-the-decks-own-problem">43.11 The optimizers, traced: numpy on the deck’s own problem</h2>
+<p>Time to watch §43.1–§43.6 happen. The deck’s ill-conditioned problem, <span class="math inline">\(f(x_1,x_2) = 0.1x_1^2 + 2x_2^2\)</span> with <span class="math inline">\(\nabla f = (0.2x_1, 4x_2)\)</span>, from <span class="math inline">\(x = (-4, 1)\)</span> (<span class="math inline">\(f = 3.6\)</span>). All traces below re-run here [verified-NumPy].</p>
+<!-- Original figure drawn for this chapter (not reused from any URL): contour of f=0.1x1^2+2x2^2 with traced trajectories of GD eta=0.4, GD eta=0.6 (diverging), and momentum eta=0.6 beta=0.9, from (-4,1) -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/43-ill-conditioned-trajectories.png" class="img-fluid figure-img"></p>
+<figcaption>Contours of f = 0.1x1^2 + 2x2^2 with three optimization trajectories from (-4,1): plain GD with eta=0.4 zig-zags toward the center, plain GD with eta=0.6 shoots off the frame (diverges), momentum with eta=0.6 and beta=0.9 swings widely but survives and heads for the minimum.</figcaption>
+</figure>
+</div>
+<p><strong>eg 4 (plain GD: the oscillation, then the divergence).</strong> <span class="math inline">\(\eta = 0.4\)</span>:</p>
+<pre><code>step 0: x=(-4.0000,+1.0000) f=3.6000
+step 1: x=(-3.6800,-0.6000) f=2.0742
+step 2: x=(-3.3856,+0.3600) f=1.4054
+step 3: x=(-3.1148,-0.2160) f=1.0635
+step 4: x=(-2.8656,+0.1296) f=0.8547</code></pre>
+<p><span class="math inline">\(x_2\)</span> alternates sign — the ravine zig-zag, decaying by <span class="math inline">\(0.6\)</span> per step — while <span class="math inline">\(x_1\)</span> crawls (factor <span class="math inline">\(0.92\)</span>). Why: each step multiplies <span class="math inline">\(x_1\)</span> by <span class="math inline">\((1-0.2\eta) = 0.92\)</span> and <span class="math inline">\(x_2\)</span> by <span class="math inline">\((1-4\eta) = -0.6\)</span>. Now <span class="math inline">\(\eta = 0.6\)</span>: the <span class="math inline">\(x_2\)</span> factor becomes <span class="math inline">\(1-2.4 = -1.4\)</span>, <span class="math inline">\(|{-1.4}| &gt; 1\)</span>, and</p>
+<pre><code>step 1: f= 5.1590   step 3: f=15.8021   step 6: f=113.7329</code></pre>
+<p>— “a high learning rate (<span class="math inline">\(\eta = 0.6\)</span>) that caused GD to diverge” (deck, verbatim). One <span class="math inline">\(\eta\)</span> cannot serve both directions: this is §43.1(i) with numbers.</p>
+<p><strong>eg 5 (momentum survives the <span class="math inline">\(\eta\)</span> that kills GD).</strong> Momentum, <span class="math inline">\(\eta = 0.6\)</span>, <span class="math inline">\(\beta = 0.9\)</span>:</p>
+<pre><code>step  1: f=5.159040   step  5: f=1.945453   step 10: f=1.958112
+step 15: f=1.137399   step 20: f=0.716362   step 25: f=0.423362   step 30: f=0.171884</code></pre>
+<p>It swings — the velocity overshoots early — but the oscillations cancel instead of compounding, and it converges (<span class="math inline">\(f &lt; 10^{-6}\)</span> at step <span class="math inline">\(120\)</span>). The deck’s claim, checked: momentum tames the learning rate plain GD cannot survive.</p>
+<p><strong>eg 6 (the preconditioner effect, counted in steps).</strong> Steps to reach <span class="math inline">\(f &lt; 10^{-6}\)</span> from the same start: - Plain GD, <span class="math inline">\(\eta = 0.4\)</span>: <strong>86</strong> steps. - Momentum, <span class="math inline">\(\eta = 0.6\)</span>, <span class="math inline">\(\beta = 0.9\)</span>: <strong>120</strong> steps (survives the bigger <span class="math inline">\(\eta\)</span>; the swings cost steps). - AdaGrad, <span class="math inline">\(\eta = 2.0\)</span> (the deck’s own demo setting): <strong>13</strong> steps — the per-parameter scaling walks almost straight down the valley, “as if the problem were better conditioned.” - RMSProp: <span class="math inline">\(\eta = 0.1\)</span> → <strong>64</strong> steps; <span class="math inline">\(\eta = 0.01\)</span> crawls (still <span class="math inline">\(5.25\times 10^{-5}\)</span> after <span class="math inline">\(10{,}000\)</span> steps); <span class="math inline">\(\eta = 0.5\)</span> oscillates (<span class="math inline">\(f = 0.13\)</span> stuck). The notebook’s warning, earned: adaptive methods “still require manual LR tuning.” - Adam, <span class="math inline">\(\eta = 0.01\)</span>: <strong>1227</strong> steps (the default LR is conservative here; Adam’s strength is robustness across problems, not speed on this one).</p>
+<p><strong>Note (honest comparison).</strong> The deck’s story is “momentum fixes GD’s oscillation” — the traces refine it: momentum <em>survives</em> the <span class="math inline">\(\eta\)</span> that explodes plain GD, but on this problem the step-count crown goes to AdaGrad’s preconditioning. Different fixes for different pathologies: §43.3 fixes direction memory, §43.5 fixes per-parameter scale. Adam does both at once, which is why it is the default — not because it wins every race.</p>
+<p><strong>Basically, …</strong> “Same valley, five optimizers, one start. Plain GD zig-zags at <span class="math inline">\(\eta{=}0.4\)</span> and explodes at <span class="math inline">\(\eta{=}0.6\)</span>. Momentum survives <span class="math inline">\(\eta{=}0.6\)</span> by averaging the zig-zag away. AdaGrad rescales each direction separately and walks nearly straight to the bottom in 13 steps. Adam is the all-rounder — slower here, reliable everywhere.”</p>
+</section>
+<section id="the-practitioners-cheat-sheet-notebook-recorded" class="level2">
+<h2 class="anchored" data-anchor-id="the-practitioners-cheat-sheet-notebook-recorded">43.12 The practitioner’s cheat sheet (notebook, [recorded])</h2>
+<p>Everything in this section is the <em>Advanced_Optimization</em> notebook’s tables, transcribed.</p>
+<p><strong>Learning-rate starting points.</strong></p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Optimizer</th>
+<th>Typical LR range</th>
+<th>Start here</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Vanilla GD</td>
+<td><span class="math inline">\(0.001\)</span>–<span class="math inline">\(0.1\)</span></td>
+<td><span class="math inline">\(0.01\)</span></td>
+</tr>
+<tr class="even">
+<td>Momentum</td>
+<td><span class="math inline">\(0.001\)</span>–<span class="math inline">\(0.1\)</span></td>
+<td><span class="math inline">\(0.01\)</span></td>
+</tr>
+<tr class="odd">
+<td>AdaGrad</td>
+<td><span class="math inline">\(0.01\)</span>–<span class="math inline">\(1.0\)</span></td>
+<td><span class="math inline">\(0.1\)</span></td>
+</tr>
+<tr class="even">
+<td>RMSProp</td>
+<td><span class="math inline">\(0.0001\)</span>–<span class="math inline">\(0.01\)</span></td>
+<td><span class="math inline">\(0.001\)</span></td>
+</tr>
+<tr class="odd">
+<td>AdaDelta</td>
+<td>N/A (adaptive)</td>
+<td>default (<span class="math inline">\(\rho = 0.95\)</span>)</td>
+</tr>
+<tr class="even">
+<td>Adam / AdamW</td>
+<td><span class="math inline">\(0.0001\)</span>–<span class="math inline">\(0.01\)</span></td>
+<td><span class="math inline">\(0.001\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Momentum <span class="math inline">\(\beta\)</span>: <span class="math inline">\(0.9\)</span> standard, <span class="math inline">\(0.99\)</span> for smooth landscapes. Adam: <span class="math inline">\(\beta_1 = 0.9\)</span>, <span class="math inline">\(\beta_2 = 0.999\)</span>, <span class="math inline">\(\epsilon = 10^{-8}\)</span>. AdamW weight decay: start <span class="math inline">\(0.01\)</span>.</p>
+<p><strong>Which optimizer when.</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Scenario</th>
+<th>Pick</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>General deep learning</td>
+<td>Adam / AdamW</td>
+<td>Best balance of speed and robustness</td>
+</tr>
+<tr class="even">
+<td>CNNs (vision)</td>
+<td>SGD + momentum, or AdamW</td>
+<td>Better generalization, proven track record</td>
+</tr>
+<tr class="odd">
+<td>NLP / transformers</td>
+<td>AdamW</td>
+<td>Industry standard; decoupled weight decay</td>
+</tr>
+<tr class="even">
+<td>Sparse features</td>
+<td>AdaGrad / Adam</td>
+<td>Per-parameter rates for rare features</td>
+</tr>
+<tr class="odd">
+<td>RNNs / LSTMs</td>
+<td>RMSProp / Adam</td>
+<td>Handles non-stationary objectives</td>
+</tr>
+<tr class="even">
+<td>Fine-tuning a pretrained model</td>
+<td>AdamW, low LR</td>
+<td>Preserves learned features</td>
+</tr>
+<tr class="odd">
+<td>Convex problem</td>
+<td>SGD / Nesterov</td>
+<td>Strong convergence guarantees</td>
+</tr>
+<tr class="even">
+<td>Fast prototyping</td>
+<td>Adam</td>
+<td>Works with defaults</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Troubleshooting (symptom → cause → fix).</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Problem</th>
+<th>Possible causes</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Training loss not decreasing</td>
+<td>LR too small, poor initialization</td>
+<td>Increase LR, proper init</td>
+</tr>
+<tr class="even">
+<td>Loss exploding</td>
+<td>LR too large</td>
+<td>Decrease LR, gradient clipping</td>
+</tr>
+<tr class="odd">
+<td>Slow convergence</td>
+<td>Wrong optimizer / LR</td>
+<td>Try Adam/AdamW, add a schedule</td>
+</tr>
+<tr class="even">
+<td>Overfitting</td>
+<td>No regularization</td>
+<td>AdamW, dropout, augmentation</td>
+</tr>
+<tr class="odd">
+<td>Oscillating loss</td>
+<td>LR too high for vanilla GD</td>
+<td>Add momentum or reduce LR</td>
+</tr>
+<tr class="even">
+<td>Stuck in a local minimum</td>
+<td>No momentum</td>
+<td>Momentum-based optimizer</td>
+</tr>
+<tr class="odd">
+<td>Adam generalizes poorly</td>
+<td>L2/weight-decay interaction</td>
+<td>Switch to AdamW</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The 2025 defaults.</strong> Start with AdamW (<span class="math inline">\(\eta = 0.001\)</span>, weight decay <span class="math inline">\(0.01\)</span>). For the best generalization, SGD + momentum + a schedule (cosine annealing, <code>ReduceLROnPlateau</code>, warm-up). Clip gradients for RNNs/transformers (<code>torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)</code>) [recorded — torch API, not re-run]. Mixed precision for large models.</p>
+<p><strong>Basically, …</strong> “Prototype with AdamW and its defaults. Chase the last few percent with SGD + momentum + a cosine schedule. When something breaks, read the symptom table before touching the architecture — nine times out of ten it is the learning rate.”</p>
+</section>
+<section id="where-this-goes-next" class="level2">
+<h2 class="anchored" data-anchor-id="where-this-goes-next">43.13 Where this goes next</h2>
+<ol type="i">
+<li><p><strong>CNNs (Chapter 44).</strong> Same optimizers, new layers. The GenAI W4 material trains convolutions with the machinery of this chapter — nothing here changes, which is the point: the optimizer is layer-agnostic. (Batch normalization, used-but-unexplained in the Week 5 notebook, is the obvious companion topic when convolutions arrive.)</p></li>
+<li><p><strong>RNNs (Chapter 45).</strong> The exploding-gradient half of §42.8’s story: where this chapter scheduled learning rates, Chapter 45 will need gradient <em>clipping</em> — the notebook lists it as “essential for RNNs and Transformers.”</p></li>
+<li><p><strong>The debugging playbook rides along.</strong> §40.5(i): “debugging a neural net starts with the same playbook — shapes first, then scale (§37.3’s scaling sermon returns with a vengeance for SGD-trained nets), then shuffle, then the leak audit.” Add this chapter’s row to the playbook: when the loss misbehaves, check <span class="math inline">\(\eta\)</span> and the schedule before the architecture, and check the feature scales before <span class="math inline">\(\eta\)</span>.</p></li>
+<li><p><strong>Attention and generative models (Chapters 46–47).</strong> The notebook’s §43.12 defaults — AdamW as the transformer standard, warm-up among the scheduling options — carry over whole: Chapter 46 inherits them without re-deriving.</p></li>
+</ol>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li><strong>The ravine, by hand.</strong> <span class="math inline">\(f(x_1,x_2) = 0.1x_1^2 + 2x_2^2\)</span>, start <span class="math inline">\((-4, 1)\)</span>. (i) Write <span class="math inline">\(\nabla f\)</span> and show one GD step multiplies <span class="math inline">\(x_1\)</span> by <span class="math inline">\((1-0.2\eta)\)</span> and <span class="math inline">\(x_2\)</span> by <span class="math inline">\((1-4\eta)\)</span>. (ii) Compute step 1 by hand for <span class="math inline">\(\eta = 0.4\)</span> and for <span class="math inline">\(\eta = 0.6\)</span>. (iii) For what <span class="math inline">\(\eta\)</span> does the <span class="math inline">\(x_2\)</span> coordinate start diverging, and why is there no <span class="math inline">\(\eta\)</span> that is simultaneously fast in <span class="math inline">\(x_1\)</span> and stable in <span class="math inline">\(x_2\)</span>?</li>
+<li><strong>Velocity is a leaky average.</strong> (i) Expand <span class="math inline">\(v_t = \beta v_{t-1} + g_t\)</span> (<span class="math inline">\(v_{-1} = 0\)</span>) to prove <span class="math inline">\(v_t = \sum_{\tau=0}^{t}\beta^{t-\tau}g_\tau\)</span>. (ii) Prove the weight sum tends to <span class="math inline">\(1/(1-\beta)\)</span>, and evaluate it for <span class="math inline">\(\beta = 0.9\)</span>. (iii) If the gradient is a constant <span class="math inline">\(g\)</span> for many steps, what does the momentum update <span class="math inline">\(x_{t+1} = x_t - \eta v_t\)</span> converge to per step, in terms of <span class="math inline">\(\eta\)</span>, <span class="math inline">\(\beta\)</span>, <span class="math inline">\(g\)</span>?</li>
+<li><strong>Mini-batch noise.</strong> (i) In one line each: why is one sample’s gradient an unbiased estimate of the full gradient, and why does averaging <span class="math inline">\(b\)</span> of them divide the variance by <span class="math inline">\(b\)</span>? (ii) The deck says mini-batch is “the de facto standard” — give the computational reason (vectorization) and the statistical reason (your part (i)) in one line each. (iii) Name the downside the notebook lists for very large batches.</li>
+<li><strong>AdaGrad vs RMSProp, one step each.</strong> <span class="math inline">\(f\)</span> as in problem 1, at <span class="math inline">\((-4, 1)\)</span>, accumulators starting at <span class="math inline">\(0\)</span>, <span class="math inline">\(\epsilon = 0\)</span>. (i) One AdaGrad step with <span class="math inline">\(\eta = 2.0\)</span>: compute <span class="math inline">\(s_1\)</span>, the per-parameter effective LRs, and <span class="math inline">\(x_1\)</span>. (ii) One RMSProp step with <span class="math inline">\(\eta = 0.1\)</span>, <span class="math inline">\(\beta = 0.9\)</span>: compute <span class="math inline">\(E[g^2]_1\)</span> and <span class="math inline">\(x_1\)</span>. (iii) In two lines, say which direction each method stepped harder in, and why that is the preconditioner story.</li>
+<li><strong>Adam’s bias correction, with and without.</strong> Scalar, first step, <span class="math inline">\(g_1 = 0.5\)</span>, <span class="math inline">\(\beta_1 = 0.9\)</span>, <span class="math inline">\(\beta_2 = 0.999\)</span>. (i) Compute <span class="math inline">\(v_1, s_1, \hat v_1, \hat s_1\)</span> and the corrected step as a multiple of <span class="math inline">\(\eta\)</span>. (ii) Compute the <em>uncorrected</em> step <span class="math inline">\(\eta \cdot v_1/\sqrt{s_1}\)</span> as a multiple of <span class="math inline">\(\eta\)</span>. (iii) In one line, say what goes wrong in early training without the correction.</li>
+<li><strong>Weight decay = L2, until Adam.</strong> (i) Starting from <span class="math inline">\(J_\lambda(\theta) = J(\theta) + \tfrac{\lambda}{2}\lVert\theta\rVert^2\)</span>, derive the plain-SGD update and show it equals <span class="math inline">\((1-\eta\lambda)\theta_t - \eta g_t\)</span>. (ii) Explain in two lines why feeding this same <span class="math inline">\(J_\lambda\)</span> to Adam does <em>not</em> give every parameter the same <span class="math inline">\((1-\eta\lambda)\)</span> shrink. (iii) Write AdamW’s update and point at the term that restores the uniform shrink.</li>
+<li><strong>Read the schedules.</strong> <span class="math inline">\(\eta_0 = 0.2\)</span>, <span class="math inline">\(\lambda = 0.01\)</span>, <span class="math inline">\(k = 0.01\)</span>, <span class="math inline">\(T_{\max} = 1000\)</span>, <span class="math inline">\(\eta_{\min} = 0\)</span>, <span class="math inline">\(\eta_{\max} = 0.2\)</span>. (i) Compute <span class="math inline">\(\eta(500)\)</span> for exponential, inverse-time, and cosine schedules. (ii) Which schedule hits exactly <span class="math inline">\(0\)</span> at <span class="math inline">\(t = 1000\)</span>, and why? (iii) sklearn’s <code>'invscaling'</code> is <span class="math inline">\(\eta_0/t^{\text{power\_t}}\)</span> (§37.3) — how does it differ from the deck’s <span class="math inline">\(\eta_0/(1+kt)\)</span>, and does the difference matter for large <span class="math inline">\(t\)</span>?</li>
+<li><strong>Init scale through the <span class="math inline">\(\delta\)</span> recursion.</strong> A 4-hidden-layer sigmoid net; every hidden neuron starts with <span class="math inline">\(|z| \ge 3\)</span>. (i) Bound <span class="math inline">\(g'(z)\)</span> at <span class="math inline">\(|z| = 3\)</span> (<span class="math inline">\(\sigma(3) \approx 0.9526\)</span>; show <span class="math inline">\(g'(z) \le 0.0451\)</span> for <span class="math inline">\(|z| \ge 3\)</span>). (ii) Bound how much <span class="math inline">\(\lVert\delta^{[1]}\rVert\)</span> shrinks relative to <span class="math inline">\(\lVert\delta^{[4]}\rVert\)</span> across the three backward steps (weights <span class="math inline">\(\approx 1\)</span> in magnitude). (iii) In two lines, translate this into a rule about how large initial weights may be.</li>
+<li><strong>Scaling as preconditioning.</strong> Two features, <span class="math inline">\(x_1 \in [0,1]\)</span>, <span class="math inline">\(x_2 \in [0,1000]\)</span>, squared-error loss on a linear model. (i) In one line, say which direction of the loss valley is steep and why. (ii) Apply <code>StandardScaler</code> (<span class="math inline">\(x' = (x-\mu)/\sigma\)</span>): what are the new feature ranges, roughly? (iii) In two lines, connect this to the AdaGrad story of §43.5 — what work does scaling do that AdaGrad would otherwise have to?</li>
+<li><strong>Triage.</strong> (i) “Training loss not decreasing” — list the notebook’s two possible causes and two fixes. (ii) “Adam generalizes poorly on my fine-tune” — name the cause and the fix from the tables. (iii) You are fine-tuning a transformer: pick the optimizer, LR, and weight decay from §43.12, and give the one-line reason for each choice.</li>
+</ol>
+<hr>
+<p><em>Sources: GenAI Week 5 “Optimization Strategies” deck (Balaji Srinivasan, Ganapathy Krishnamurthi), 78 slides — optimization challenges (ravines, saddle points), convex primer (weight decay as penalty), GD algorithms (batch/SGD/mini-batch theorem, vectorization), LR scheduling (why + five schedules), momentum (theorem, leaky-average derivation, ill-conditioned demo <span class="math inline">\(\eta = 0.6\)</span>), AdaGrad/RMSProp/AdaDelta/Adam (theorems, intuitions, drawbacks); Gradient_Descent.ipynb — three GD implementations, batch-size experiment (<span class="math inline">\(1\)</span>–<span class="math inline">\(256\)</span>), LR sensitivity (<span class="math inline">\(0.0001\)</span>–<span class="math inline">\(0.1\)</span>), PyTorch DataLoader vocabulary, manual-vs-PyTorch comparison; Advanced_Optimization.ipynb — optimizer implementations (Vanilla GD, momentum, Nesterov, AdaGrad, RMSProp, AdaDelta, Adam, AdamW), Rosenbrock/Beale/neural-net demos, LR table, selection guide, pitfalls table, 2025 best practices (all torch/sklearn code [recorded], all numeric traces in §43.11 [verified-NumPy]); GenAI Week 5 notes PDF — same deck content; book chapters 10 (§10.5), 21, 28 (ridge <span class="math inline">\(\lambda\)</span>), 36 (§36.6), 37 (§37.3 scaling + invscaling), 40 (§40.5(i) playbook), 41 (§§41.7, 41.14(i), 41.15(ii)), 42 (§§42.4, 42.8(ii)).</em></p>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — The ravine, by hand
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math inline">\(f(x_1, x_2) = 0.1x_1^2 + 2x_2^2\)</span>, start <span class="math inline">\((-4, 1)\)</span>.</p>
+<p><strong>(i)</strong> <span class="math inline">\(\nabla f = (0.2x_1,\ 4x_2)\)</span>. One GD step <span class="math inline">\(x \gets x - \eta\nabla f\)</span>: <span class="math display">\[x_1 \gets x_1 - \eta(0.2x_1) = (1 - 0.2\eta)x_1, \qquad x_2 \gets x_2 - \eta(4x_2) = (1 - 4\eta)x_2.\]</span></p>
+<p><strong>(ii)</strong> <span class="math inline">\(\eta = 0.4\)</span>: <span class="math inline">\(x_1 = -4(1-0.08) = -3.68\)</span>, <span class="math inline">\(x_2 = 1(1-1.6) = -0.60\)</span>. <span class="math inline">\(\eta = 0.6\)</span>: <span class="math inline">\(x_1 = -4(1-0.12) = -3.52\)</span>, <span class="math inline">\(x_2 = 1(1-2.4) = -1.40\)</span>. Both match the §43.11 traces exactly [verified-NumPy].</p>
+<p><strong>(iii)</strong> The <span class="math inline">\(x_2\)</span> factor <span class="math inline">\(|1-4\eta| &gt; 1\)</span> when <span class="math inline">\(\eta &gt; 0.5\)</span> (or <span class="math inline">\(\eta &lt; 0\)</span>) — then <span class="math inline">\(|x_2|\)</span> grows every step: divergence. Fast progress in <span class="math inline">\(x_1\)</span> wants <span class="math inline">\((1-0.2\eta)\)</span> near <span class="math inline">\(0\)</span>, i.e.&nbsp;<span class="math inline">\(\eta \approx 5\)</span>; stability in <span class="math inline">\(x_2\)</span> wants <span class="math inline">\(\eta &lt; 0.5\)</span>. The two requirements don’t overlap — that non-overlap <em>is</em> ill-conditioning: no single <span class="math inline">\(\eta\)</span> is both fast-flat and stable-steep.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — Velocity is a leaky average
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> Base: <span class="math inline">\(v_0 = \beta v_{-1} + g_0 = g_0\)</span> (taking <span class="math inline">\(v_{-1} = 0\)</span>). Inductive step: assume <span class="math inline">\(v_{t-1} = \sum_{\tau=0}^{t-1}\beta^{t-1-\tau}g_\tau\)</span>; then <span class="math display">\[v_t = \beta\sum_{\tau=0}^{t-1}\beta^{t-1-\tau}g_\tau + g_t = \sum_{\tau=0}^{t}\beta^{t-\tau}g_\tau. \quad \blacksquare\]</span></p>
+<p><strong>(ii)</strong> The weights are a geometric series: <span class="math inline">\(\sum_{i=0}^{t}\beta^i \to \sum_{i=0}^{\infty}\beta^i = 1/(1-\beta)\)</span> for <span class="math inline">\(|\beta| &lt; 1\)</span>. For <span class="math inline">\(\beta = 0.9\)</span>: <span class="math inline">\(1/0.1 = 10\)</span> (partial sum to <span class="math inline">\(k=60\)</span> is <span class="math inline">\(9.984\)</span> [verified-NumPy]).</p>
+<p><strong>(iii)</strong> <span class="math inline">\(v_t \to g\sum_{i=0}^{\infty}\beta^i = g/(1-\beta)\)</span>, so the update tends to <span class="math inline">\(x_{t+1} - x_t \to -\eta g/(1-\beta)\)</span>: momentum with a constant gradient behaves like plain GD with effective learning rate <span class="math inline">\(\eta/(1-\beta)\)</span> — <span class="math inline">\(10\eta\)</span> for <span class="math inline">\(\beta = 0.9\)</span>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — Mini-batch noise
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> Sampling <span class="math inline">\(i\)</span> uniformly, <span class="math inline">\(\mathbb{E}[\nabla f_i] = \frac{1}{n}\sum_{i=1}^{n}\nabla f_i = \nabla f\)</span> — unbiased. For <span class="math inline">\(b\)</span> i.i.d. draws, <span class="math inline">\(\mathrm{Var}\big(\frac{1}{b}\sum \nabla f_i\big) = \frac{1}{b^2}\cdot b\,\mathrm{Var}(\nabla f_i) = \mathrm{Var}/b\)</span>.</p>
+<p><strong>(ii)</strong> Computational: blocks fit in cache and parallelize on CPUs/GPUs (the deck’s vectorization slide). Statistical: averaging divides gradient noise by <span class="math inline">\(b\)</span>.</p>
+<p><strong>(iii)</strong> “May converge to sharp minima (worse generalization)” and needs more memory (notebook’s batch-size table [recorded]).</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — AdaGrad vs RMSProp, one step each
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>At <span class="math inline">\((-4, 1)\)</span>: <span class="math inline">\(g = (0.2\cdot(-4),\ 4\cdot 1) = (-0.8,\ 4)\)</span>.</p>
+<p><strong>(i) AdaGrad, <span class="math inline">\(\eta = 2.0\)</span>.</strong> <span class="math inline">\(s_1 = (0.64,\ 16)\)</span>. Effective LRs: <span class="math inline">\(2/\sqrt{0.64} = 2/0.8 = 2.5\)</span>; <span class="math inline">\(2/\sqrt{16} = 2/4 = 0.5\)</span>. Update <span class="math inline">\(= -(2.5\cdot(-0.8),\ 0.5\cdot 4) = (2.0,\ -2.0)\)</span>. New <span class="math inline">\(x = (-4+2,\ 1-2) = (-2,\ -1)\)</span>.</p>
+<p><strong>(ii) RMSProp, <span class="math inline">\(\eta = 0.1\)</span>, <span class="math inline">\(\beta = 0.9\)</span>.</strong> <span class="math inline">\(E[g^2]_1 = 0.1\cdot(0.64,\ 16) = (0.064,\ 1.6)\)</span>. Effective LRs: <span class="math inline">\(0.1/\sqrt{0.064} \approx 0.3953\)</span>; <span class="math inline">\(0.1/\sqrt{1.6} \approx 0.0791\)</span>. Update <span class="math inline">\(= -(0.3953\cdot(-0.8),\ 0.0791\cdot 4) \approx (0.3162,\ -0.3162)\)</span>. New <span class="math inline">\(x \approx (-3.6838,\ 0.6838)\)</span>.</p>
+<p><strong>(iii)</strong> AdaGrad steps the flat direction <span class="math inline">\(5\times\)</span> harder per unit gradient (<span class="math inline">\(2.5\)</span> vs <span class="math inline">\(0.5\)</span>); RMSProp does the same (<span class="math inline">\(0.3953\)</span> vs <span class="math inline">\(0.0791\)</span>, also <span class="math inline">\(5\times\)</span>). That is the preconditioner story: each direction’s step is divided by its own typical gradient size, so the <span class="math inline">\(20\times\)</span> scale gap between the directions is cancelled instead of fought.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — Adam’s bias correction, with and without
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> <span class="math inline">\(v_1 = 0.1\cdot 0.5 = 0.05\)</span>; <span class="math inline">\(s_1 = 0.001\cdot 0.25 = 0.00025\)</span>. <span class="math inline">\(\hat v_1 = 0.05/0.1 = 0.5\)</span>; <span class="math inline">\(\hat s_1 = 0.00025/0.001 = 0.25\)</span>. Corrected step <span class="math inline">\(= \eta\cdot 0.5/\sqrt{0.25} = 1.0\,\eta\)</span>.</p>
+<p><strong>(ii)</strong> Uncorrected: <span class="math inline">\(\eta\cdot 0.05/\sqrt{0.00025} = \eta\cdot 0.05/0.015811 \approx 3.162\,\eta\)</span>.</p>
+<p><strong>(iii)</strong> Without correction the first steps are inflated by a factor (<span class="math inline">\(3.16\times\)</span> here) that comes from the zero initialization of the moments, not from the data — early training overshoots for no reason.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — Weight decay = L2, until Adam
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> <span class="math inline">\(\nabla J_\lambda = \nabla J + \lambda\theta = g_t + \lambda\theta_t\)</span>. Plain SGD: <span class="math display">\[\theta_{t+1} = \theta_t - \eta(g_t + \lambda\theta_t) = (1-\eta\lambda)\theta_t - \eta g_t. \quad \blacksquare\]</span></p>
+<p><strong>(ii)</strong> Adam divides the <em>entire</em> gradient — including the <span class="math inline">\(\lambda\theta_t\)</span> piece — by <span class="math inline">\(\sqrt{\hat s_t} + \epsilon\)</span>, which is different for every parameter. So the <span class="math inline">\(\lambda\theta_t\)</span> shrink is no longer the uniform <span class="math inline">\((1-\eta\lambda)\)</span> factor; heavily-updated parameters get less decay, rarely-updated ones more.</p>
+<p><strong>(iii)</strong> AdamW: <span class="math inline">\(\theta_{t+1} = \theta_t - \eta\big(\hat v_t/(\sqrt{\hat s_t}+\epsilon) + \lambda\theta_t\big) = (1-\eta\lambda)\theta_t - \eta\,\hat v_t/(\sqrt{\hat s_t}+\epsilon)\)</span>. The <span class="math inline">\(+\lambda\theta_t\)</span> sits <em>outside</em> the adaptive fraction — that term restores the uniform per-step shrink.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — Read the schedules
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> <span class="math inline">\(\eta(500)\)</span>: exponential <span class="math inline">\(= 0.2e^{-0.01\cdot 500} = 0.2e^{-5} \approx 0.2(0.006738) \approx 0.0013\)</span>. Inverse time <span class="math inline">\(= 0.2/(1+0.01\cdot 500) = 0.2/6 \approx 0.0333\)</span>. Cosine <span class="math inline">\(= 0 + \tfrac12(0.2)(1+\cos(\pi\cdot 500/1000)) = 0.1(1+\cos(\pi/2)) = 0.1(1+0) = 0.1\)</span>.</p>
+<p><strong>(ii)</strong> Cosine: at <span class="math inline">\(t = T_{\max}\)</span>, <span class="math inline">\(\cos(\pi) = -1\)</span>, so <span class="math inline">\(\eta = \eta_{\min} + 0 = 0\)</span> exactly — <span class="math inline">\(T_{\max}\)</span> is defined as the horizon where the curve lands on <span class="math inline">\(\eta_{\min}\)</span>.</p>
+<p><strong>(iii)</strong> sklearn: <span class="math inline">\(\eta_0/t^{p}\)</span>; deck: <span class="math inline">\(\eta_0/(1+kt)\)</span>. sklearn’s diverges at <span class="math inline">\(t = 0\)</span> (implementations index steps from <span class="math inline">\(t \ge 1\)</span> or equivalent); the deck’s equals <span class="math inline">\(\eta_0\)</span> at <span class="math inline">\(t = 0\)</span>. For large <span class="math inline">\(t\)</span> with <span class="math inline">\(p = k = 1\)</span>: <span class="math inline">\(\eta_0/t\)</span> vs <span class="math inline">\(\eta_0/(kt)\)</span> — the same <span class="math inline">\(1/t\)</span> tail up to the constant; the difference is negligible.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 8 — Init scale through the <span class="math inline">\(\delta\)</span> recursion
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> <span class="math inline">\(g'(z) = \sigma(z)(1-\sigma(z))\)</span>, symmetric in <span class="math inline">\(z\)</span>, maximal <span class="math inline">\(0.25\)</span> at <span class="math inline">\(z = 0\)</span>, decreasing as <span class="math inline">\(|z|\)</span> grows. At <span class="math inline">\(|z| = 3\)</span>: <span class="math inline">\(\sigma(3) \approx 0.9526\)</span>, so <span class="math inline">\(g'(3) \approx 0.9526\cdot 0.0474 \approx 0.0451\)</span>; for <span class="math inline">\(|z| \ge 3\)</span>, <span class="math inline">\(g'(z) \le 0.0451\)</span>.</p>
+<p><strong>(ii)</strong> <span class="math inline">\(\delta^{[l]} = ((W^{[l+1]})^T\delta^{[l+1]})\odot g'(z^{[l]})\)</span> (§42.4). With <span class="math inline">\(\lVert W\rVert \approx 1\)</span> and <span class="math inline">\(g' \le 0.0451\)</span> at each of the three backward steps from layer 4 to layer 1: <span class="math display">\[\lVert\delta^{[1]}\rVert \lesssim (0.0451)^3\,\lVert\delta^{[4]}\rVert \approx 9.2\times 10^{-5}\,\lVert\delta^{[4]}\rVert.\]</span> The error signal is crushed to <span class="math inline">\(\sim 10^{-4}\)</span> of itself before reaching the first layer — before training has even started.</p>
+<p><strong>(iii)</strong> Rule: initial weights must be small enough that pre-activations stay where the activation’s slope is healthy — <span class="math inline">\(|z| \gtrsim 3\)</span> everywhere in a sigmoid stack means the gradients are dead on arrival. (The course gives no formula for that scale — the criterion, not the constant, is the takeaway; see §43.10’s flagged gap.)</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 9 — Scaling as preconditioning
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> The <span class="math inline">\(x_2\)</span> direction: its gradients are <span class="math inline">\(\sim 1000\times\)</span> larger, so the loss surface is <span class="math inline">\(1000\times\)</span> steeper along <span class="math inline">\(x_2\)</span> — the same ravine as §43.1(i), built from units.</p>
+<p><strong>(ii)</strong> Roughly: both features end up mean <span class="math inline">\(0\)</span>, standard deviation <span class="math inline">\(1\)</span>, spanning about <span class="math inline">\([-3, 3]\)</span> each — the <span class="math inline">\(1000\times\)</span> gap is gone.</p>
+<p><strong>(iii)</strong> AdaGrad would discover the scale gap through its accumulators (<span class="math inline">\(s_t\)</span> growing <span class="math inline">\(10^6\times\)</span> faster for <span class="math inline">\(x_2\)</span>) and compensate per-parameter; <code>StandardScaler</code> removes the gap before the optimizer runs, so no compensation is needed. Scaling is the preconditioner you apply once to the data instead of every step to the gradients.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 10 — Triage
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> Causes: learning rate too small; poor initialization. Fixes: increase the LR; use proper initialization (notebook’s pitfalls table [recorded]).</p>
+<p><strong>(ii)</strong> Cause: Adam’s interaction with L2/weight decay — the decay goes through the adaptive scaling and isn’t true weight decay. Fix: switch to AdamW.</p>
+<p><strong>(iii)</strong> AdamW, LR <span class="math inline">\(0.001\)</span> (low, to preserve the pretrained features), weight decay <span class="math inline">\(0.001\)</span> (the notebook’s fine-tuning row: <span class="math inline">\(0.0001\)</span>–<span class="math inline">\(0.001\)</span>). AdamW is the recorded industry standard for transformers because its decoupled decay regularizes uniformly; the low LR keeps fine-tuning from destroying what pretraining learned.</p>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./42-backpropagation.html" class="pagination-link" aria-label="Chapter 42: Backpropagation, worked end-to-end">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./44-cnns.html" class="pagination-link" aria-label="Chapter 44: CNNs — convolution, pooling, transfer learning">
+        <span class="nav-page-text"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

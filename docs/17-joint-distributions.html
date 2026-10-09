@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>17. Joint distributions: two random variables – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./18-joint-continuous-distributions.html" rel="next">
+<link href="./16-continuous-random-variables.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./14-probability-basics.html">Part II — Probability and Statistics</a></li><li class="breadcrumb-item"><a href="./17-joint-distributions.html"><span class="chapter-title">17. Joint distributions: two random variables</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#two-random-variables-one-experiment" id="toc-two-random-variables-one-experiment" class="nav-link active" data-scroll-target="#two-random-variables-one-experiment">17.1 Two random variables, one experiment</a></li>
+  <li><a href="#the-joint-pmf" id="toc-the-joint-pmf" class="nav-link" data-scroll-target="#the-joint-pmf">17.2 The joint PMF</a></li>
+  <li><a href="#marginal-pmfs-summing-out" id="toc-marginal-pmfs-summing-out" class="nav-link" data-scroll-target="#marginal-pmfs-summing-out">17.3 Marginal PMFs: summing out</a></li>
+  <li><a href="#conditional-pmfs-and-the-multiplication-rule" id="toc-conditional-pmfs-and-the-multiplication-rule" class="nav-link" data-scroll-target="#conditional-pmfs-and-the-multiplication-rule">17.4 Conditional PMFs and the multiplication rule</a></li>
+  <li><a href="#independence-of-random-variables" id="toc-independence-of-random-variables" class="nav-link" data-scroll-target="#independence-of-random-variables">17.5 Independence of random variables</a></li>
+  <li><a href="#the-joint-cdf" id="toc-the-joint-cdf" class="nav-link" data-scroll-target="#the-joint-cdf">17.6 The joint CDF</a></li>
+  <li><a href="#expectation-of-functions-of-two-random-variables" id="toc-expectation-of-functions-of-two-random-variables" class="nav-link" data-scroll-target="#expectation-of-functions-of-two-random-variables">17.7 Expectation of functions of two random variables</a></li>
+  <li><a href="#the-distribution-of-gx-y-pooling-over-contours" id="toc-the-distribution-of-gx-y-pooling-over-contours" class="nav-link" data-scroll-target="#the-distribution-of-gx-y-pooling-over-contours">17.8 The distribution of <span class="math inline">\(g(X, Y)\)</span>: pooling over contours</a></li>
+  <li><a href="#covariance" id="toc-covariance" class="nav-link" data-scroll-target="#covariance">17.9 Covariance</a></li>
+  <li><a href="#the-correlation-coefficient" id="toc-the-correlation-coefficient" class="nav-link" data-scroll-target="#the-correlation-coefficient">17.10 The correlation coefficient</a></li>
+  <li><a href="#variance-of-a-sum" id="toc-variance-of-a-sum" class="nav-link" data-scroll-target="#variance-of-a-sum">17.11 Variance of a sum</a></li>
+  <li><a href="#the-joint-pdf" id="toc-the-joint-pdf" class="nav-link" data-scroll-target="#the-joint-pdf">17.12 The joint PDF</a></li>
+  <li><a href="#marginal-pdfs-integrating-out" id="toc-marginal-pdfs-integrating-out" class="nav-link" data-scroll-target="#marginal-pdfs-integrating-out">17.13 Marginal PDFs: integrating out</a></li>
+  <li><a href="#conditional-pdfs" id="toc-conditional-pdfs" class="nav-link" data-scroll-target="#conditional-pdfs">17.14 Conditional PDFs</a></li>
+  <li><a href="#why-this-matters-the-two-variable-toolkit" id="toc-why-this-matters-the-two-variable-toolkit" class="nav-link" data-scroll-target="#why-this-matters-the-two-variable-toolkit">17.15 Why this matters: the two-variable toolkit</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./14-probability-basics.html">Part II — Probability and Statistics</a></li><li class="breadcrumb-item"><a href="./17-joint-distributions.html"><span class="chapter-title">17. Joint distributions: two random variables</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">17. Joint distributions: two random variables</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Chapters 15–16 built the full toolkit for <em>one</em> random variable: PMF/PDF, CDF, expectation, variance, and the named distributions. Real experiments rarely carry just one quantity of interest, though: toss a coin and you may care about the outcome of <em>each</em> toss; pick a two-digit number and you may care about its units digit <em>and</em> its remainder mod <span class="math inline">\(4\)</span>. Chapter 17 puts two random variables together — the joint PMF/PDF, marginals, conditionals, independence, the joint CDF, <span class="math inline">\(E[g(X, Y)]\)</span>, covariance, correlation, and <span class="math inline">\(\mathrm{Var}(X + Y)\)</span>. This is also the object that §§15.8 and 16.5 leaned on: the proof of linearity of expectation for sums was deferred until the joint distribution existed. It exists now.</p>
+<section id="two-random-variables-one-experiment" class="level2">
+<h2 class="anchored" data-anchor-id="two-random-variables-one-experiment">17.1 Two random variables, one experiment</h2>
+<p><strong>Def.</strong> <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are <strong>jointly distributed</strong> (or “defined on the same probability space”) = <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are both functions of the outcome of the <em>same</em> experiment (§15.1).</p>
+<p>The Stats 2 deck’s three motivating examples:</p>
+<ol type="i">
+<li><strong>Toss a coin thrice.</strong> <span class="math inline">\(X_i = 1\)</span> if the <span class="math inline">\(i\)</span>-th toss is heads, <span class="math inline">\(0\)</span> if tails, <span class="math inline">\(i = 1, 2, 3\)</span>. Three random variables on one experiment; together <span class="math inline">\(X_1, X_2, X_3\)</span> completely describe the outcome.</li>
+<li><strong>A random 2-digit number, 00–99.</strong> <span class="math inline">\(X\)</span> = units digit, <span class="math inline">\(Y\)</span> = remainder on division by <span class="math inline">\(4\)</span>. Two random variables on one experiment. Here knowing <span class="math inline">\(X\)</span> tells you something about <span class="math inline">\(Y\)</span> (a number ending in <span class="math inline">\(1\)</span> cannot be a multiple of <span class="math inline">\(4\)</span>).</li>
+<li><strong>An IPL powerplay over.</strong> <span class="math inline">\(X\)</span> = runs scored, <span class="math inline">\(Y\)</span> = wickets fallen. A model that ignores the <span class="math inline">\(X\)</span>–<span class="math inline">\(Y\)</span> relationship is a bad model: expect larger <span class="math inline">\(X\)</span> when <span class="math inline">\(Y = 0\)</span> than when <span class="math inline">\(Y = 2\)</span>.</li>
+</ol>
+<p>So the new question is not “what does <span class="math inline">\(X\)</span> do?” or “what does <span class="math inline">\(Y\)</span> do?” but “what do <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> do <em>together</em>?” — and in particular, how one changes what you know about the other.</p>
+<p><strong>Note.</strong> Everything here is stated for two variables. The same ideas extend to <span class="math inline">\(n\)</span> (the deck’s §1.5), but this chapter stays at two; Chapter 19’s multivariate normal is the first place this book needs more.</p>
+<p><strong>Basically, …</strong> One random variable = one question about an experiment. Two random variables = two questions about the <em>same</em> experiment. The interesting part is the relationship between the two answers: sometimes they have nothing to do with each other (separate coin tosses), sometimes one pins down the other (units digit vs.&nbsp;remainder mod <span class="math inline">\(4\)</span>).</p>
+</section>
+<section id="the-joint-pmf" class="level2">
+<h2 class="anchored" data-anchor-id="the-joint-pmf">17.2 The joint PMF</h2>
+<p><strong>Def.</strong> Let <span class="math inline">\(X, Y\)</span> be discrete random variables on the same probability space, with ranges <span class="math inline">\(T_X, T_Y\)</span>. Their <strong>joint PMF</strong> is the function <span class="math inline">\(f_{X,Y}: T_X \times T_Y \to [0, 1]\)</span>, <span class="math display">\[\boxed{f_{X,Y}(x, y) = P(X = x \text{ and } Y = y) = P(X = x, Y = y)}, \qquad x \in T_X,\ y \in T_Y.\]</span></p>
+<p>Two properties, straight from the probability axioms (§14.6):</p>
+<ol type="i">
+<li>Every value satisfies <span class="math inline">\(0 \le f_{X,Y}(x, y) \le 1\)</span> — it <em>is</em> a probability.</li>
+<li>All the values sum to <span class="math inline">\(1\)</span>: <span class="math inline">\(\sum_{x \in T_X}\sum_{y \in T_Y} f_{X,Y}(x, y) = 1\)</span> — the <span class="math inline">\((x, y)\)</span> pairs partition the sample space (§14.5).</li>
+</ol>
+<p>The joint PMF is usually written as a <strong>table</strong> (or matrix): <span class="math inline">\(X\)</span>-values along one axis, <span class="math inline">\(Y\)</span>-values along the other, <span class="math inline">\(P(X = x, Y = y)\)</span> in cell <span class="math inline">\((x, y)\)</span>.</p>
+<p><strong>eg 1 (two coin tosses — the deck’s example).</strong> Toss a fair coin twice; <span class="math inline">\(X_i = 1\)</span> if toss <span class="math inline">\(i\)</span> is heads, <span class="math inline">\(0\)</span> if tails. The four outcomes are equally likely: <span class="math display">\[f_{X_1,X_2}(0,0) = P(X_1 = 0, X_2 = 0) = \tfrac{1}{2}\cdot\tfrac{1}{2} = \tfrac{1}{4},\]</span> and the same for the other three cells. The joint PMF table:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(X_1 \setminus X_2\)</span></th>
+<th><span class="math inline">\(0\)</span></th>
+<th><span class="math inline">\(1\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(1/4\)</span></td>
+<td><span class="math inline">\(1/4\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(1\)</span></td>
+<td><span class="math inline">\(1/4\)</span></td>
+<td><span class="math inline">\(1/4\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>eg 2 (random 2-digit number — the deck’s example).</strong> A number from <span class="math inline">\(00\)</span> to <span class="math inline">\(99\)</span> is equally likely. <span class="math inline">\(X\)</span> = units digit (<span class="math inline">\(0\)</span>–<span class="math inline">\(9\)</span>), <span class="math inline">\(Y\)</span> = number mod <span class="math inline">\(4\)</span> (<span class="math inline">\(0\)</span>–<span class="math inline">\(3\)</span>):</p>
+<ol type="i">
+<li><span class="math inline">\(f_{X,Y}(0, 0)\)</span>: units digit <span class="math inline">\(0\)</span> <em>and</em> divisible by <span class="math inline">\(4\)</span> — the numbers <span class="math inline">\(00, 20, 40, 60, 80\)</span>. That’s <span class="math inline">\(5\)</span> of <span class="math inline">\(100\)</span>: <span class="math inline">\(\boxed{1/20}\)</span>.</li>
+<li><span class="math inline">\(f_{X,Y}(1, 0)\)</span>: units digit <span class="math inline">\(1\)</span> <em>and</em> divisible by <span class="math inline">\(4\)</span> — impossible (odd numbers are never <span class="math inline">\(0 \bmod 4\)</span>): <span class="math inline">\(\boxed{0}\)</span>.</li>
+<li><span class="math inline">\(f_{X,Y}(4, 2)\)</span>: units digit <span class="math inline">\(4\)</span> <em>and</em> <span class="math inline">\(\equiv 2 \bmod 4\)</span> — the numbers <span class="math inline">\(14, 34, 54, 74, 94\)</span>: <span class="math inline">\(\boxed{1/20}\)</span>.</li>
+</ol>
+<p>Every cell is <span class="math inline">\(0\)</span> or <span class="math inline">\(1/20\)</span> — a checkerboard with holes where the <span class="math inline">\(X\)</span>–<span class="math inline">\(Y\)</span> combination is impossible (panel (a) of the figure). The <span class="math inline">\(100\)</span> cells sum to <span class="math inline">\(1\)</span> ✓.</p>
+<p><strong>Basically, …</strong> The joint PMF is the PMF of the <em>pair</em>: one probability for every <span class="math inline">\((x, y)\)</span> combination. The table form is the working tool — row for one variable, column for the other, joint probability in each cell, everything summing to <span class="math inline">\(1\)</span>.</p>
+</section>
+<section id="marginal-pmfs-summing-out" class="level2">
+<h2 class="anchored" data-anchor-id="marginal-pmfs-summing-out">17.3 Marginal PMFs: summing out</h2>
+<p><strong>Def.</strong> Given the joint PMF <span class="math inline">\(f_{X,Y}\)</span>, the PMFs of the individual variables <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are called the <strong>marginal PMFs</strong>. To get them, <strong>sum out</strong> the other variable: <span class="math display">\[\boxed{f_X(x) = \sum_{y \in T_Y} f_{X,Y}(x, y), \qquad f_Y(y) = \sum_{x \in T_X} f_{X,Y}(x, y).}\]</span></p>
+<p><em>Why it works</em> (the deck’s proof): fix <span class="math inline">\(x\)</span>; the events <span class="math inline">\(\{X = x, Y = y\}\)</span> as <span class="math inline">\(y\)</span> ranges over <span class="math inline">\(T_Y\)</span> are disjoint and their union is <span class="math inline">\(\{X = x\}\)</span> — a partition (§14.5). So by the law of total probability (§14.10), <span class="math display">\[P(X = x) = \sum_{y \in T_Y} P(X = x, Y = y).\]</span> This step is called <strong>marginalization</strong>. In the table: <span class="math inline">\(f_X\)</span> is the row totals, <span class="math inline">\(f_Y\)</span> the column totals.</p>
+<ol type="i">
+<li><strong>Joint → marginal is unique.</strong> One joint table gives exactly one pair of marginals.</li>
+<li><strong>Marginal ↛ joint.</strong> The reverse is <em>not</em> unique: many different joint tables can produce the same marginals. You cannot reconstruct the relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> from their individual distributions alone.</li>
+</ol>
+<p><strong>eg 3 (marginals from the table — the deck’s example).</strong> The joint PMF</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(X_1 \setminus X_2\)</span></th>
+<th><span class="math inline">\(0\)</span></th>
+<th><span class="math inline">\(1\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(0.05\)</span></td>
+<td><span class="math inline">\(0.35\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(1\)</span></td>
+<td><span class="math inline">\(0.25\)</span></td>
+<td><span class="math inline">\(0.35\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>is valid: all entries <span class="math inline">\(\ge 0\)</span>, sum <span class="math inline">\(= 1.00\)</span> ✓. Summing out: <span class="math display">\[f_{X_1}(0) = 0.05 + 0.25 = \boxed{0.30}, \qquad f_{X_1}(1) = 0.35 + 0.35 = \boxed{0.70},\]</span> <span class="math display">\[f_{X_2}(0) = 0.05 + 0.35 = \boxed{0.40}, \qquad f_{X_2}(1) = 0.25 + 0.35 = \boxed{0.60}.\]</span></p>
+<p><strong>eg 4 (same marginals, different joints — the deck’s example).</strong> For any <span class="math inline">\(x \in [0, 1/2]\)</span> the table</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(X_1 \setminus X_2\)</span></th>
+<th><span class="math inline">\(0\)</span></th>
+<th><span class="math inline">\(1\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(x\)</span></td>
+<td><span class="math inline">\(1/2 - x\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(1\)</span></td>
+<td><span class="math inline">\(1/2 - x\)</span></td>
+<td><span class="math inline">\(x\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>has marginals <span class="math inline">\(f_{X_1}(0) = f_{X_1}(1) = f_{X_2}(0) = f_{X_2}(1) = 1/2\)</span> — <em>regardless of <span class="math inline">\(x\)</span></em>. Infinitely many different joints, identical marginals. (The deck’s warning made concrete: seeing the marginals and writing down <span class="math inline">\(f_{X,Y}(x,y) = f_X(x)\,f_Y(y)\)</span> is only <em>one</em> of these possibilities — the <span class="math inline">\(x = 1/4\)</span> one — and it may be wrong. §17.5 names when it is right.)</p>
+<p><strong>Basically, …</strong> Marginal = “the <span class="math inline">\(X\)</span> story alone”, obtained by adding up each row (or column) of the joint table and forgetting the other variable. But the marginals don’t remember how the two variables interact — that information lives only in the full joint table.</p>
+</section>
+<section id="conditional-pmfs-and-the-multiplication-rule" class="level2">
+<h2 class="anchored" data-anchor-id="conditional-pmfs-and-the-multiplication-rule">17.4 Conditional PMFs and the multiplication rule</h2>
+<p><strong>Def.</strong> The <strong>conditional PMF of <span class="math inline">\(Y\)</span> given <span class="math inline">\(X = x\)</span></strong> is <span class="math display">\[\boxed{f_{Y \mid X = x}(y) = P(Y = y \mid X = x) = \frac{f_{X,Y}(x, y)}{f_X(x)}}, \qquad f_X(x) &gt; 0.\]</span> It is exactly the conditional probability of §14.9, with the joint PMF in the numerator.</p>
+<ol type="i">
+<li>For fixed <span class="math inline">\(x\)</span>, <span class="math inline">\(f_{Y \mid X = x}\)</span> is a genuine PMF: <span class="math inline">\(\sum_y f_{Y \mid X = x}(y) = \sum_y f_{X,Y}(x,y)/f_X(x) = f_X(x)/f_X(x) = 1\)</span>.</li>
+<li><strong>Conditioning can change the range.</strong> <span class="math inline">\((Y \mid X = x)\)</span> only takes values <span class="math inline">\(y\)</span> with <span class="math inline">\(f_{X,Y}(x, y) &gt; 0\)</span> — knowing <span class="math inline">\(X\)</span> can rule out <span class="math inline">\(Y\)</span>-values entirely (as eg 2’s zeros showed).</li>
+<li>Rearranging the definition gives the <strong>multiplication rule</strong>: <span class="math display">\[\boxed{f_{X,Y}(x, y) = f_X(x)\; f_{Y \mid X = x}(y)},\]</span> the joint built from a marginal and a conditional — the workhorse for <em>constructing</em> joint PMFs when the experiment has a natural order.</li>
+</ol>
+<p><strong>eg 5 (conditionals from the table — the deck’s example).</strong> Joint PMF on <span class="math inline">\(X \in \{0, 1, 2\}\)</span>, <span class="math inline">\(Y \in \{0, 1\}\)</span>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(X \setminus Y\)</span></th>
+<th><span class="math inline">\(0\)</span></th>
+<th><span class="math inline">\(1\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(1/4\)</span></td>
+<td><span class="math inline">\(1/8\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(1\)</span></td>
+<td><span class="math inline">\(1/8\)</span></td>
+<td><span class="math inline">\(1/8\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(2\)</span></td>
+<td><span class="math inline">\(1/8\)</span></td>
+<td><span class="math inline">\(1/4\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Marginals: <span class="math inline">\(f_X(0) = 3/8\)</span>, <span class="math inline">\(f_X(1) = 1/4\)</span>, <span class="math inline">\(f_X(2) = 3/8\)</span>; <span class="math inline">\(f_Y(0) = f_Y(1) = 1/2\)</span>. <span class="math display">\[f_{Y \mid X = 0}(0) = \frac{1/4}{3/8} = \boxed{\tfrac{2}{3}}, \qquad f_{Y \mid X = 0}(1) = \frac{1/8}{3/8} = \boxed{\tfrac{1}{3}} \quad \text{(sums to } 1 \text{ ✓)},\]</span> <span class="math display">\[f_{X \mid Y = 1}(0) = \frac{1/8}{1/2} = \boxed{\tfrac{1}{4}}.\]</span></p>
+<p><strong>eg 6 (die, then coins — the deck’s example).</strong> Throw a die; let <span class="math inline">\(X\)</span> be the number shown. Toss a coin that many times; let <span class="math inline">\(Y\)</span> be the number of heads. Then <span class="math display">\[f_X(t) = \tfrac{1}{6}\ (t = 1,\dots,6), \qquad (Y \mid X = t) \sim \mathrm{Binomial}(t, \tfrac{1}{2}) \quad \text{(§15.12)},\]</span> so <span class="math inline">\(f_{Y \mid X = t}(t') = \binom{t}{t'}(1/2)^t\)</span> for <span class="math inline">\(t' = 0, \dots, t\)</span>. By the multiplication rule: <span class="math display">\[\boxed{f_{X,Y}(t, t') = \tfrac{1}{6}\binom{t}{t'}\left(\tfrac{1}{2}\right)^t}, \qquad t = 1,\dots,6,\ t' = 0,\dots,t.\]</span> The conditional was easy to write down; the joint follows for free. This is the standard modeling pattern: specify what happens first, then what happens <em>given</em> it.</p>
+<p><strong>Basically, …</strong> Conditional PMF = “zoom in on one column (or row) of the joint table and re-normalize it to sum to <span class="math inline">\(1\)</span>”. The multiplication rule reads the same table backwards: joint = marginal <span class="math inline">\(\times\)</span> conditional. If your experiment has an order (die first, coins after), build the joint from the conditional — don’t try to write the joint directly.</p>
+</section>
+<section id="independence-of-random-variables" class="level2">
+<h2 class="anchored" data-anchor-id="independence-of-random-variables">17.5 Independence of random variables</h2>
+<p><strong>Def.</strong> <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are <strong>independent</strong> if their joint PMF factors into the product of the marginals, for <em>every</em> pair: <span class="math display">\[\boxed{f_{X,Y}(x, y) = f_X(x)\, f_Y(y) \quad \text{for all } x \in T_X,\ y \in T_Y.}\]</span></p>
+<p>This lifts §14.12 (independence of <em>events</em>) to random variables: <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are independent iff every event <span class="math inline">\(\{X = x\}\)</span> is independent of every event <span class="math inline">\(\{Y = y\}\)</span>.</p>
+<ol type="i">
+<li><strong>To prove independence:</strong> check the factorization at <em>all</em> <span class="math inline">\((x, y)\)</span>.</li>
+<li><strong>To disprove independence:</strong> <em>one</em> counterexample suffices: <span class="math inline">\(f_{X,Y}(x, y) \ne f_X(x)\,f_Y(y)\)</span> for a single pair.</li>
+<li><strong>The zero-cell shortcut</strong> (the deck’s special case): if <span class="math inline">\(f_{X,Y}(x, y) = 0\)</span> while <span class="math inline">\(f_X(x) &gt; 0\)</span> and <span class="math inline">\(f_Y(y) &gt; 0\)</span>, then <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are dependent — independence would require <span class="math inline">\(f_{X,Y}(x,y) = f_X(x)f_Y(y) &gt; 0\)</span>. Impossible combinations are the fastest dependence detector.</li>
+</ol>
+<p><strong>eg 7 (independence tests — the deck’s examples).</strong></p>
+<ol type="i">
+<li><strong>Two coin tosses (eg 1):</strong> <span class="math inline">\(f_{X_1,X_2}(0,0) = 1/4 = (1/2)(1/2) = f_{X_1}(0)f_{X_2}(0)\)</span>, and the same at all four cells. Independent ✓.</li>
+<li><strong>The 2-digit number (eg 2):</strong> <span class="math inline">\(f_{X,Y}(1, 0) = 0 \ne (1/10)(1/4) = 1/40 = f_X(1)f_Y(0)\)</span>. Not independent — one counterexample is enough (and it’s the zero-cell case).</li>
+<li><strong>The <span class="math inline">\(x\)</span>-family (eg 4):</strong> <span class="math inline">\(f_{X_1,X_2}(0,0) = x\)</span> vs.&nbsp;<span class="math inline">\(f_{X_1}(0)f_{X_2}(0) = 1/4\)</span>. Independent iff <span class="math inline">\(\boxed{x = 1/4}\)</span>; dependent for every other <span class="math inline">\(x \in [0, 1/2]\)</span>.</li>
+</ol>
+<p><strong>Basically, …</strong> Independent = “the table is the product of its margins” — knowing <span class="math inline">\(X\)</span> changes nothing about <span class="math inline">\(Y\)</span>’s distribution, so <span class="math inline">\(f_{Y \mid X = x}(y) = f_Y(y)\)</span> for every <span class="math inline">\(x\)</span>. To <em>break</em> independence you only need a single cell where the product rule fails; a <span class="math inline">\(0\)</span> in a cell whose row and column both have positive mass is the classic giveaway.</p>
+</section>
+<section id="the-joint-cdf" class="level2">
+<h2 class="anchored" data-anchor-id="the-joint-cdf">17.6 The joint CDF</h2>
+<p><strong>Def.</strong> The <strong>joint CDF</strong> of <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> is <span class="math display">\[\boxed{F_{X,Y}(x, y) = P(X \le x,\ Y \le y) = \sum_{u \le x}\sum_{v \le y} f_{X,Y}(u, v)}, \qquad x, y \in \mathbb{R}.\]</span></p>
+<p>Same definition as §15.5, in two dimensions: probability of the rectangle <span class="math inline">\((-\infty, x] \times (-\infty, y]\)</span>.</p>
+<ol type="i">
+<li>Limits: <span class="math inline">\(F_{X,Y} \to 0\)</span> when <span class="math inline">\(x \to -\infty\)</span> or <span class="math inline">\(y \to -\infty\)</span>; <span class="math inline">\(F_{X,Y} \to 1\)</span> when both <span class="math inline">\(x, y \to +\infty\)</span>.</li>
+<li>Non-decreasing in each argument separately.</li>
+<li><strong>Rectangle formula.</strong> For <span class="math inline">\(a &lt; b\)</span>, <span class="math inline">\(c &lt; d\)</span>: <span class="math display">\[\boxed{P(a &lt; X \le b,\ c &lt; Y \le d) = F_{X,Y}(b, d) - F_{X,Y}(a, d) - F_{X,Y}(b, c) + F_{X,Y}(a, c)}\]</span> (add the whole rectangle, subtract the two strips, add back the doubly-subtracted corner — inclusion–exclusion, §14.7).</li>
+<li>The marginal CDFs fall out: <span class="math inline">\(F_X(x) = \lim_{y \to +\infty} F_{X,Y}(x, y)\)</span> — push one bound to infinity and the other variable is summed out.</li>
+</ol>
+<p><strong>eg 8 (joint CDF of two coin tosses).</strong> With eg 1’s table (<span class="math inline">\(1/4\)</span> in each cell): <span class="math display">\[F_{X_1,X_2}(0, 0) = \tfrac{1}{4}, \quad F_{X_1,X_2}(0, 1) = \tfrac{1}{2}, \quad F_{X_1,X_2}(1, 0) = \tfrac{1}{2}, \quad F_{X_1,X_2}(1, 1) = 1.\]</span> Check the rectangle formula on <span class="math inline">\((0, 1] \times (0, 1]\)</span>: <span class="math display">\[P(X_1 = 1, X_2 = 1) = F(1,1) - F(0,1) - F(1,0) + F(0,0) = 1 - \tfrac{1}{2} - \tfrac{1}{2} + \tfrac{1}{4} = \boxed{\tfrac{1}{4}} \text{ ✓}.\]</span></p>
+<p><strong>Basically, …</strong> The joint CDF is the running total in two dimensions — “how much probability has piled up in the rectangle below-left of <span class="math inline">\((x, y)\)</span>”. Differences of CDF values give rectangle probabilities, exactly as <span class="math inline">\(F_X(b) - F_X(a)\)</span> gives interval probabilities (§15.5).</p>
+</section>
+<section id="expectation-of-functions-of-two-random-variables" class="level2">
+<h2 class="anchored" data-anchor-id="expectation-of-functions-of-two-random-variables">17.7 Expectation of functions of two random variables</h2>
+<p><strong>Def (two-variable LOTUS).</strong> For <span class="math inline">\(Z = g(X, Y)\)</span>, <span class="math display">\[\boxed{E[g(X, Y)] = \sum_{x \in T_X}\sum_{y \in T_Y} g(x, y)\, f_{X,Y}(x, y)}\]</span> — average the transformed values with the <em>joint</em> PMF, no need to find <span class="math inline">\(Z\)</span>’s distribution first. (The continuous version swaps the sums for a double integral; §17.12.)</p>
+<p>The headline application is the sum — and with the joint PMF in hand, linearity finally gets its proof:</p>
+<p><strong>Theorem (linearity for sums — the deferred proof from §§15.8, 16.5).</strong> <span class="math display">\[\boxed{E[X + Y] = E[X] + E[Y]},\]</span> no independence needed. <em>Proof:</em> <span class="math display">\[\begin{aligned}
+E[X + Y] &amp;= \sum_x\sum_y (x + y)\, f_{X,Y}(x, y) \\
+&amp;= \sum_x x\underbrace{\sum_y f_{X,Y}(x, y)}_{f_X(x)} + \sum_y y\underbrace{\sum_x f_{X,Y}(x, y)}_{f_Y(y)} \quad \text{(marginalization, §17.3)} \\
+&amp;= E[X] + E[Y]. \ \blacksquare
+\end{aligned}\]</span> The joint PMF was the missing piece all along: the double sum splits because marginalization collapses each inner sum.</p>
+<p><strong>Note (total expectation, two-variable form).</strong> Conditioning the other way: <span class="math inline">\(E[Y] = \sum_x E[Y \mid X = x]\, f_X(x)\)</span> — the law of total probability (§14.10) with expectations. This is how eg 6-style “two-stage” experiments are averaged.</p>
+<p><strong>eg 9 (<span class="math inline">\(E[XY]\)</span> on the table).</strong> On eg 5’s table: <span class="math display">\[E[XY] = \sum_x\sum_y xy\,f_{X,Y}(x,y) = 1\cdot 1\cdot\tfrac{1}{8} + 2\cdot 1\cdot\tfrac{1}{4} = \boxed{\tfrac{5}{8}},\]</span> the other terms being <span class="math inline">\(0\)</span>. (Watch for this number — §17.9 uses it.)</p>
+<p><strong>eg 10 (die, then coins — total expectation).</strong> With eg 6’s setup, <span class="math inline">\((Y \mid X = t) \sim \mathrm{Binomial}(t, 1/2)\)</span> has mean <span class="math inline">\(t/2\)</span> (§15.12), and <span class="math inline">\(E[X] = 7/2\)</span>: <span class="math display">\[E[Y] = \sum_{t=1}^{6} E[Y \mid X = t]\, f_X(t) = \sum_{t=1}^{6} \frac{t}{2}\cdot\frac{1}{6} = \frac{E[X]}{2} = \boxed{\frac{7}{4}}.\]</span> No joint table was ever written — the conditional did all the work.</p>
+<p><strong>Basically, …</strong> Two-variable LOTUS: to average any function of the pair, weight each cell’s <span class="math inline">\(g(x, y)\)</span> by the cell’s probability and add up. And linearity <span class="math inline">\(E[X+Y] = E[X] + E[Y]\)</span> is <em>not</em> a separate axiom — it falls out of the double sum the moment the joint PMF exists. Always true, independence irrelevant.</p>
+</section>
+<section id="the-distribution-of-gx-y-pooling-over-contours" class="level2">
+<h2 class="anchored" data-anchor-id="the-distribution-of-gx-y-pooling-over-contours">17.8 The distribution of <span class="math inline">\(g(X, Y)\)</span>: pooling over contours</h2>
+<p>LOTUS (§17.7) gives <em>expectations</em> without the distribution of <span class="math inline">\(Z = g(X, Y)\)</span>. When the distribution itself is needed, pool the joint PMF over the <strong>contours</strong> <span class="math inline">\(\{g(x, y) = z\}\)</span> (the deck’s §2.3.3): <span class="math display">\[\boxed{P(Z = z) = \sum_{(x,y):\, g(x,y) = z} f_{X,Y}(x, y)}\]</span> — add up every cell of the joint table that the function maps to <span class="math inline">\(z\)</span>. (One-variable version: §15.6.)</p>
+<p><strong>eg 11 (sum of two uniforms — the deck’s example).</strong> <span class="math inline">\(X, Y \stackrel{\text{i.i.d.}}{\sim} \mathrm{Uniform}\{0, 1, 2, 3\}\)</span>, <span class="math inline">\(Z = X + Y\)</span>. The joint cells are all <span class="math inline">\(1/16\)</span> (independence, §17.5). Counting the <span class="math inline">\((x, y)\)</span> with <span class="math inline">\(x + y = z\)</span>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(z\)</span></th>
+<th><span class="math inline">\(0\)</span></th>
+<th><span class="math inline">\(1\)</span></th>
+<th><span class="math inline">\(2\)</span></th>
+<th><span class="math inline">\(3\)</span></th>
+<th><span class="math inline">\(4\)</span></th>
+<th><span class="math inline">\(5\)</span></th>
+<th><span class="math inline">\(6\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(f_Z(z)\)</span></td>
+<td><span class="math inline">\(1/16\)</span></td>
+<td><span class="math inline">\(2/16\)</span></td>
+<td><span class="math inline">\(3/16\)</span></td>
+<td><span class="math inline">\(4/16\)</span></td>
+<td><span class="math inline">\(3/16\)</span></td>
+<td><span class="math inline">\(2/16\)</span></td>
+<td><span class="math inline">\(1/16\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note:</strong> the sum of two uniforms is <em>not</em> uniform — it peaks in the middle (the deck’s “Try it yourself” warning). Pooling over the anti-diagonal contours makes the triangular shape obvious: more <span class="math inline">\((x, y)\)</span> pairs land on middle sums.</p>
+<p><strong>Basically, …</strong> The distribution of <span class="math inline">\(g(X, Y)\)</span> = walk the joint table, and for each value <span class="math inline">\(z\)</span>, collect all cells where <span class="math inline">\(g\)</span> equals <span class="math inline">\(z\)</span>. Sums, maxima, minima all work this way; the contours tell you which cells to pool. (The continuous version — convolution integrals and max/min via CDFs — is Chapter 18.)</p>
+</section>
+<section id="covariance" class="level2">
+<h2 class="anchored" data-anchor-id="covariance">17.9 Covariance</h2>
+<p><strong>Def.</strong> The <strong>covariance</strong> of <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> is <span class="math display">\[\boxed{\mathrm{Cov}(X, Y) = E\big[(X - E[X])(Y - E[Y])\big]},\]</span> the average product of the <em>deviations</em> from the means. Expanding (linearity, §17.7): <span class="math display">\[\boxed{\mathrm{Cov}(X, Y) = E[XY] - E[X]\,E[Y]}.\]</span></p>
+<ol type="i">
+<li>Sign: <span class="math inline">\(\mathrm{Cov} &gt; 0\)</span> means <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> tend to be above (or below) their means <em>together</em>; <span class="math inline">\(\mathrm{Cov} &lt; 0\)</span> means one is above when the other is below; <span class="math inline">\(\mathrm{Cov} = 0\)</span> means no <em>linear</em> co-movement — <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are <strong>uncorrelated</strong>.</li>
+<li><span class="math inline">\(\mathrm{Cov}(X, X) = \mathrm{Var}(X)\)</span> — variance is self-covariance (§15.9).</li>
+<li>Symmetric: <span class="math inline">\(\mathrm{Cov}(X, Y) = \mathrm{Cov}(Y, X)\)</span>.</li>
+<li><span class="math inline">\(\mathrm{Cov}(aX + b,\ cY + d) = ac\,\mathrm{Cov}(X, Y)\)</span> — shifts don’t matter, scales multiply.</li>
+</ol>
+<p><strong>Theorem (independence ⇒ uncorrelated).</strong> If <span class="math inline">\(X, Y\)</span> are independent, <span class="math inline">\(\mathrm{Cov}(X, Y) = 0\)</span>. <em>Proof:</em> <span class="math inline">\(E[XY] = \sum_x\sum_y xy\,f_X(x)f_Y(y) = \big(\sum_x x f_X(x)\big)\big(\sum_y y f_Y(y)\big) = E[X]E[Y]\)</span>. ∎</p>
+<p><strong>Warning — the converse is false.</strong> Zero covariance does <em>not</em> imply independence. Covariance only sees <em>linear</em> co-movement; a perfect <em>nonlinear</em> relationship can have <span class="math inline">\(\mathrm{Cov} = 0\)</span>.</p>
+<p><strong>eg 12 (covariance on the table).</strong> On eg 5’s table: <span class="math inline">\(E[X] = 1\)</span>, <span class="math inline">\(E[Y] = 1/2\)</span> (check: <span class="math inline">\(0\cdot\tfrac{3}{8} + 1\cdot\tfrac{1}{4} + 2\cdot\tfrac{3}{8} = 1\)</span>), and <span class="math inline">\(E[XY] = 5/8\)</span> (eg 9): <span class="math display">\[\mathrm{Cov}(X, Y) = \tfrac{5}{8} - 1\cdot\tfrac{1}{2} = \boxed{\tfrac{1}{8}} &gt; 0\]</span> — positive: larger <span class="math inline">\(X\)</span> comes with larger <span class="math inline">\(Y\)</span> (look at the table: the mass sits on <span class="math inline">\((0,0)\)</span> and <span class="math inline">\((2,1)\)</span>).</p>
+<p><strong>eg 13 (uncorrelated but dependent — a hand-checked counterexample).</strong> Let <span class="math inline">\(X \in \{-1, 0, 1\}\)</span> with probability <span class="math inline">\(1/3\)</span> each, and <span class="math inline">\(Y = X^2\)</span>. Then <span class="math inline">\(E[X] = 0\)</span>, <span class="math inline">\(E[Y] = (1 + 0 + 1)/3 = 2/3\)</span>, and <span class="math display">\[E[XY] = E[X^3] = \frac{(-1)^3 + 0^3 + 1^3}{3} = 0,\]</span> so <span class="math inline">\(\mathrm{Cov}(X, Y) = 0 - 0\cdot\tfrac{2}{3} = \boxed{0}\)</span> — uncorrelated. But <span class="math inline">\(Y\)</span> is <em>determined by</em> <span class="math inline">\(X\)</span>: e.g.&nbsp;<span class="math inline">\(f_{X,Y}(0, 1) = 0 \ne (1/3)(2/3) = f_X(0)f_Y(1)\)</span> (zero-cell test, §17.5). Dependence with exactly zero covariance — panel (d) of the figure.</p>
+<p><strong>Basically, …</strong> Covariance = “do the two variables move together?” measured as the average product of their deviations. Independent variables always have covariance <span class="math inline">\(0\)</span> — but <span class="math inline">\(0\)</span> covariance doesn’t mean independent: it only rules out <em>linear</em> relationships. A <span class="math inline">\(U\)</span>-shaped relationship (like <span class="math inline">\(Y = X^2\)</span>) slips through with covariance exactly <span class="math inline">\(0\)</span>.</p>
+</section>
+<section id="the-correlation-coefficient" class="level2">
+<h2 class="anchored" data-anchor-id="the-correlation-coefficient">17.10 The correlation coefficient</h2>
+<p><strong>Def.</strong> The <strong>correlation coefficient</strong> (Pearson) of <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> is <span class="math display">\[\boxed{\rho(X, Y) = \frac{\mathrm{Cov}(X, Y)}{\sigma_X\, \sigma_Y}}, \qquad \sigma_X, \sigma_Y &gt; 0.\]</span></p>
+<p>Covariance has awkward units (units of <span class="math inline">\(X \times\)</span> units of <span class="math inline">\(Y\)</span>); dividing by the standard deviations (§15.9) makes <span class="math inline">\(\rho\)</span> <strong>unitless</strong> and comparable across problems.</p>
+<p><strong>Theorem.</strong> <span class="math inline">\(\boxed{-1 \le \rho(X, Y) \le 1}\)</span>. <em>Proof:</em> standardize <span class="math inline">\(U = (X - E[X])/\sigma_X\)</span>, <span class="math inline">\(V = (Y - E[Y])/\sigma_Y\)</span>, so <span class="math inline">\(\mathrm{Var}(U) = \mathrm{Var}(V) = 1\)</span> and <span class="math inline">\(\mathrm{Cov}(U, V) = \rho\)</span>. Then <span class="math inline">\(0 \le \mathrm{Var}(U + V) = 2 + 2\rho\)</span> gives <span class="math inline">\(\rho \ge -1\)</span>, and <span class="math inline">\(0 \le \mathrm{Var}(U - V) = 2 - 2\rho\)</span> gives <span class="math inline">\(\rho \le 1\)</span>. ∎</p>
+<ol type="i">
+<li><span class="math inline">\(|\rho| = 1\)</span> iff <span class="math inline">\(Y\)</span> is an exact affine function of <span class="math inline">\(X\)</span> (<span class="math inline">\(Y = aX + b\)</span>): <span class="math inline">\(+1\)</span> for <span class="math inline">\(a &gt; 0\)</span>, <span class="math inline">\(-1\)</span> for <span class="math inline">\(a &lt; 0\)</span>.</li>
+<li><span class="math inline">\(\rho = 0\)</span> = uncorrelated — same warning as §17.9: linear silence, not independence.</li>
+</ol>
+<p><strong>eg 14.</strong> On eg 5’s table: <span class="math inline">\(\mathrm{Cov}(X, Y) = 1/8\)</span> (eg 12). <span class="math inline">\(E[X^2] = 0 + 1\cdot\tfrac{1}{4} + 4\cdot\tfrac{3}{8} = 7/4\)</span>, so <span class="math inline">\(\mathrm{Var}(X) = 7/4 - 1 = 3/4\)</span>; <span class="math inline">\(\mathrm{Var}(Y) = 1/2 - 1/4 = 1/4\)</span> (Bernoulli-ish, §15.11). Hence <span class="math display">\[\rho(X, Y) = \frac{1/8}{\sqrt{3/4}\,\sqrt{1/4}} = \frac{1/8}{\sqrt{3}/4} = \boxed{\frac{1}{2\sqrt{3}} \approx 0.29},\]</span> a mild positive linear relationship — consistent with the table’s diagonal lean.</p>
+<p><strong>Basically, …</strong> Correlation = covariance rescaled to live in <span class="math inline">\([-1, 1]\)</span>: <span class="math inline">\(+1\)</span> = perfect lockstep, <span class="math inline">\(-1\)</span> = perfect mirror, <span class="math inline">\(0\)</span> = no linear relationship. It inherits covariance’s blind spot for nonlinear patterns, so never read it as “dependence strength” in general.</p>
+</section>
+<section id="variance-of-a-sum" class="level2">
+<h2 class="anchored" data-anchor-id="variance-of-a-sum">17.11 Variance of a sum</h2>
+<p><strong>Theorem.</strong> For any two random variables, <span class="math display">\[\boxed{\mathrm{Var}(X + Y) = \mathrm{Var}(X) + \mathrm{Var}(Y) + 2\,\mathrm{Cov}(X, Y)}.\]</span> <em>Proof:</em> write <span class="math inline">\(\mu_X = E[X]\)</span>, <span class="math inline">\(\mu_Y = E[Y]\)</span> and expand: <span class="math display">\[\mathrm{Var}(X + Y) = E\big[((X - \mu_X) + (Y - \mu_Y))^2\big] = E[(X-\mu_X)^2] + E[(Y-\mu_Y)^2] + 2E[(X-\mu_X)(Y-\mu_Y)].\]</span> ∎</p>
+<p><strong>Corollary (the deferred case from §16.6).</strong> If <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are <em>independent</em>, <span class="math inline">\(\mathrm{Cov}(X, Y) = 0\)</span> (§17.9), so <span class="math display">\[\boxed{\mathrm{Var}(X + Y) = \mathrm{Var}(X) + \mathrm{Var}(Y)} \qquad \text{(independent } X, Y\text{)}.\]</span> Variances add for independent variables — the fact §16.6 promised.</p>
+<ol type="i">
+<li>Positively correlated variables: the sum is <em>more</em> variable than the parts (<span class="math inline">\(\mathrm{Var}(X+Y) &gt; \mathrm{Var}(X) + \mathrm{Var}(Y)\)</span>); negatively correlated: less.</li>
+<li>The general affine form: <span class="math inline">\(\mathrm{Var}(aX + bY) = a^2\mathrm{Var}(X) + b^2\mathrm{Var}(Y) + 2ab\,\mathrm{Cov}(X, Y)\)</span> — note <span class="math inline">\(\mathrm{Var}(X - Y) = \mathrm{Var}(X) + \mathrm{Var}(Y) - 2\,\mathrm{Cov}(X, Y)\)</span>.</li>
+<li>Sanity check on §16.6’s counterexample: <span class="math inline">\(Y = -X\)</span> gives <span class="math inline">\(\mathrm{Cov}(X, Y) = -\mathrm{Var}(X)\)</span>, so <span class="math inline">\(\mathrm{Var}(X + Y) = \mathrm{Var}(X) + \mathrm{Var}(X) - 2\mathrm{Var}(X) = 0\)</span> ✓ — exactly what §16.6 computed directly.</li>
+</ol>
+<p><strong>eg 15 (variances add — checked two ways).</strong> <span class="math inline">\(X_1, X_2\)</span> = two fair-coin indicators (§17.2, eg 1): each <span class="math inline">\(\mathrm{Var} = 1/4\)</span> (§15.11). Independence gives <span class="math inline">\(\mathrm{Var}(X_1 + X_2) = 1/4 + 1/4 = \boxed{1/2}\)</span>. Direct check: <span class="math inline">\(Z = X_1 + X_2\)</span> takes <span class="math inline">\(0, 1, 2\)</span> with probabilities <span class="math inline">\(1/4, 1/2, 1/4\)</span>; <span class="math inline">\(E[Z] = 1\)</span>, <span class="math inline">\(E[Z^2] = 0 + 1/2 + 1 = 3/2\)</span>, so <span class="math inline">\(\mathrm{Var}(Z) = 3/2 - 1 = 1/2\)</span> ✓.</p>
+<p><strong>Basically, …</strong> Variance of a sum = sum of variances <em>plus twice the covariance</em>. The covariance term is the correction for the two variables moving together. For independent variables there’s no co-movement to correct for, and variances simply add — the cleanest case, and the one §16.6 was waiting for.</p>
+</section>
+<section id="the-joint-pdf" class="level2">
+<h2 class="anchored" data-anchor-id="the-joint-pdf">17.12 The joint PDF</h2>
+<p><strong>Def.</strong> For two <em>continuous</em> random variables <span class="math inline">\(X, Y\)</span> (MLF Week 11, Part 4), the <strong>joint PDF</strong> is the function <span class="math inline">\(f_{X,Y}\)</span> such that for any region <span class="math inline">\(A \subseteq \mathbb{R}^2\)</span>, <span class="math display">\[\boxed{P\big((X, Y) \in A\big) = \iint_A f_{X,Y}(x, y)\, dx\, dy}.\]</span></p>
+<ol type="i">
+<li><span class="math inline">\(f_{X,Y}(x, y) \ge 0\)</span> everywhere — it is probability divided by a positive area <span class="math inline">\(dx\,dy\)</span>.</li>
+<li><span class="math inline">\(\iint_{\mathbb{R}^2} f_{X,Y} = 1\)</span> — the discrete “table sums to <span class="math inline">\(1\)</span>” (§17.2) with sums replaced by integrals, as in §16.3.</li>
+<li><span class="math inline">\(f_{X,Y}\)</span> is a <em>density</em> (probability per unit area), not a probability — it can exceed <span class="math inline">\(1\)</span>, exactly as in §16.3.</li>
+</ol>
+<p><strong>eg 16 (the MLF Week 11 tutorial’s problem).</strong> <span class="math display">\[f_{X,Y}(x, y) = \begin{cases} c\,xy &amp; 0 &lt; x &lt; 2,\ 1 &lt; y &lt; 3, \\ 0 &amp; \text{otherwise}. \end{cases}\]</span> Find <span class="math inline">\(c\)</span>: integrate to <span class="math inline">\(1\)</span> over the rectangle. <span class="math display">\[1 = \int_0^2\!\!\int_1^3 cxy\, dy\, dx = c\left[\frac{x^2}{2}\right]_0^2 \left[\frac{y^2}{2}\right]_1^3 = c\cdot 2\cdot\frac{9 - 1}{2} = 8c,\]</span> so <span class="math inline">\(\boxed{c = 1/8}\)</span>. (The rectangle factors into separate <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> integrals — a hint of independence, confirmed in §17.13.)</p>
+<p><strong>eg 17 (rectangle probability — the tutorial’s question).</strong> <span class="math display">\[P(0 &lt; X &lt; 1,\ 1 &lt; Y &lt; 2) = \int_0^1\!\!\int_1^2 \frac{xy}{8}\, dy\, dx = \frac{1}{8}\cdot\frac{1}{2}\cdot\frac{4 - 1}{2} = \boxed{\frac{3}{32}}.\]</span></p>
+<p><strong>eg 18 (a non-rectangular region — the tutorial’s question).</strong> <span class="math inline">\(P(X + Y &lt; 3)\)</span>: the region is <span class="math inline">\(0 &lt; x &lt; 2\)</span>, <span class="math inline">\(1 &lt; y &lt; \min(3, 3 - x) = 3 - x\)</span> (panel (b) of the figure): <span class="math display">\[\begin{aligned}
+P(X + Y &lt; 3) &amp;= \int_0^2\!\!\int_1^{\,3-x} \frac{xy}{8}\, dy\, dx = \frac{1}{8}\int_0^2 x\left[\frac{(3-x)^2 - 1}{2}\right]dx \\
+&amp;= \frac{1}{16}\int_0^2 \big(x^3 - 6x^2 + 8x\big)\, dx = \frac{1}{16}\left[\frac{x^4}{4} - 2x^3 + 4x^2\right]_0^2 \\
+&amp;= \frac{1}{16}(4 - 16 + 16) = \boxed{\frac{1}{4}}.
+\end{aligned}\]</span></p>
+<p><strong>Basically, …</strong> The joint PDF is the continuous joint table: probability is <em>volume</em> under the joint density surface over a region. Rectangles are easy (separate the integrals); slanted regions need the limits written carefully — draw the region first, then integrate.</p>
+</section>
+<section id="marginal-pdfs-integrating-out" class="level2">
+<h2 class="anchored" data-anchor-id="marginal-pdfs-integrating-out">17.13 Marginal PDFs: integrating out</h2>
+<p><strong>Def.</strong> The <strong>marginal PDFs</strong> come from <strong>integrating out</strong> the other variable (MLF Week 11, Part 4): <span class="math display">\[\boxed{f_X(x) = \int_{-\infty}^{\infty} f_{X,Y}(x, y)\, dy, \qquad f_Y(y) = \int_{-\infty}^{\infty} f_{X,Y}(x, y)\, dx}.\]</span></p>
+<p>Same idea as §17.3 — “row totals and column totals” — with sums replaced by integrals (§16.3’s lift). Marginal CDFs follow: <span class="math inline">\(F_X(x) = \int_{-\infty}^{x} f_X(u)\, du\)</span> (§16.4).</p>
+<p><strong>eg 19 (marginals of the tutorial density).</strong> For <span class="math inline">\(f_{X,Y}(x, y) = xy/8\)</span> on <span class="math inline">\((0,2)\times(1,3)\)</span>: <span class="math display">\[f_X(x) = \int_1^3 \frac{xy}{8}\, dy = \frac{x}{8}\left[\frac{y^2}{2}\right]_1^3 = \boxed{\frac{x}{2}}, \qquad 0 &lt; x &lt; 2,\]</span> <span class="math display">\[f_Y(y) = \int_0^2 \frac{xy}{8}\, dx = \frac{y}{8}\left[\frac{x^2}{2}\right]_0^2 = \boxed{\frac{y}{4}}, \qquad 1 &lt; y &lt; 3.\]</span> Check they are valid densities: <span class="math inline">\(\int_0^2 (x/2)\,dx = 1\)</span> ✓, <span class="math inline">\(\int_1^3 (y/4)\,dy = (9-1)/8 = 1\)</span> ✓. Then <span class="math display">\[F_X(1) = \int_0^1 \frac{x}{2}\,dx = \boxed{\tfrac{1}{4}}, \qquad F_Y(2) = \int_1^2 \frac{y}{4}\,dy = \boxed{\tfrac{3}{8}}\]</span> — the tutorial’s answers, confirmed.</p>
+<p><strong>Note (independence in the continuous case).</strong> Here <span class="math inline">\(f_{X,Y}(x, y) = xy/8 = (x/2)(y/4) = f_X(x)\,f_Y(y)\)</span> for every <span class="math inline">\((x, y)\)</span>, on a <em>rectangular</em> region — so <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are independent (§17.5’s rule, with integrals). Two ingredients, both needed: the density factors <em>and</em> the support is a product set. A factorizing density on a non-rectangular support is <em>not</em> independent.</p>
+<p><strong>Basically, …</strong> Integrating out = the continuous version of summing out. Slice the joint density along one axis, add up the slice, and you get the other variable’s density alone. And the independence test is unchanged: does the joint equal the product of the marginals — with a rectangular support?</p>
+</section>
+<section id="conditional-pdfs" class="level2">
+<h2 class="anchored" data-anchor-id="conditional-pdfs">17.14 Conditional PDFs</h2>
+<p><strong>Def.</strong> The <strong>conditional PDF of <span class="math inline">\(Y\)</span> given <span class="math inline">\(X = x\)</span></strong> is (MLF Week 11, Part 2/4) <span class="math display">\[\boxed{f_{Y \mid X = x}(y) = \frac{f_{X,Y}(x, y)}{f_X(x)}}, \qquad f_X(x) &gt; 0,\]</span> and the <strong>multiplication rule</strong> holds as in §17.4: <span class="math display">\[\boxed{f_{X,Y}(x, y) = f_X(x)\; f_{Y \mid X = x}(y)}.\]</span></p>
+<p>For fixed <span class="math inline">\(x\)</span>, <span class="math inline">\(f_{Y \mid X = x}\)</span> is a genuine density (<span class="math inline">\(\int f_{Y \mid X = x} = 1\)</span> — the joint integrates to <span class="math inline">\(f_X(x)\)</span>). If <span class="math inline">\(X, Y\)</span> are independent, <span class="math inline">\(f_{Y \mid X = x}(y) = f_Y(y)\)</span>: conditioning changes nothing.</p>
+<p><strong>eg 20 (conditional on a triangular region — hand-checked).</strong> Let <span class="math inline">\(X \sim \mathrm{Uniform}[0, 1]\)</span> and, given <span class="math inline">\(X = x\)</span>, let <span class="math inline">\((Y \mid X = x) \sim \mathrm{Uniform}[0, x]\)</span>: <span class="math display">\[f_{X,Y}(x, y) = f_X(x)\,f_{Y \mid X = x}(y) = 1\cdot\frac{1}{x} = \frac{1}{x}, \qquad 0 \le y \le x \le 1.\]</span> Validity: <span class="math inline">\(\int_0^1\!\!\int_0^x (1/x)\,dy\,dx = \int_0^1 1\,dx = 1\)</span> ✓. The marginal of <span class="math inline">\(Y\)</span>: <span class="math display">\[f_Y(y) = \int_y^1 \frac{1}{x}\,dx = \boxed{-\ln y}, \qquad 0 &lt; y &lt; 1 \quad \left(\int_0^1 -\ln y\,dy = 1 \text{ ✓}\right).\]</span> And the reverse conditional, on <span class="math inline">\(y \le x \le 1\)</span>: <span class="math display">\[f_{X \mid Y = y}(x) = \frac{1/x}{-\ln y} = \boxed{\frac{1}{-x\,\ln y}}; \qquad \int_y^1 \frac{dx}{-x\ln y} = \frac{[\ln x]_y^1}{-\ln y} = 1 \text{ ✓}.\]</span> Knowing <span class="math inline">\(Y = y\)</span> rules out <span class="math inline">\(X &lt; y\)</span> — conditioning reshapes the range, exactly as in §17.4 — and the density is <em>not</em> uniform on <span class="math inline">\([y, 1]\)</span>: smaller <span class="math inline">\(x\)</span> (tighter <span class="math inline">\(Y\)</span>-intervals) get more weight.</p>
+<p><strong>Basically, …</strong> Conditional PDF = slice the joint density at <span class="math inline">\(X = x\)</span> and re-normalize the slice to area <span class="math inline">\(1\)</span>. Same table-column idea as §17.4, now with integrals. And the multiplication rule is the modeling workhorse in the continuous world too: specify the marginal of the first variable, then the conditional of the second, and the joint follows.</p>
+</section>
+<section id="why-this-matters-the-two-variable-toolkit" class="level2">
+<h2 class="anchored" data-anchor-id="why-this-matters-the-two-variable-toolkit">17.15 Why this matters: the two-variable toolkit</h2>
+<ol type="i">
+<li><strong>The toolkit is complete.</strong> From one joint object you get everything: marginals by summing/integrating out (§§17.3, 17.13), conditionals by dividing (§§17.4, 17.14), the joint back by multiplying (§§17.4, 17.14), independence by the factorization test (§17.5). Two slogans to keep: <em>joint → marginal is unique; marginal ↛ joint</em>.</li>
+<li><strong>Linearity, proved.</strong> <span class="math inline">\(E[X + Y] = E[X] + E[Y]\)</span> (§17.7) needed the joint PMF — that was the debt §§15.8 and 16.5 carried, now paid. And covariance/correlation (§§17.9–17.10) is the first <em>measure of relationship</em> between variables: the feature-correlation matrices and PCA of later chapters are this idea at scale.</li>
+<li><strong>What comes next.</strong> Chapter 18 goes deeper on joint <em>continuous</em> distributions (sums via convolution, min/max via CDFs, transformed variables); Chapter 19 builds the multivariate normal, where the covariance becomes a matrix; Chapter 20 estimates these joint models from data (MLE); Chapter 21’s central limit theorem explains why sums of many variables are normal — with <span class="math inline">\(\mathrm{Var}\)</span> adding (§17.11) all the way there.</li>
+</ol>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li>(Joint PMF validity and marginals) The joint PMF of <span class="math inline">\(X_1, X_2 \in \{0, 1\}\)</span> is: <span class="math inline">\(f(0,0) = 0.05\)</span>, <span class="math inline">\(f(0,1) = 0.35\)</span>, <span class="math inline">\(f(1,0) = 0.25\)</span>, <span class="math inline">\(f(1,1) = 0.35\)</span>. (a) Verify it is a valid joint PMF. (b) Find the marginal PMFs <span class="math inline">\(f_{X_1}\)</span> and <span class="math inline">\(f_{X_2}\)</span>. (c) Are <span class="math inline">\(X_1\)</span> and <span class="math inline">\(X_2\)</span> independent?</li>
+<li>(The 2-digit number) <span class="math inline">\(X\)</span> = units digit, <span class="math inline">\(Y\)</span> = remainder mod <span class="math inline">\(4\)</span> of a random 2-digit number (eg 2). (a) Find <span class="math inline">\(f_{X,Y}(2, 3)\)</span>. (b) Are <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> independent? Give a one-cell justification.</li>
+<li>(Conditional PMFs) On eg 5’s table (<span class="math inline">\(X \in \{0,1,2\}\)</span>, <span class="math inline">\(Y \in \{0,1\}\)</span>): (a) find <span class="math inline">\(f_{Y \mid X = 1}\)</span> and check it sums to <span class="math inline">\(1\)</span>; (b) find <span class="math inline">\(f_{X \mid Y = 0}(2)\)</span>.</li>
+<li>(Joint CDF) For two fair-coin indicators <span class="math inline">\(X_1, X_2\)</span> (eg 1): (a) write <span class="math inline">\(F_{X_1,X_2}\)</span> at the four points <span class="math inline">\((0,0), (0,1), (1,0), (1,1)\)</span>; (b) use the rectangle formula to recover <span class="math inline">\(P(X_1 = 1, X_2 = 1)\)</span>.</li>
+<li>(<span class="math inline">\(E[g(X,Y)]\)</span> and covariance) Die-then-coins (eg 6/eg 10): <span class="math inline">\(X\)</span> = die outcome, <span class="math inline">\(Y\)</span> = heads in <span class="math inline">\(X\)</span> tosses. (a) Find <span class="math inline">\(E[Y]\)</span>. (b) Find <span class="math inline">\(\mathrm{Cov}(X, Y)\)</span>.</li>
+<li>(Covariance and correlation) On eg 5’s table: compute <span class="math inline">\(\mathrm{Cov}(X, Y)\)</span> and <span class="math inline">\(\rho(X, Y)\)</span>.</li>
+<li>(Variance of sums) <span class="math inline">\(X, Y \stackrel{\text{i.i.d.}}{\sim} \mathrm{Bernoulli}(p)\)</span>. Find <span class="math inline">\(\mathrm{Var}(X + Y)\)</span> and <span class="math inline">\(\mathrm{Var}(X - Y)\)</span>.</li>
+<li>(Joint PDF) <span class="math inline">\(f_{X,Y}(x, y) = cxy\)</span> for <span class="math inline">\(0 &lt; x &lt; 2\)</span>, <span class="math inline">\(1 &lt; y &lt; 3\)</span> (<span class="math inline">\(0\)</span> otherwise). (a) Find <span class="math inline">\(c\)</span>. (b) Find <span class="math inline">\(P(X &lt; 1,\ Y &gt; 2)\)</span>.</li>
+<li>(Marginal and conditional PDFs) For the density in Problem 8: (a) find <span class="math inline">\(f_X\)</span> and <span class="math inline">\(f_Y\)</span>; (b) find <span class="math inline">\(f_{Y \mid X = x}\)</span>; (c) are <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> independent?</li>
+<li>(IPL powerplay) <span class="math inline">\(Y \in \{0, 1, 2\}\)</span> = wickets in an over, with <span class="math inline">\(f_Y(0) = 13/16\)</span>, <span class="math inline">\(f_Y(1) = 1/8\)</span>, <span class="math inline">\(f_Y(2) = 1/16\)</span>. Given <span class="math inline">\(Y = y\)</span>, <span class="math inline">\(X\)</span> = runs is uniform on <span class="math inline">\(\{6,\dots,12\}\)</span>, <span class="math inline">\(\{2,\dots,8\}\)</span>, <span class="math inline">\(\{0,\dots,6\}\)</span> respectively. Find <span class="math inline">\(E[X]\)</span>.</li>
+</ol>
+<!-- Original matplotlib illustration drawn for this chapter (not reused from any URL) -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/17-joint-distributions.png" class="img-fluid figure-img"></p>
+<figcaption>(a) Joint PMF of the 2-digit number (eg 2): checkerboard of 1/20 cells with impossible (x,y) holes — X and Y are not independent. (b) Joint PDF xy/8 on (0,2)x(1,3) with the line x+y=3 (eg 18’s region). (c) Positively correlated scatter: Cov&gt;0. (d) Uncorrelated but dependent: Y=X^2 (eg 13), Cov=0 yet Y is a function of X.</figcaption>
+</figure>
+</div>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — Joint PMF validity and marginals)** The table:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>1. (Joint PMF validity and marginals)</strong> The table:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(X_1 \setminus X_2\)</span></th>
+<th><span class="math inline">\(0\)</span></th>
+<th><span class="math inline">\(1\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(0.05\)</span></td>
+<td><span class="math inline">\(0.35\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(1\)</span></td>
+<td><span class="math inline">\(0.25\)</span></td>
+<td><span class="math inline">\(0.35\)</span></td>
+</tr>
+</tbody>
+</table>
+<ol type="a">
+<li><p>Validity: every entry is in <span class="math inline">\([0, 1]\)</span> ✓; the entries sum to <span class="math inline">\(0.05 + 0.35 + 0.25 + 0.35 = 1.00\)</span> ✓ (§17.2). Valid joint PMF.</p></li>
+<li><p>Summing out (§17.3): <span class="math display">\[f_{X_1}(0) = 0.05 + 0.25 = \boxed{0.30}, \qquad f_{X_1}(1) = 0.35 + 0.35 = \boxed{0.70},\]</span> <span class="math display">\[f_{X_2}(0) = 0.05 + 0.35 = \boxed{0.40}, \qquad f_{X_2}(1) = 0.25 + 0.35 = \boxed{0.60}.\]</span></p></li>
+<li><p>Independence test (§17.5): <span class="math inline">\(f_{X_1,X_2}(0, 0) = 0.05\)</span> but <span class="math inline">\(f_{X_1}(0)\,f_{X_2}(0) = 0.30 \times 0.40 = 0.12\)</span>. Since <span class="math inline">\(0.05 \ne 0.12\)</span>, <span class="math inline">\(\boxed{\text{not independent}}\)</span> — one failing cell is enough.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — The 2-digit number)** (a) <span class="math inline">\(f_{X,Y}(2, 3)\)</span>: units digit <span class="math inline">\(2\)</span> and number <span class="math inline">\(\equiv 3 \bmod 4\)</span>. A number ending in <span class="math inline">\(2\)</span> is even, hence <span class="math inline">\(0\)</span> or <span class="math inline">\(2 \bmod 4\)</span> — never <span class="math inline">\(3\)</span>. The count is <span class="math inline">\(0\)</span>: <span class="math inline">\(\boxed{f_{X,Y}(2,3) = 0}\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>2. (The 2-digit number)</strong> (a) <span class="math inline">\(f_{X,Y}(2, 3)\)</span>: units digit <span class="math inline">\(2\)</span> and number <span class="math inline">\(\equiv 3 \bmod 4\)</span>. A number ending in <span class="math inline">\(2\)</span> is even, hence <span class="math inline">\(0\)</span> or <span class="math inline">\(2 \bmod 4\)</span> — never <span class="math inline">\(3\)</span>. The count is <span class="math inline">\(0\)</span>: <span class="math inline">\(\boxed{f_{X,Y}(2,3) = 0}\)</span>.</p>
+<ol start="2" type="a">
+<li>One-cell justification (§17.5, zero-cell shortcut): <span class="math inline">\(f_{X,Y}(2, 3) = 0\)</span> while <span class="math inline">\(f_X(2) = 1/10 &gt; 0\)</span> and <span class="math inline">\(f_Y(3) = 1/4 &gt; 0\)</span>, so <span class="math inline">\(f_{X,Y}(2,3) \ne f_X(2)\,f_Y(3) = 1/40\)</span>. <span class="math inline">\(\boxed{\text{Not independent}.}\)</span></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — Conditional PMFs)** On eg 5’s table, <span class="math inline">\(f_X(1) = 1/4\)</span>, <span class="math inline">\(f_Y(0) = 1/2\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>3. (Conditional PMFs)</strong> On eg 5’s table, <span class="math inline">\(f_X(1) = 1/4\)</span>, <span class="math inline">\(f_Y(0) = 1/2\)</span>.</p>
+<ol type="a">
+<li><p><span class="math inline">\(f_{Y \mid X = 1}(0) = \dfrac{f_{X,Y}(1,0)}{f_X(1)} = \dfrac{1/8}{1/4} = \boxed{\tfrac{1}{2}}\)</span>, <span class="math inline">\(f_{Y \mid X = 1}(1) = \dfrac{1/8}{1/4} = \boxed{\tfrac{1}{2}}\)</span>. Check: <span class="math inline">\(1/2 + 1/2 = 1\)</span> ✓ — a genuine PMF (§17.4).</p></li>
+<li><p><span class="math inline">\(f_{X \mid Y = 0}(2) = \dfrac{f_{X,Y}(2,0)}{f_Y(0)} = \dfrac{1/8}{1/2} = \boxed{\tfrac{1}{4}}\)</span>.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — Joint CDF)** (a) With <span class="math inline">\(1/4\)</span> in every cell of eg 1’s table:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>4. (Joint CDF)</strong> (a) With <span class="math inline">\(1/4\)</span> in every cell of eg 1’s table: <span class="math display">\[\boxed{F_{X_1,X_2}(0,0) = 1/4}, \quad \boxed{F_{X_1,X_2}(0,1) = 1/2}, \quad \boxed{F_{X_1,X_2}(1,0) = 1/2}, \quad \boxed{F_{X_1,X_2}(1,1) = 1}.\]</span></p>
+<ol start="2" type="a">
+<li>Rectangle formula (§17.6) on <span class="math inline">\((0,1] \times (0,1]\)</span>: <span class="math display">\[P(X_1 = 1, X_2 = 1) = F(1,1) - F(0,1) - F(1,0) + F(0,0) = 1 - \tfrac{1}{2} - \tfrac{1}{2} + \tfrac{1}{4} = \boxed{\tfrac{1}{4}},\]</span> matching the table ✓.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — <span class="math inline">\(E[g(X,Y)]\)</span> and covariance)** (a) By total expectation (§17.7): <span class="math inline">\(E[Y \mid X = t] = t/2\)</span> for <span class="math inline">\((Y \mid X = t) \sim \mathrm{Binomial}(t, 1/2)\)</span>, and <span class="math inline">\(E[X] = 7/2\)</span>, so
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>5. (<span class="math inline">\(E[g(X,Y)]\)</span> and covariance)</strong> (a) By total expectation (§17.7): <span class="math inline">\(E[Y \mid X = t] = t/2\)</span> for <span class="math inline">\((Y \mid X = t) \sim \mathrm{Binomial}(t, 1/2)\)</span>, and <span class="math inline">\(E[X] = 7/2\)</span>, so <span class="math display">\[E[Y] = \sum_{t=1}^{6} \frac{t}{2}\cdot\frac{1}{6} = \frac{1}{2}E[X] = \boxed{\frac{7}{4}}.\]</span></p>
+<ol start="2" type="a">
+<li><span class="math inline">\(E[XY] = E_X\big[X\cdot E[Y \mid X]\big] = E[X^2]/2\)</span>. For a fair die, <span class="math inline">\(E[X^2] = (1 + 4 + 9 + 16 + 25 + 36)/6 = 91/6\)</span>, so <span class="math inline">\(E[XY] = 91/12\)</span>. Then <span class="math display">\[\mathrm{Cov}(X, Y) = E[XY] - E[X]E[Y] = \frac{91}{12} - \frac{7}{2}\cdot\frac{7}{4} = \frac{91}{12} - \frac{49}{8} = \frac{182 - 147}{24} = \boxed{\frac{35}{24} \approx 1.46},\]</span> positive — more die pips mean more tosses, hence more heads, as expected.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — Covariance and correlation)** On eg 5’s table (§17.9–17.10):
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>6. (Covariance and correlation)</strong> On eg 5’s table (§17.9–17.10): <span class="math display">\[E[X] = 0\cdot\tfrac{3}{8} + 1\cdot\tfrac{1}{4} + 2\cdot\tfrac{3}{8} = 1, \qquad E[Y] = \tfrac{1}{2},\]</span> <span class="math display">\[E[XY] = 1\cdot 1\cdot\tfrac{1}{8} + 2\cdot 1\cdot\tfrac{1}{4} = \tfrac{5}{8},\]</span> <span class="math display">\[\boxed{\mathrm{Cov}(X, Y) = \tfrac{5}{8} - 1\cdot\tfrac{1}{2} = \tfrac{1}{8}}.\]</span> For <span class="math inline">\(\rho\)</span>: <span class="math inline">\(E[X^2] = 0 + 1\cdot\tfrac{1}{4} + 4\cdot\tfrac{3}{8} = 7/4\)</span>, so <span class="math inline">\(\mathrm{Var}(X) = 7/4 - 1 = 3/4\)</span>; <span class="math inline">\(E[Y^2] = 1/2\)</span>, so <span class="math inline">\(\mathrm{Var}(Y) = 1/2 - 1/4 = 1/4\)</span>. Hence <span class="math display">\[\boxed{\rho(X, Y) = \frac{1/8}{\sqrt{3/4}\,\sqrt{1/4}} = \frac{1/8}{\sqrt{3}/4} = \frac{1}{2\sqrt{3}} = \frac{\sqrt{3}}{6} \approx 0.29}.\]</span></p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — Variance of sums)** <span class="math inline">\(X, Y \stackrel{\text{i.i.d.}}{\sim} \mathrm{Bernoulli}(p)\)</span> are independent, so <span class="math inline">\(\mathrm{Cov}(X, Y) = 0\)</span> (§17.9) and <span class="math inline">\(\mathrm{Var}(X) = \mathrm{Var}(Y) = p(1-p)\)</span> (§15.11). By §17.11:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>7. (Variance of sums)</strong> <span class="math inline">\(X, Y \stackrel{\text{i.i.d.}}{\sim} \mathrm{Bernoulli}(p)\)</span> are independent, so <span class="math inline">\(\mathrm{Cov}(X, Y) = 0\)</span> (§17.9) and <span class="math inline">\(\mathrm{Var}(X) = \mathrm{Var}(Y) = p(1-p)\)</span> (§15.11). By §17.11: <span class="math display">\[\boxed{\mathrm{Var}(X + Y) = p(1-p) + p(1-p) + 0 = 2p(1-p)},\]</span> <span class="math display">\[\boxed{\mathrm{Var}(X - Y) = p(1-p) + p(1-p) - 0 = 2p(1-p)}.\]</span> Note the sign of the sum doesn’t matter for independent variables — both give <span class="math inline">\(2p(1-p)\)</span>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 8 — Joint PDF)** (a) <span class="math inline">\(1 = \int_0^2\!\!\int_1^3 cxy\,dy\,dx = c\cdot 2\cdot\frac{9-1}{2} = 8c\)</span>, so <span class="math inline">\(\boxed{c = 1/8}\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>8. (Joint PDF)</strong> (a) <span class="math inline">\(1 = \int_0^2\!\!\int_1^3 cxy\,dy\,dx = c\cdot 2\cdot\frac{9-1}{2} = 8c\)</span>, so <span class="math inline">\(\boxed{c = 1/8}\)</span>.</p>
+<ol start="2" type="a">
+<li><span class="math inline">\(P(X &lt; 1,\ Y &gt; 2) = \int_0^1\!\!\int_2^3 \dfrac{xy}{8}\,dy\,dx = \dfrac{1}{8}\cdot\left[\dfrac{x^2}{2}\right]_0^1\!\cdot\left[\dfrac{y^2}{2}\right]_2^3 = \dfrac{1}{8}\cdot\dfrac{1}{2}\cdot\dfrac{9-4}{2} = \boxed{\dfrac{5}{32}}.\)</span></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 9 — Marginal and conditional PDFs)** (a) Integrating out (§17.13):
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>9. (Marginal and conditional PDFs)</strong> (a) Integrating out (§17.13): <span class="math display">\[f_X(x) = \int_1^3 \frac{xy}{8}\,dy = \frac{x}{8}\cdot\frac{9-1}{2} = \boxed{\frac{x}{2}}, \quad 0 &lt; x &lt; 2,\]</span> <span class="math display">\[f_Y(y) = \int_0^2 \frac{xy}{8}\,dx = \frac{y}{8}\cdot\frac{4}{2} = \boxed{\frac{y}{4}}, \quad 1 &lt; y &lt; 3.\]</span></p>
+<ol start="2" type="a">
+<li><p><span class="math inline">\(f_{Y \mid X = x}(y) = \dfrac{f_{X,Y}(x,y)}{f_X(x)} = \dfrac{xy/8}{x/2} = \boxed{\dfrac{y}{4}}, \quad 1 &lt; y &lt; 3\)</span> (§17.14).</p></li>
+<li><p><span class="math inline">\(\boxed{\text{Yes, independent}}\)</span>: <span class="math inline">\(f_{Y \mid X = x}(y) = y/4 = f_Y(y)\)</span> for every <span class="math inline">\(x\)</span>, equivalently <span class="math inline">\(f_{X,Y}(x,y) = (x/2)(y/4) = f_X(x)f_Y(y)\)</span>, on the rectangular support <span class="math inline">\((0,2)\times(1,3)\)</span> (§17.13’s Note).</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 10 — IPL powerplay)** By total expectation (§17.7’s Note): <span class="math inline">\(E[X \mid Y = 0] = (6 + 12)/2 = 9\)</span>, <span class="math inline">\(E[X \mid Y = 1] = (2 + 8)/2 = 5\)</span>, <span class="math inline">\(E[X \mid Y = 2] = (0 + 6)/2 = 3\)</span> (means of discrete uniforms, §15.10). So
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>10. (IPL powerplay)</strong> By total expectation (§17.7’s Note): <span class="math inline">\(E[X \mid Y = 0] = (6 + 12)/2 = 9\)</span>, <span class="math inline">\(E[X \mid Y = 1] = (2 + 8)/2 = 5\)</span>, <span class="math inline">\(E[X \mid Y = 2] = (0 + 6)/2 = 3\)</span> (means of discrete uniforms, §15.10). So <span class="math display">\[E[X] = \tfrac{13}{16}\cdot 9 + \tfrac{1}{8}\cdot 5 + \tfrac{1}{16}\cdot 3 = \frac{117 + 10 + 3}{16} = \boxed{\frac{65}{8} = 8.125}.\]</span> Sanity check: most overs have <span class="math inline">\(0\)</span> wickets (<span class="math inline">\(13/16\)</span>) with mean <span class="math inline">\(9\)</span> runs, so <span class="math inline">\(E[X]\)</span> should sit just below <span class="math inline">\(9\)</span> — <span class="math inline">\(8.125\)</span> ✓.</p>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./16-continuous-random-variables.html" class="pagination-link" aria-label="16. Continuous random variables">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">16. Continuous random variables</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./18-joint-continuous-distributions.html" class="pagination-link" aria-label="18. Joint continuous distributions">
+        <span class="nav-page-text"><span class="chapter-title">18. Joint continuous distributions</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

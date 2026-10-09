@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>13. Duality and KKT conditions – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./14-probability-basics.html" rel="next">
+<link href="./12-convex-sets-functions.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./01-sets-functions-preliminaries.html">Part I — Mathematical Foundations</a></li><li class="breadcrumb-item"><a href="./13-duality-kkt.html"><span class="chapter-title">13. Duality and KKT conditions</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#the-problem-revisited" id="toc-the-problem-revisited" class="nav-link active" data-scroll-target="#the-problem-revisited">13.1 The problem, revisited</a></li>
+  <li><a href="#the-lagrangian-made-formal" id="toc-the-lagrangian-made-formal" class="nav-link" data-scroll-target="#the-lagrangian-made-formal">13.2 The Lagrangian, made formal</a></li>
+  <li><a href="#the-primal-problem-maxing-over-lambda-is-the-constraint" id="toc-the-primal-problem-maxing-over-lambda-is-the-constraint" class="nav-link" data-scroll-target="#the-primal-problem-maxing-over-lambda-is-the-constraint">13.3 The primal problem: maxing over <span class="math inline">\(\lambda\)</span> <em>is</em> the constraint</a></li>
+  <li><a href="#swap-the-min-and-the-max-the-dual-function-and-the-dual-problem" id="toc-swap-the-min-and-the-max-the-dual-function-and-the-dual-problem" class="nav-link" data-scroll-target="#swap-the-min-and-the-max-the-dual-function-and-the-dual-problem">13.4 Swap the min and the max: the dual function and the dual problem</a></li>
+  <li><a href="#the-dual-function-is-concave-the-lecturers-exercise" id="toc-the-dual-function-is-concave-the-lecturers-exercise" class="nav-link" data-scroll-target="#the-dual-function-is-concave-the-lecturers-exercise">13.5 The dual function is concave (the lecturer’s exercise)</a></li>
+  <li><a href="#weak-duality-the-dual-always-under-promises-dstar-le-pstar" id="toc-weak-duality-the-dual-always-under-promises-dstar-le-pstar" class="nav-link" data-scroll-target="#weak-duality-the-dual-always-under-promises-dstar-le-pstar">13.6 Weak duality: the dual always under-promises (<span class="math inline">\(d^\star \le p^\star\)</span>)</a></li>
+  <li><a href="#strong-duality-for-convex-problems-the-gap-closes-dstar-pstar" id="toc-strong-duality-for-convex-problems-the-gap-closes-dstar-pstar" class="nav-link" data-scroll-target="#strong-duality-for-convex-problems-the-gap-closes-dstar-pstar">13.7 Strong duality: for convex problems the gap closes (<span class="math inline">\(d^\star = p^\star\)</span>)</a></li>
+  <li><a href="#the-kkt-conditions-derived-from-strong-duality" id="toc-the-kkt-conditions-derived-from-strong-duality" class="nav-link" data-scroll-target="#the-kkt-conditions-derived-from-strong-duality">13.8 The KKT conditions, derived from strong duality</a></li>
+  <li><a href="#the-general-kkt-form-m-inequalities-n-equalities" id="toc-the-general-kkt-form-m-inequalities-n-equalities" class="nav-link" data-scroll-target="#the-general-kkt-form-m-inequalities-n-equalities">13.9 The general KKT form: <span class="math inline">\(m\)</span> inequalities, <span class="math inline">\(n\)</span> equalities</a></li>
+  <li><a href="#necessary-sufficient-and-the-certificate" id="toc-necessary-sufficient-and-the-certificate" class="nav-link" data-scroll-target="#necessary-sufficient-and-the-certificate">13.10 Necessary, sufficient — and the certificate</a></li>
+  <li><a href="#reading-complementary-slackness-active-vs.-inactive" id="toc-reading-complementary-slackness-active-vs.-inactive" class="nav-link" data-scroll-target="#reading-complementary-slackness-active-vs.-inactive">13.11 Reading complementary slackness: active vs.&nbsp;inactive</a></li>
+  <li><a href="#eg-1-the-tutorials-lp-solved-end-to-end-with-kkt-full-steps" id="toc-eg-1-the-tutorials-lp-solved-end-to-end-with-kkt-full-steps" class="nav-link" data-scroll-target="#eg-1-the-tutorials-lp-solved-end-to-end-with-kkt-full-steps">13.12 eg 1 — the tutorial’s LP, solved end-to-end with KKT (full steps)</a></li>
+  <li><a href="#eg-2-a-quadratic-with-an-inequality-constraint-primal-and-dual-full-steps" id="toc-eg-2-a-quadratic-with-an-inequality-constraint-primal-and-dual-full-steps" class="nav-link" data-scroll-target="#eg-2-a-quadratic-with-an-inequality-constraint-primal-and-dual-full-steps">13.13 eg 2 — a quadratic with an inequality constraint, primal <em>and</em> dual (full steps)</a></li>
+  <li><a href="#eg-3-the-diet-problem-a-primaldual-pair-from-the-tutorial-full-steps" id="toc-eg-3-the-diet-problem-a-primaldual-pair-from-the-tutorial-full-steps" class="nav-link" data-scroll-target="#eg-3-the-diet-problem-a-primaldual-pair-from-the-tutorial-full-steps">13.14 eg 3 — the diet problem: a primal/dual pair from the tutorial (full steps)</a></li>
+  <li><a href="#why-this-matters-svms-and-the-part-i-closing-shot" id="toc-why-this-matters-svms-and-the-part-i-closing-shot" class="nav-link" data-scroll-target="#why-this-matters-svms-and-the-part-i-closing-shot">13.15 Why this matters: SVMs, and the Part I closing shot</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./01-sets-functions-preliminaries.html">Part I — Mathematical Foundations</a></li><li class="breadcrumb-item"><a href="./13-duality-kkt.html"><span class="chapter-title">13. Duality and KKT conditions</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">13. Duality and KKT conditions</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>This is the last chapter of Part I, and it ties the whole part together. Chapter 10 said: for unconstrained problems, <span class="math inline">\(\nabla f(\mathbf{x}^\star) = \mathbf{0}\)</span> finds candidates, and gradient descent finds local minima (§10.8–10.9). Chapter 11 said: constraints change the game — the Lagrangian encodes them, and each inequality is either active or inactive at the optimum (§11.3, §11.7). Chapter 12 said: if everything is convex, local minima <em>are</em> global minima (§12.9), and <span class="math inline">\(\nabla f = \mathbf{0}\)</span> becomes necessary <em>and</em> sufficient (§12.10). This chapter finishes the story: every constrained problem has a <strong>mirror image</strong> — the <strong>dual</strong> problem — and for convex problems the two mirrors agree (strong duality). Out of that agreement drop the <strong>KKT conditions</strong>: four equations that <em>completely characterize</em> the optimum of a convex constrained problem — the constrained analogue of “set the gradient to zero”.</p>
+<p>The lectures build this in the simplest setting first — one inequality constraint — and only then generalize. This chapter follows that order.</p>
+<section id="the-problem-revisited" class="level2">
+<h2 class="anchored" data-anchor-id="the-problem-revisited">13.1 The problem, revisited</h2>
+<p><strong>Def.</strong> The (single-inequality) constrained problem = <span class="math display">\[\min_{\mathbf{x}} f(\mathbf{x}) \quad \text{s.t.} \quad h(\mathbf{x}) \le 0,\]</span> with <span class="math inline">\(f, h : \mathbb{R}^d \to \mathbb{R}\)</span>. <span class="math inline">\(f\)</span> is the objective, <span class="math inline">\(h(\mathbf{x}) \le 0\)</span> the constraint. The feasible set <span class="math inline">\(\{\mathbf{x} : h(\mathbf{x}) \le 0\}\)</span> is a sublevel set of <span class="math inline">\(h\)</span>.</p>
+<p><strong>Note:</strong> Chapter 11 handled <em>equality</em> constraints <span class="math inline">\(l(\mathbf{x}) = 0\)</span> with the Lagrangian (§11.3). Inequalities need one extra discipline: the multiplier must be non-negative. That sign is the whole subject of this chapter.</p>
+</section>
+<section id="the-lagrangian-made-formal" class="level2">
+<h2 class="anchored" data-anchor-id="the-lagrangian-made-formal">13.2 The Lagrangian, made formal</h2>
+<p><strong>Def.</strong> The <strong>Lagrangian</strong> for the problem above = <span class="math display">\[L(\mathbf{x}, \lambda) = f(\mathbf{x}) + \lambda\, h(\mathbf{x}), \qquad \lambda \ge 0.\]</span> It takes <em>two</em> inputs: the variable <span class="math inline">\(\mathbf{x}\)</span> (a vector) and one scalar <strong>Lagrange multiplier</strong> <span class="math inline">\(\lambda\)</span> per constraint — here just one, since there is one constraint. (With <span class="math inline">\(m\)</span> inequalities and <span class="math inline">\(n\)</span> equalities there will be <span class="math inline">\(m + n\)</span> multipliers; §13.9.)</p>
+<p>Why <span class="math inline">\(\lambda \ge 0\)</span>? Think of <span class="math inline">\(\lambda h(\mathbf{x})\)</span> as a <em>penalty</em> for violating the constraint. If <span class="math inline">\(h(\mathbf{x}) &gt; 0\)</span> (violation) and <span class="math inline">\(\lambda &gt; 0\)</span>, the penalty is positive — bad. If <span class="math inline">\(h(\mathbf{x}) \le 0\)</span> (feasible) and <span class="math inline">\(\lambda \ge 0\)</span>, the penalty is <span class="math inline">\(\le 0\)</span> — never a reward for leaving. A negative <span class="math inline">\(\lambda\)</span> would <em>reward</em> violations, which is backwards. The sign discipline <span class="math inline">\(\lambda \ge 0\)</span> is what makes the Lagrangian honest.</p>
+<p><strong>Basically, …</strong> The Lagrangian is the objective plus a fine for breaking the rule. The fine is <span class="math inline">\(\lambda\)</span> rupees per unit of violation, and <span class="math inline">\(\lambda\)</span> can’t be negative — you never get <em>paid</em> for breaking the rule.</p>
+</section>
+<section id="the-primal-problem-maxing-over-lambda-is-the-constraint" class="level2">
+<h2 class="anchored" data-anchor-id="the-primal-problem-maxing-over-lambda-is-the-constraint">13.3 The primal problem: maxing over <span class="math inline">\(\lambda\)</span> <em>is</em> the constraint</h2>
+<p>Here is the lecture’s key move. Fix an <span class="math inline">\(\mathbf{x}\)</span> and consider <span class="math display">\[\max_{\lambda \ge 0} L(\mathbf{x}, \lambda) = \max_{\lambda \ge 0} \big[f(\mathbf{x}) + \lambda h(\mathbf{x})\big].\]</span> <span class="math inline">\(f(\mathbf{x})\)</span> is now a constant; only the penalty term moves. Two cases:</p>
+<ol type="i">
+<li><span class="math inline">\(h(\mathbf{x}) \le 0\)</span> (feasible): <span class="math inline">\(\lambda h(\mathbf{x}) \le 0\)</span> for every <span class="math inline">\(\lambda \ge 0\)</span>, so the biggest it can be is <span class="math inline">\(0\)</span> — attained at <span class="math inline">\(\lambda = 0\)</span>. The max equals <span class="math inline">\(f(\mathbf{x})\)</span>.</li>
+<li><span class="math inline">\(h(\mathbf{x}) &gt; 0\)</span> (infeasible): crank <span class="math inline">\(\lambda \to \infty\)</span> and <span class="math inline">\(\lambda h(\mathbf{x}) \to \infty\)</span>. The max is <span class="math inline">\(\infty\)</span>.</li>
+</ol>
+<p>So <span class="math inline">\(\max_{\lambda \ge 0} L(\mathbf{x}, \lambda)\)</span> equals <span class="math inline">\(f(\mathbf{x})\)</span> inside the feasible set and <span class="math inline">\(\infty\)</span> outside — exactly the function <span class="math display">\[J(\mathbf{x}) = \begin{cases} f(\mathbf{x}) &amp; h(\mathbf{x}) \le 0 \\ \infty &amp; \text{otherwise.} \end{cases}\]</span></p>
+<p><strong>Def.</strong> The <strong>primal problem</strong> = <span class="math display">\[\min_{\mathbf{x}} \left[ \max_{\lambda \ge 0} L(\mathbf{x}, \lambda) \right] = \min_{\mathbf{x}} J(\mathbf{x}).\]</span> It is <em>equivalent</em> to the original constrained problem: any <span class="math inline">\(\mathbf{x}\)</span> outside the feasible set scores <span class="math inline">\(\infty\)</span> and can never be the minimum, so the minimizer must be feasible, and among feasible points <span class="math inline">\(J = f\)</span>. Call the primal solution <span class="math inline">\(\mathbf{x}^\star\)</span> and the primal optimal value <span class="math inline">\(p^\star = f(\mathbf{x}^\star)\)</span>.</p>
+<p><strong>Note:</strong> We have not made anything easier — the lectures are explicit that this min-max “can be hard to solve”. The payoff comes from <em>swapping</em> the min and the max.</p>
+<p><strong>Basically, …</strong> The inner max is a bouncer: show a feasible <span class="math inline">\(\mathbf{x}\)</span> and it lets you through with your exact <span class="math inline">\(f(\mathbf{x})\)</span>; show an infeasible one and it throws you out with an infinite bill. Minimizing over <span class="math inline">\(\mathbf{x}\)</span> afterwards therefore solves the original problem — with the constraint now <em>encoded</em> in the objective.</p>
+</section>
+<section id="swap-the-min-and-the-max-the-dual-function-and-the-dual-problem" class="level2">
+<h2 class="anchored" data-anchor-id="swap-the-min-and-the-max-the-dual-function-and-the-dual-problem">13.4 Swap the min and the max: the dual function and the dual problem</h2>
+<p>Out of curiosity, swap the order: <span class="math display">\[\max_{\lambda \ge 0} \left[ \min_{\mathbf{x}} L(\mathbf{x}, \lambda) \right].\]</span></p>
+<p><strong>Def.</strong> The <strong>dual function</strong> = <span class="math display">\[g(\lambda) = \min_{\mathbf{x}} L(\mathbf{x}, \lambda) = \min_{\mathbf{x}} \big[f(\mathbf{x}) + \lambda h(\mathbf{x})\big].\]</span></p>
+<p><strong>Def.</strong> The <strong>dual problem</strong> = <span class="math inline">\(\max_{\lambda \ge 0} g(\lambda)\)</span>. Call the dual solution <span class="math inline">\(\lambda^\star\)</span> and the dual optimal value <span class="math inline">\(d^\star = g(\lambda^\star)\)</span>.</p>
+<p>Why would anyone do this? Two reasons (both from the lectures):</p>
+<ol type="i">
+<li>The inner problem <span class="math inline">\(\min_{\mathbf{x}} L(\mathbf{x}, \lambda)\)</span> is <em>unconstrained</em> — the whole Chapter 10 toolbox applies.</li>
+<li>The outer constraint is just <span class="math inline">\(\lambda \ge 0\)</span> — far simpler than the original <span class="math inline">\(h(\mathbf{x}) \le 0\)</span>.</li>
+</ol>
+<p>So the dual is “typically easier” than the primal. The catch: swapping min and max changes the problem, and nothing yet says the two optima agree. That is what §§13.6–13.7 settle.</p>
+<p><strong>Basically, …</strong> The primal does the hard part (constraints) on the inside and the easy part outside; the dual flips it — unconstrained on the inside, a trivial <span class="math inline">\(\lambda \ge 0\)</span> on the outside. Same ingredients, much friendlier order.</p>
+</section>
+<section id="the-dual-function-is-concave-the-lecturers-exercise" class="level2">
+<h2 class="anchored" data-anchor-id="the-dual-function-is-concave-the-lecturers-exercise">13.5 The dual function is concave (the lecturer’s exercise)</h2>
+<p><strong>Theorem.</strong> <span class="math inline">\(g(\lambda) = \min_{\mathbf{x}} L(\mathbf{x}, \lambda)\)</span> is a <strong>concave</strong> function of <span class="math inline">\(\lambda\)</span>.</p>
+<p><em>Proof.</em> Fix <span class="math inline">\(\mathbf{x}\)</span>. As a function of <span class="math inline">\(\lambda\)</span>, <span class="math inline">\(L(\mathbf{x}, \lambda) = f(\mathbf{x}) + \lambda h(\mathbf{x})\)</span> is <em>affine</em> (a straight line in <span class="math inline">\(\lambda\)</span>). So <span class="math inline">\(g\)</span> is the pointwise <em>minimum</em> of a family of affine functions — one line per <span class="math inline">\(\mathbf{x}\)</span>. Take <span class="math inline">\(\lambda_1, \lambda_2\)</span> and <span class="math inline">\(\theta \in [0, 1]\)</span>: <span class="math display">\[g(\theta\lambda_1 + (1-\theta)\lambda_2) = \min_{\mathbf{x}} \big[\theta L(\mathbf{x}, \lambda_1) + (1-\theta) L(\mathbf{x}, \lambda_2)\big].\]</span> For every <span class="math inline">\(\mathbf{x}\)</span>, <span class="math inline">\(\theta L(\mathbf{x}, \lambda_1) + (1-\theta)L(\mathbf{x}, \lambda_2) \ge \theta g(\lambda_1) + (1-\theta) g(\lambda_2)\)</span> (each term is at least its own minimum). Taking <span class="math inline">\(\min_{\mathbf{x}}\)</span> on the left preserves the inequality: <span class="math display">\[g(\theta\lambda_1 + (1-\theta)\lambda_2) \ge \theta g(\lambda_1) + (1-\theta) g(\lambda_2),\]</span> which is exactly the concavity chord inequality (graph above its chords). ∎</p>
+<p>So the dual problem is: <strong>maximize a concave function over <span class="math inline">\(\lambda \ge 0\)</span></strong> — a well-behaved problem (maximizing concave is the mirror of minimizing convex).</p>
+<p><strong>Basically, …</strong> Each fixed <span class="math inline">\(\mathbf{x}\)</span> gives a straight line in <span class="math inline">\(\lambda\)</span>; the dual function is the <em>lower envelope</em> of all those lines — and the lower envelope of straight lines always sags downward like a frown, i.e.&nbsp;it is concave.</p>
+</section>
+<section id="weak-duality-the-dual-always-under-promises-dstar-le-pstar" class="level2">
+<h2 class="anchored" data-anchor-id="weak-duality-the-dual-always-under-promises-dstar-le-pstar">13.6 Weak duality: the dual always under-promises (<span class="math inline">\(d^\star \le p^\star\)</span>)</h2>
+<p><strong>Theorem (weak duality).</strong> For <em>any</em> <span class="math inline">\(f, h\)</span> (no convexity needed), <span class="math display">\[\boxed{d^\star \le p^\star.}\]</span> The dual optimal value never exceeds the primal optimal value. The difference <span class="math inline">\(p^\star - d^\star \ge 0\)</span> is the <strong>duality gap</strong>.</p>
+<p><em>Proof (following the lectures).</em> Fix any <span class="math inline">\(\lambda \ge 0\)</span>.</p>
+<ol type="i">
+<li>From §13.3: <span class="math inline">\(L(\mathbf{x}, \lambda) \le J(\mathbf{x})\)</span> for <em>every</em> <span class="math inline">\(\mathbf{x}\)</span> — if <span class="math inline">\(h(\mathbf{x}) \le 0\)</span> then <span class="math inline">\(L = f + \lambda h \le f = J\)</span>; if <span class="math inline">\(h(\mathbf{x}) &gt; 0\)</span> then <span class="math inline">\(L \le \infty = J\)</span>.</li>
+<li>Take <span class="math inline">\(\min_{\mathbf{x}}\)</span> on both sides: <span class="math inline">\(\min_{\mathbf{x}} L(\mathbf{x}, \lambda) \le \min_{\mathbf{x}} J(\mathbf{x})\)</span>. The left side is <span class="math inline">\(g(\lambda)\)</span>; the right side is <span class="math inline">\(p^\star\)</span> (the min of <span class="math inline">\(J\)</span> is the constrained optimum <span class="math inline">\(f(\mathbf{x}^\star)\)</span>).</li>
+<li>This holds for <em>every</em> <span class="math inline">\(\lambda \ge 0\)</span>, so it holds for the <span class="math inline">\(\lambda\)</span> that maximizes <span class="math inline">\(g\)</span>: <span class="math inline">\(\max_{\lambda \ge 0} g(\lambda) \le p^\star\)</span>, i.e.&nbsp;<span class="math inline">\(d^\star \le p^\star\)</span>. ∎</li>
+</ol>
+<p><strong>Note:</strong> The panel (a) of the figure is this proof drawn: for the problem <span class="math inline">\(\min x^2\)</span> s.t. <span class="math inline">\(x \ge 1\)</span> (i.e.&nbsp;<span class="math inline">\(h(x) = 1 - x \le 0\)</span>), every Lagrangian curve <span class="math inline">\(L(x, \lambda) = x^2 + \lambda(1-x)\)</span> lies on or below <span class="math inline">\(J(x)\)</span> — which is <span class="math inline">\(x^2\)</span> for <span class="math inline">\(x \ge 1\)</span> and <span class="math inline">\(\infty\)</span> elsewhere.</p>
+<!-- Original matplotlib illustration drawn for this chapter (not reused from any URL) -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/13-duality-kkt.png" class="img-fluid figure-img"></p>
+<figcaption>(a) For f(x) = x^2 with constraint x &gt;= 1, the Lagrangian curves L(x, lambda) for lambda = 0, 2, 4 all lie on or below J(x) (x^2 on the feasible set, infinity outside) — the picture behind weak duality. (b) The dual function g(lambda) = lambda - lambda^2/4 is concave; its maximum d* = 1 at lambda* = 2 equals the primal optimum p* = 1, so the duality gap is zero (strong duality).</figcaption>
+</figure>
+</div>
+<p><strong>Corollary.</strong> If the primal is <em>unbounded below</em> (<span class="math inline">\(p^\star = -\infty\)</span>), the dual must be <em>infeasible</em> (<span class="math inline">\(d^\star = -\infty\)</span>); if the dual is <em>unbounded above</em> (<span class="math inline">\(d^\star = +\infty\)</span>), the primal must be infeasible (<span class="math inline">\(p^\star = +\infty\)</span>). (The tutorial’s primal/dual table says exactly this for LPs; it follows from <span class="math inline">\(d^\star \le p^\star\)</span> in general.)</p>
+<p><strong>Basically, …</strong> Weak duality is a free lunch with a catch: solve the (easier) dual and you get a <em>guaranteed lower bound</em> on the true optimum — but not the optimum itself. The gap between the bound and the truth is the duality gap, and nothing so far closes it.</p>
+</section>
+<section id="strong-duality-for-convex-problems-the-gap-closes-dstar-pstar" class="level2">
+<h2 class="anchored" data-anchor-id="strong-duality-for-convex-problems-the-gap-closes-dstar-pstar">13.7 Strong duality: for convex problems the gap closes (<span class="math inline">\(d^\star = p^\star\)</span>)</h2>
+<p><strong>Theorem (strong duality).</strong> If <span class="math inline">\(f\)</span> and <span class="math inline">\(h\)</span> are <strong>convex</strong>, then (up to some regularity conditions) <span class="math display">\[\boxed{d^\star = p^\star.}\]</span> Solve the dual, and you have solved the primal. The lectures state this as “a very, very powerful theorem” and do not prove it.</p>
+<p><strong>Note on the fine print.</strong> The lectures only ever say “up to some regularity conditions” / “modulo regularity” — they never name them. In the standard literature these are the <em>constraint qualifications</em>, the most famous being <strong>Slater’s condition</strong> (roughly: some strictly feasible point exists, i.e.&nbsp;some <span class="math inline">\(\mathbf{x}\)</span> with <span class="math inline">\(h(\mathbf{x}) &lt; 0\)</span> strictly). For this book’s purposes — convex <span class="math inline">\(f\)</span>, convex constraints, nothing pathological — strong duality holds, and we use it.</p>
+<p><strong>Basically, …</strong> Weak duality says the dual’s answer is <em>at most</em> the primal’s answer. Strong duality says: if everything is convex (and the problem isn’t degenerate), the two answers are <em>equal</em>. The mirror reflects perfectly — so you may solve whichever side is easier.</p>
+</section>
+<section id="the-kkt-conditions-derived-from-strong-duality" class="level2">
+<h2 class="anchored" data-anchor-id="the-kkt-conditions-derived-from-strong-duality">13.8 The KKT conditions, derived from strong duality</h2>
+<p>Assume <span class="math inline">\(f, h\)</span> convex, strong duality holds, and <span class="math inline">\(\mathbf{x}^\star, \lambda^\star\)</span> are the primal/dual optima. What <em>must</em> this pair satisfy? The lectures derive two non-trivial conditions (call them C1, C2) plus the two obvious ones.</p>
+<p><strong>C1 — stationarity.</strong> By strong duality, <span class="math inline">\(f(\mathbf{x}^\star) = g(\lambda^\star) = \min_{\mathbf{x}} [f(\mathbf{x}) + \lambda^\star h(\mathbf{x})]\)</span>. So <span class="math inline">\(\mathbf{x}^\star\)</span> minimizes the <em>unconstrained</em> function <span class="math inline">\(L(\cdot, \lambda^\star)\)</span> — and an unconstrained minimizer has zero gradient (§10.8): <span class="math display">\[\boxed{\nabla f(\mathbf{x}^\star) + \lambda^\star \nabla h(\mathbf{x}^\star) = \mathbf{0}.} \tag{a}\]</span></p>
+<p><strong>C2 — complementary slackness.</strong> The same equality, read differently: <span class="math inline">\(f(\mathbf{x}^\star) = \min_{\mathbf{x}} [f(\mathbf{x}) + \lambda^\star h(\mathbf{x})]\)</span>. The minimum over <em>all</em> <span class="math inline">\(\mathbf{x}\)</span> is <span class="math inline">\(\le\)</span> the value at any particular <span class="math inline">\(\mathbf{x}\)</span> — in particular at <span class="math inline">\(\mathbf{x}^\star\)</span> itself: <span class="math display">\[f(\mathbf{x}^\star) \le f(\mathbf{x}^\star) + \lambda^\star h(\mathbf{x}^\star).\]</span> But <span class="math inline">\(\lambda^\star \ge 0\)</span> and <span class="math inline">\(h(\mathbf{x}^\star) \le 0\)</span> (dual and primal feasibility), so the extra term is <span class="math inline">\(\le 0\)</span>, i.e.&nbsp;the right side is <span class="math inline">\(\le f(\mathbf{x}^\star)\)</span>. Sandwiched between <span class="math inline">\(f(\mathbf{x}^\star)\)</span> and <span class="math inline">\(f(\mathbf{x}^\star)\)</span>, it must <em>equal</em> <span class="math inline">\(f(\mathbf{x}^\star)\)</span> — forcing the extra term to zero: <span class="math display">\[\boxed{\lambda^\star h(\mathbf{x}^\star) = 0.} \tag{b}\]</span></p>
+<p>The remaining two are the feasibility conditions we already knew: <span class="math display">\[\boxed{h(\mathbf{x}^\star) \le 0} \tag{c} \quad \text{[primal feasibility]}\]</span> <span class="math display">\[\boxed{\lambda^\star \ge 0} \tag{d} \quad \text{[dual feasibility]}\]</span></p>
+<p>These four are the <strong>Karush–Kuhn–Tucker (KKT) conditions</strong>. The lectures name them after the three people who formulated them.</p>
+<p><strong>Basically, …</strong> (a) says: at the optimum, the Lagrangian looks flat — same first-order idea as <span class="math inline">\(\nabla f = 0\)</span>, but for the penalized objective. (b) says: either the constraint is <em>tight</em> (<span class="math inline">\(h = 0\)</span>) or its multiplier is <em>off</em> (<span class="math inline">\(\lambda = 0\)</span>) — you don’t pay a fine on a rule you weren’t breaking. (c) and (d) say: the answer must be feasible, and the fine must be non-negative.</p>
+</section>
+<section id="the-general-kkt-form-m-inequalities-n-equalities" class="level2">
+<h2 class="anchored" data-anchor-id="the-general-kkt-form-m-inequalities-n-equalities">13.9 The general KKT form: <span class="math inline">\(m\)</span> inequalities, <span class="math inline">\(n\)</span> equalities</h2>
+<p>The one-constraint derivation was for exposition. For the general problem <span class="math display">\[\min_{\mathbf{x}} f(\mathbf{x}) \quad \text{s.t.} \quad h_i(\mathbf{x}) \le 0 \;\; (i = 1, \dots, m), \quad l_j(\mathbf{x}) = 0 \;\; (j = 1, \dots, n),\]</span> give every constraint its own multiplier: <span class="math inline">\(u_i \ge 0\)</span> for the inequalities, <span class="math inline">\(v_j\)</span> (free sign) for the equalities. The Lagrangian is <span class="math display">\[L(\mathbf{x}, \mathbf{u}, \mathbf{v}) = f(\mathbf{x}) + \sum_{i=1}^{m} u_i h_i(\mathbf{x}) + \sum_{j=1}^{n} v_j l_j(\mathbf{x}).\]</span> The same argument goes through, and the KKT conditions read:</p>
+<ol type="a">
+<li><strong>Stationarity:</strong> <span class="math inline">\(\nabla f(\mathbf{x}^\star) + \sum_{i=1}^{m} u_i^\star \nabla h_i(\mathbf{x}^\star) + \sum_{j=1}^{n} v_j^\star \nabla l_j(\mathbf{x}^\star) = \mathbf{0}\)</span> (the zero <em>vector</em>).</li>
+<li><strong>Complementary slackness:</strong> <span class="math inline">\(u_i^\star h_i(\mathbf{x}^\star) = 0\)</span> for every <span class="math inline">\(i\)</span> (only the inequalities need it — for equalities <span class="math inline">\(l_j(\mathbf{x}^\star) = 0\)</span> already).</li>
+<li><strong>Primal feasibility:</strong> <span class="math inline">\(h_i(\mathbf{x}^\star) \le 0\)</span> for every <span class="math inline">\(i\)</span>; <span class="math inline">\(l_j(\mathbf{x}^\star) = 0\)</span> for every <span class="math inline">\(j\)</span>.</li>
+<li><strong>Dual feasibility:</strong> <span class="math inline">\(u_i^\star \ge 0\)</span> for every <span class="math inline">\(i\)</span> (the <span class="math inline">\(v_j^\star\)</span> are unrestricted).</li>
+</ol>
+<p><strong>Note:</strong> With no inequality constraints this collapses to §11.3’s Lagrange conditions (stationarity only) — the KKT conditions are their proper generalization.</p>
+</section>
+<section id="necessary-sufficient-and-the-certificate" class="level2">
+<h2 class="anchored" data-anchor-id="necessary-sufficient-and-the-certificate">13.10 Necessary, sufficient — and the certificate</h2>
+<p>The lectures are careful about <em>which direction</em> the KKT conditions work:</p>
+<ol type="i">
+<li><strong>Necessity (convex case).</strong> If <span class="math inline">\(f\)</span> and the constraints are convex (modulo regularity), every optimal <span class="math inline">\((\mathbf{x}^\star, \mathbf{u}^\star, \mathbf{v}^\star)\)</span> <em>must</em> satisfy KKT — that is what §13.8 proved.</li>
+<li><strong>Sufficiency — read the fine print.</strong> The lectures assert that KKT <span class="math inline">\(\Rightarrow\)</span> local optimum “irrespective of convex or not” (asserted, not proved). That is overstated: without convexity a KKT point can be a saddle or even a local <em>maximum</em>. Counterexample: <span class="math inline">\(\min_x -x^2\)</span> s.t. <span class="math inline">\(x \le 0\)</span> — stationarity (<span class="math inline">\(-2x + u = 0\)</span>), complementary slackness (<span class="math inline">\(ux = 0\)</span>), primal feasibility (<span class="math inline">\(x \le 0\)</span>), and dual feasibility (<span class="math inline">\(u \ge 0\)</span>) all hold at <span class="math inline">\((x^\star, u^\star) = (0, 0)\)</span>, yet <span class="math inline">\(x = 0\)</span> is a local <em>maximum</em> (<span class="math inline">\(f(-0.1) = -0.01 &lt; f(0) = 0\)</span>). What is standard: under the regularity conditions, KKT is <em>necessary</em> for a local optimum — even without convexity; but <em>sufficiency</em> needs convexity, which is exactly what (iii) supplies.</li>
+<li><strong>Both (convex case).</strong> For convex problems, (i) + (ii) + §12.9 (every local minimum of a convex function is global) combine: the KKT conditions are <strong>necessary and sufficient</strong> for global optimality. The transcript’s words: for convex problems the KKT conditions “completely characterize the optimal solution”; in the KKT-continued lecture, they are “both necessary and sufficient for most convex optimization problems”.</li>
+</ol>
+<p>This makes KKT a <strong>certificate</strong>: hand me a candidate <span class="math inline">\((\mathbf{x}^\star, \mathbf{u}^\star)\)</span> for a <em>convex</em> problem; if it passes the four checks, I <em>know</em> it is optimal — I never had to run an optimizer. Compare §10.8: there <span class="math inline">\(\nabla f = \mathbf{0}\)</span> was only a <em>necessary</em> condition (it also holds at maxima and saddles). For convex constrained problems, KKT upgrades “suspect” to “convicted”.</p>
+<p><strong>Basically, …</strong> The KKT conditions are the constrained version of “<span class="math inline">\(\nabla f = 0\)</span> means you’re at the bottom” — except better: for convex problems they don’t just <em>suggest</em> optimality, they <em>prove</em> it. Find numbers satisfying (a)–(d) and the case is closed.</p>
+</section>
+<section id="reading-complementary-slackness-active-vs.-inactive" class="level2">
+<h2 class="anchored" data-anchor-id="reading-complementary-slackness-active-vs.-inactive">13.11 Reading complementary slackness: active vs.&nbsp;inactive</h2>
+<p>Condition (b), <span class="math inline">\(u_i^\star h_i(\mathbf{x}^\star) = 0\)</span>, is the formal version of §11.7’s active/inactive discussion:</p>
+<ol type="i">
+<li>If <span class="math inline">\(u_i^\star &gt; 0\)</span> (the multiplier is “on”), then <span class="math inline">\(h_i(\mathbf{x}^\star) = 0\)</span> — the constraint is <strong>active</strong> (binding): the optimum sits exactly on that constraint’s boundary.</li>
+<li>If <span class="math inline">\(h_i(\mathbf{x}^\star) &lt; 0\)</span> (strictly inside — <strong>inactive</strong>), then <span class="math inline">\(u_i^\star = 0\)</span> — the multiplier is “off”: the constraint might as well not exist.</li>
+<li>Both zero is allowed: a constraint can be exactly tight yet carry no penalty.</li>
+</ol>
+<p>So at the optimum, <em>inactive constraints drop out of the Lagrangian</em> — only the active ones shape the answer. This is why the tutorial’s LP below only ever uses two of its four constraints.</p>
+<p><strong>Basically, …</strong> Think of <span class="math inline">\(u_i^\star\)</span> as the price you’d pay to relax constraint <span class="math inline">\(i\)</span> a little. A slack constraint has price zero — loosening a rule you’re not even touching changes nothing. A binding constraint can have a positive price — it is genuinely holding the optimum back.</p>
+</section>
+<section id="eg-1-the-tutorials-lp-solved-end-to-end-with-kkt-full-steps" class="level2">
+<h2 class="anchored" data-anchor-id="eg-1-the-tutorials-lp-solved-end-to-end-with-kkt-full-steps">13.12 eg 1 — the tutorial’s LP, solved end-to-end with KKT (full steps)</h2>
+<p>The Week 9 tutorial’s canonical example: <span class="math display">\[\min_{x_1, x_2} \; 3x_1 + x_2 \quad \text{s.t.} \quad x_1 - x_2 + 4 \le 0, \;\; -3x_1 + 2x_2 + 10 \le 0, \;\; x_1, x_2 \ge 0.\]</span></p>
+<ol type="i">
+<li><strong>Standard form.</strong> <span class="math inline">\(h_1 = x_1 - x_2 + 4 \le 0\)</span>, <span class="math inline">\(h_2 = -3x_1 + 2x_2 + 10 \le 0\)</span>, <span class="math inline">\(h_3 = -x_1 \le 0\)</span>, <span class="math inline">\(h_4 = -x_2 \le 0\)</span>, with multipliers <span class="math inline">\(u_1, \dots, u_4 \ge 0\)</span>.</li>
+<li><strong>Lagrangian.</strong> <span class="math inline">\(L = 3x_1 + x_2 + u_1(x_1 - x_2 + 4) + u_2(-3x_1 + 2x_2 + 10) - u_3x_1 - u_4x_2\)</span>.</li>
+<li><strong>Stationarity.</strong> <span class="math display">\[\frac{\partial L}{\partial x_1} = 3 + u_1 - 3u_2 - u_3 = 0, \qquad \frac{\partial L}{\partial x_2} = 1 - u_1 + 2u_2 - u_4 = 0. \tag{1, 2}\]</span></li>
+<li><strong>Guess which constraints are active.</strong> Try <span class="math inline">\(h_1, h_2\)</span> active (i.e.&nbsp;<span class="math inline">\(u_1, u_2 &gt; 0\)</span>) and the non-negativity constraints slack (<span class="math inline">\(u_3 = u_4 = 0\)</span>; we will verify). Then (1, 2) become: <span class="math display">\[3 + u_1 - 3u_2 = 0, \qquad 1 - u_1 + 2u_2 = 0.\]</span> From the second: <span class="math inline">\(u_1 = 1 + 2u_2\)</span>. Substitute into the first: <span class="math inline">\(3 + (1 + 2u_2) - 3u_2 = 0\)</span>, so <span class="math inline">\(4 - u_2 = 0\)</span>, giving <span class="math inline">\(\boxed{u_2 = 4}\)</span> and <span class="math inline">\(\boxed{u_1 = 9}\)</span>. Dual feasibility: <span class="math inline">\(9 \ge 0\)</span>, <span class="math inline">\(4 \ge 0\)</span> ✓.</li>
+<li><strong>Complementary slackness.</strong> <span class="math inline">\(u_1 &gt; 0 \Rightarrow h_1 = 0\)</span>: <span class="math inline">\(x_1 - x_2 + 4 = 0\)</span>, so <span class="math inline">\(x_1 = x_2 - 4\)</span>. <span class="math inline">\(u_2 &gt; 0 \Rightarrow h_2 = 0\)</span>: <span class="math inline">\(-3x_1 + 2x_2 + 10 = 0\)</span>. Substitute: <span class="math inline">\(-3(x_2 - 4) + 2x_2 + 10 = 0\)</span>, i.e.&nbsp;<span class="math inline">\(-x_2 + 22 = 0\)</span>, so <span class="math inline">\(\boxed{x_2 = 22}\)</span> and <span class="math inline">\(\boxed{x_1 = 18}\)</span>.</li>
+<li><strong>Verify the guess.</strong> Primal feasibility: <span class="math inline">\(h_1 = 18 - 22 + 4 = 0 \le 0\)</span> ✓; <span class="math inline">\(h_2 = -54 + 44 + 10 = 0 \le 0\)</span> ✓; <span class="math inline">\(x_1 = 18 \ge 0\)</span>, <span class="math inline">\(x_2 = 22 \ge 0\)</span> ✓ (so <span class="math inline">\(u_3 = u_4 = 0\)</span> was consistent: <span class="math inline">\(0 \cdot (-18) = 0\)</span>, <span class="math inline">\(0 \cdot (-22) = 0\)</span> ✓). Complementary slackness: <span class="math inline">\(9 \cdot 0 = 0\)</span>, <span class="math inline">\(4 \cdot 0 = 0\)</span> ✓.</li>
+<li><strong>Optimum.</strong> <span class="math inline">\(\boxed{f^\star = 3 \cdot 18 + 22 = 76}\)</span>. The problem is an LP — hence convex — so KKT is necessary and sufficient: this <em>is</em> the global optimum, certified without any search.</li>
+</ol>
+<p><strong>Note:</strong> The solution strategy is always this two-step dance: <em>guess</em> the active set (which <span class="math inline">\(u_i &gt; 0\)</span>), <em>solve</em> the resulting equations, then <em>verify</em> all four KKT conditions. A wrong guess fails verification — that is the method telling you to try another active set (Problem 8 shows a failed guess).</p>
+</section>
+<section id="eg-2-a-quadratic-with-an-inequality-constraint-primal-and-dual-full-steps" class="level2">
+<h2 class="anchored" data-anchor-id="eg-2-a-quadratic-with-an-inequality-constraint-primal-and-dual-full-steps">13.13 eg 2 — a quadratic with an inequality constraint, primal <em>and</em> dual (full steps)</h2>
+<p><span class="math display">\[\min_{x} \; x^2 \quad \text{s.t.} \quad x \ge 1 \;\; \Longleftrightarrow \;\; h(x) = 1 - x \le 0.\]</span></p>
+<ol type="i">
+<li><strong>KKT.</strong> <span class="math inline">\(L(x, u) = x^2 + u(1 - x)\)</span>. Stationarity: <span class="math inline">\(2x - u = 0\)</span>. Complementary slackness: <span class="math inline">\(u(1 - x) = 0\)</span>. Primal feasibility: <span class="math inline">\(1 - x \le 0\)</span>. Dual feasibility: <span class="math inline">\(u \ge 0\)</span>.</li>
+<li><strong>Solve.</strong> If <span class="math inline">\(u = 0\)</span>, stationarity gives <span class="math inline">\(x = 0\)</span>, but <span class="math inline">\(1 - 0 = 1 \not\le 0\)</span> — violates primal feasibility. So <span class="math inline">\(u &gt; 0\)</span>, hence <span class="math inline">\(1 - x = 0\)</span>: <span class="math inline">\(\boxed{x^\star = 1}\)</span>, <span class="math inline">\(\boxed{u^\star = 2}\)</span> (from <span class="math inline">\(2x = u\)</span>). Check: <span class="math inline">\(2(1-1) = 0\)</span> ✓, <span class="math inline">\(1 - 1 = 0 \le 0\)</span> ✓, <span class="math inline">\(2 \ge 0\)</span> ✓. <span class="math inline">\(\boxed{f^\star = 1}\)</span>.</li>
+<li><strong>The dual, explicitly.</strong> <span class="math inline">\(g(u) = \min_x [x^2 + u(1-x)]\)</span>: unconstrained min at <span class="math inline">\(x = u/2\)</span>, so <span class="math inline">\(g(u) = \frac{u^2}{4} + u\left(1 - \frac{u}{2}\right) = u - \frac{u^2}{4}\)</span> — concave, as §13.5 promised (panel (b) of the figure). <span class="math inline">\(\max_{u \ge 0} g(u)\)</span>: <span class="math inline">\(g'(u) = 1 - u/2 = 0\)</span> gives <span class="math inline">\(u^\star = 2\)</span>, <span class="math inline">\(d^\star = g(2) = 2 - 1 = 1\)</span>.</li>
+<li><strong>The gap closes.</strong> <span class="math inline">\(d^\star = 1 = p^\star\)</span> — strong duality in numbers, since <span class="math inline">\(f\)</span> is convex (<span class="math inline">\(f'' = 2 &gt; 0\)</span>, §12.7) and <span class="math inline">\(h\)</span> is linear.</li>
+</ol>
+<p><strong>Basically, …</strong> Without the constraint the answer would be <span class="math inline">\(x = 0\)</span>; the constraint <span class="math inline">\(x \ge 1\)</span> drags the optimum to the boundary <span class="math inline">\(x = 1\)</span>, and the multiplier <span class="math inline">\(u^\star = 2\)</span> is exactly the “price” of that drag — relax the constraint a touch and the objective improves at rate 2.</p>
+</section>
+<section id="eg-3-the-diet-problem-a-primaldual-pair-from-the-tutorial-full-steps" class="level2">
+<h2 class="anchored" data-anchor-id="eg-3-the-diet-problem-a-primaldual-pair-from-the-tutorial-full-steps">13.14 eg 3 — the diet problem: a primal/dual pair from the tutorial (full steps)</h2>
+<p>The tutorial’s interpretation example. Primal (minimize cost subject to nutrition requirements): <span class="math display">\[\min_{x_1, x_2} \; 50x_1 + 80x_2 \quad \text{s.t.} \quad 3x_1 \ge 6, \;\; 2x_1 + 4x_2 \ge 10, \;\; 2x_1 + 5x_2 \ge 8, \;\; x_1, x_2 \ge 0.\]</span> Its <strong>dual</strong> (given in the tutorial): <span class="math display">\[\max_{y_1, y_2, y_3} \; 6y_1 + 10y_2 + 8y_3 \quad \text{s.t.} \quad 3y_1 + 2y_2 + 2y_3 \le 50, \;\; 4y_2 + 5y_3 \le 80, \;\; y_1, y_2, y_3 \ge 0.\]</span></p>
+<ol type="i">
+<li><strong>Primal optimum.</strong> From <span class="math inline">\(3x_1 \ge 6\)</span>: <span class="math inline">\(x_1 \ge 2\)</span>. The first two constraints bind: <span class="math inline">\(x_1 = 2\)</span>, <span class="math inline">\(2(2) + 4x_2 = 10 \Rightarrow x_2 = 1.5\)</span>. Check the third: <span class="math inline">\(4 + 7.5 = 11.5 \ge 8\)</span> ✓. Value: <span class="math inline">\(50(2) + 80(1.5) = 100 + 120 = 220\)</span>.</li>
+<li><strong>Dual optimum.</strong> Complementary slackness suggests: primal constraints 1, 2 binding and <span class="math inline">\(x_1, x_2 &gt; 0\)</span>, so try dual constraints binding with <span class="math inline">\(y_3 = 0\)</span> (primal constraint 3 slack). Then <span class="math inline">\(3y_1 + 2y_2 = 50\)</span>, <span class="math inline">\(4y_2 = 80\)</span>: <span class="math inline">\(y_2 = 20\)</span>, <span class="math inline">\(3y_1 = 50 - 40 = 10\)</span>, <span class="math inline">\(y_1 = 10/3\)</span>. Feasible ✓. Value: <span class="math inline">\(6(10/3) + 10(20) + 8(0) = 20 + 200 = 220\)</span>.</li>
+<li><strong>Verdict.</strong> <span class="math inline">\(d^\star = 220 = p^\star\)</span>: strong duality again (LPs are convex problems). And the certificate argument (Problem 10): a primal-feasible point with value 220 and a dual-feasible point with value 220 <em>prove</em> each other optimal via weak duality — <span class="math inline">\(220 \le d^\star \le p^\star \le 220\)</span>.</li>
+</ol>
+<p><strong>Basically, …</strong> The primal asks “cheapest menu meeting the diet”; the dual asks the mirror question. Both arrive at 220 — two different problems, one answer. That is strong duality you can taste.</p>
+</section>
+<section id="why-this-matters-svms-and-the-part-i-closing-shot" class="level2">
+<h2 class="anchored" data-anchor-id="why-this-matters-svms-and-the-part-i-closing-shot">13.15 Why this matters: SVMs, and the Part I closing shot</h2>
+<p>The lectures end the optimization part of the course with one machine-learning example — the <strong>support vector machine</strong> (Chapters 32–33 will build it properly):</p>
+<p><span class="math display">\[\min_{\mathbf{w}} \; \frac{1}{2}\lVert\mathbf{w}\rVert^2 \quad \text{s.t.} \quad y_i\,\mathbf{w}^T\mathbf{x}_i \ge 1 \;\; \forall i,\]</span> i.e.&nbsp;<span class="math inline">\(h_i(\mathbf{w}) = 1 - y_i\,\mathbf{w}^T\mathbf{x}_i \le 0\)</span> for each datapoint <span class="math inline">\((\mathbf{x}_i, y_i)\)</span>.</p>
+<ol type="i">
+<li>The objective is quadratic — convex (§12.7: its Hessian is the identity, eigenvalues <span class="math inline">\(1 &gt; 0\)</span>). The constraints are linear — convex. So <strong>strong duality holds</strong>: the primal and dual have the same optimal value.</li>
+<li>The dual is therefore fair game — and the lectures promise it is the <em>better</em> game: solving the dual “will help one go from linear models to non-linear models in a very smooth way”, leading to <strong>kernel methods</strong> (Chapter 33).</li>
+<li>The KKT conditions will do real work there: complementary slackness will tell us that only the <em>active</em> constraints matter — the datapoints sitting exactly on the margin. Those are the <strong>support vectors</strong>; every other point gets multiplier zero and drops out of the answer. (§13.11’s “price” intuition, weaponized.)</li>
+</ol>
+<p><strong>Basically, …</strong> The SVM is a quadratic objective with linear constraints — exactly the kind of problem this chapter was built for. Duality lets us solve the mirror problem instead, and complementary slackness then reveals that only a few special datapoints (the support vectors) actually decide the answer.</p>
+<p><strong>Part I, in one paragraph.</strong> Unconstrained optimization (Ch 10): follow the gradient down; <span class="math inline">\(\nabla f = \mathbf{0}\)</span> marks the suspects. Constraints (Ch 11): the Lagrangian folds constraints into the objective; inequalities are active or inactive. Convexity (Ch 12): the bowl shape that makes every local minimum global. Duality and KKT (this chapter): every constrained problem has a concave mirror image; for convex problems the mirror agrees, and the four KKT conditions certify optimality outright. With this, Part I’s machinery is complete — Part II puts probability underneath it.</p>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li>For <span class="math inline">\(\min_x x^2\)</span> s.t. <span class="math inline">\(x \ge 2\)</span>: write <span class="math inline">\(h\)</span>, <span class="math inline">\(L\)</span>, the primal and the dual function <span class="math inline">\(g(\lambda)\)</span>. Solve the dual, report <span class="math inline">\(p^\star\)</span>, <span class="math inline">\(d^\star\)</span> and the gap, and verify all four KKT conditions at the optimum.</li>
+<li>For the tutorial LP of §13.12, compute each complementary-slackness product <span class="math inline">\(u_i^\star h_i(\mathbf{x}^\star)\)</span> numerically and each primal-feasibility residual <span class="math inline">\(h_i(\mathbf{x}^\star)\)</span>, and confirm stationarity holds — i.e.&nbsp;verify KKT by hand at <span class="math inline">\(((18, 22), (9, 4, 0, 0))\)</span>.</li>
+<li>Diet problem (§13.14): (a) check <span class="math inline">\((x_1, x_2) = (2, 1.5)\)</span> is primal feasible with value <span class="math inline">\(220\)</span>; (b) check <span class="math inline">\((y_1, y_2, y_3) = (10/3, 20, 0)\)</span> is dual feasible with value <span class="math inline">\(220\)</span>; (c) use weak duality to prove both are optimal and <span class="math inline">\(p^\star = d^\star = 220\)</span>.</li>
+<li>Prove the dual function <span class="math inline">\(g(\lambda) = \min_{\mathbf{x}} L(\mathbf{x}, \lambda)\)</span> is concave (the lecturer’s exercise) — see §13.5 for the skeleton; write every step.</li>
+<li>For <span class="math inline">\(\min_x (x-3)^2\)</span> s.t. <span class="math inline">\(x \le 1\)</span>: compute <span class="math inline">\(\max_{\lambda \ge 0} L(x, \lambda)\)</span> for (i) <span class="math inline">\(x = 0\)</span> and (ii) <span class="math inline">\(x = 2\)</span>, and verify each equals <span class="math inline">\(J(x)\)</span> from §13.3.</li>
+<li>For <span class="math inline">\(\min_{x,y} x^2 + y^2\)</span> s.t. <span class="math inline">\(x + y \ge 1\)</span>: (a) write <span class="math inline">\(h\)</span> and <span class="math inline">\(L\)</span>; (b) compute <span class="math inline">\(g(\lambda)\)</span> and <span class="math inline">\(d^\star\)</span>; (c) state the weak-duality lower bound on <span class="math inline">\(p^\star\)</span>; (d) solve the primal (hint: Cauchy–Schwarz) and check whether the gap closes.</li>
+<li>KKT verification: for <span class="math inline">\(\min_x x^2\)</span> s.t. <span class="math inline">\(1 - x \le 0\)</span>, check all four KKT conditions at <span class="math inline">\((x^\star, u^\star) = (1, 2)\)</span>, one line each.</li>
+<li>Someone proposes <span class="math inline">\((x, u) = (0, 0)\)</span> for the problem in Problem 7. Test each KKT condition — which one(s) fail? What does this say about trusting stationarity alone (cf.&nbsp;§10.8)?</li>
+<li>From scratch: <span class="math inline">\(\min_{x_1, x_2} 2x_1 + 3x_2\)</span> s.t. <span class="math inline">\(x_1 + x_2 \ge 4\)</span>, <span class="math inline">\(x_1, x_2 \ge 0\)</span>. (a) Put it in standard form <span class="math inline">\(h_i \le 0\)</span>. (b) Write <span class="math inline">\(L\)</span> and all four KKT conditions. (c) Guess the active set, solve for <span class="math inline">\((\mathbf{x}^\star, \mathbf{u}^\star)\)</span>, verify, and report <span class="math inline">\(f^\star\)</span>.</li>
+<li>The certificate theorem: for a <em>convex</em> problem, prove that any <span class="math inline">\((\mathbf{x}^\star, \mathbf{u}^\star)\)</span> satisfying all KKT conditions must satisfy <span class="math inline">\(p^\star = d^\star = f(\mathbf{x}^\star)\)</span>. (Hint: chain <span class="math inline">\(f(\mathbf{x}^\star) = g(\mathbf{u}^\star) \le d^\star \le p^\star \le f(\mathbf{x}^\star)\)</span>, justifying each link.)</li>
+</ol>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — <span class="math inline">\(\min_x x^2\)</span> s.t. <span class="math inline">\(x \ge 2\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>1.</strong> <span class="math inline">\(\min_x x^2\)</span> s.t. <span class="math inline">\(x \ge 2\)</span>.</p>
+<p><span class="math inline">\(h(x) = 2 - x \le 0\)</span>. Lagrangian: <span class="math inline">\(L(x, \lambda) = x^2 + \lambda(2 - x)\)</span>, <span class="math inline">\(\lambda \ge 0\)</span>. Primal: <span class="math inline">\(\min_x \max_{\lambda \ge 0} L(x, \lambda)\)</span>; geometrically the answer is <span class="math inline">\(x^\star = 2\)</span>, <span class="math inline">\(p^\star = 4\)</span>. Dual function: <span class="math inline">\(g(\lambda) = \min_x [x^2 + \lambda(2 - x)]\)</span>. Unconstrained min: <span class="math inline">\(\frac{d}{dx} = 2x - \lambda = 0 \Rightarrow x = \lambda/2\)</span>. So <span class="math display">\[g(\lambda) = \frac{\lambda^2}{4} + \lambda\left(2 - \frac{\lambda}{2}\right) = 2\lambda - \frac{\lambda^2}{4}.\]</span> Dual: <span class="math inline">\(\max_{\lambda \ge 0} g(\lambda)\)</span>: <span class="math inline">\(g'(\lambda) = 2 - \lambda/2 = 0 \Rightarrow \lambda^\star = 4 \ge 0\)</span> ✓; <span class="math inline">\(g'' = -1/2 &lt; 0\)</span> so this is the max. <span class="math inline">\(d^\star = g(4) = 8 - 4 = 4\)</span>. Gap: <span class="math inline">\(p^\star - d^\star = 4 - 4 = 0\)</span> — strong duality (convex: <span class="math inline">\(f'' = 2 &gt; 0\)</span>, <span class="math inline">\(h\)</span> linear). KKT at <span class="math inline">\((2, 4)\)</span>: stationarity <span class="math inline">\(2(2) - 4 = 0\)</span> ✓; CS <span class="math inline">\(4(2-2) = 0\)</span> ✓; PF <span class="math inline">\(2 - 2 = 0 \le 0\)</span> ✓; DF <span class="math inline">\(4 \ge 0\)</span> ✓.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — Tutorial LP at <span class="math inline">\(\mathbf{x}^\star = (18, 22)\)</span>, <span class="math inline">\(\mathbf{u}^\star = (9, 4, 0, 0)\)</span>, with <span class="math inline">\(h_1 = x_1 - x_2 + 4\)</span>, <span class="math inline">\(h_2 = -3x_1 + 2x_2 + 10\)</span>, <span class="math inline">\(h_3 = -x_1\)</span>, <span class="math inline">\(h_4 = -x_2\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>2.</strong> Tutorial LP at <span class="math inline">\(\mathbf{x}^\star = (18, 22)\)</span>, <span class="math inline">\(\mathbf{u}^\star = (9, 4, 0, 0)\)</span>, with <span class="math inline">\(h_1 = x_1 - x_2 + 4\)</span>, <span class="math inline">\(h_2 = -3x_1 + 2x_2 + 10\)</span>, <span class="math inline">\(h_3 = -x_1\)</span>, <span class="math inline">\(h_4 = -x_2\)</span>.</p>
+<p>Residuals: <span class="math inline">\(h_1 = 18 - 22 + 4 = 0\)</span>; <span class="math inline">\(h_2 = -54 + 44 + 10 = 0\)</span>; <span class="math inline">\(h_3 = -18\)</span>; <span class="math inline">\(h_4 = -22\)</span>. All <span class="math inline">\(\le 0\)</span> — primal feasibility ✓. CS products: <span class="math inline">\(u_1 h_1 = 9 \cdot 0 = 0\)</span>; <span class="math inline">\(u_2 h_2 = 4 \cdot 0 = 0\)</span>; <span class="math inline">\(u_3 h_3 = 0 \cdot (-18) = 0\)</span>; <span class="math inline">\(u_4 h_4 = 0 \cdot (-22) = 0\)</span> ✓. Stationarity: <span class="math inline">\(\frac{\partial L}{\partial x_1} = 3 + u_1 - 3u_2 - u_3 = 3 + 9 - 12 - 0 = 0\)</span> ✓; <span class="math inline">\(\frac{\partial L}{\partial x_2} = 1 - u_1 + 2u_2 - u_4 = 1 - 9 + 8 - 0 = 0\)</span> ✓. Dual feasibility: <span class="math inline">\(9, 4, 0, 0 \ge 0\)</span> ✓. All four KKT conditions hold — and since an LP is convex, <span class="math inline">\((18, 22)\)</span> is certified globally optimal with <span class="math inline">\(f^\star = 76\)</span>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — Diet problem.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>3.</strong> Diet problem.</p>
+<ol type="a">
+<li>Primal feasibility of <span class="math inline">\((2, 1.5)\)</span>: <span class="math inline">\(3(2) = 6 \ge 6\)</span> ✓; <span class="math inline">\(2(2) + 4(1.5) = 10 \ge 10\)</span> ✓; <span class="math inline">\(2(2) + 5(1.5) = 11.5 \ge 8\)</span> ✓; <span class="math inline">\(2, 1.5 \ge 0\)</span> ✓. Value: <span class="math inline">\(50(2) + 80(1.5) = 220\)</span>.</li>
+<li>Dual feasibility of <span class="math inline">\((10/3, 20, 0)\)</span>: <span class="math inline">\(3(10/3) + 2(20) + 2(0) = 10 + 40 = 50 \le 50\)</span> ✓; <span class="math inline">\(4(20) + 5(0) = 80 \le 80\)</span> ✓; all <span class="math inline">\(\ge 0\)</span> ✓. Value: <span class="math inline">\(6(10/3) + 10(20) + 8(0) = 20 + 200 = 220\)</span>.</li>
+<li>For a minimization primal, any feasible point upper-bounds the optimum: <span class="math inline">\(p^\star \le 220\)</span>. For the maximization dual, any feasible point lower-bounds it: <span class="math inline">\(d^\star \ge 220\)</span>. Weak duality: <span class="math inline">\(d^\star \le p^\star\)</span>. Chain: <span class="math inline">\(220 \le d^\star \le p^\star \le 220\)</span> — equality throughout, so <span class="math inline">\(p^\star = d^\star = 220\)</span> and both points are optimal. This is the certificate argument in action: matching feasible values prove optimality on both sides.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — Concavity of <span class="math inline">\(g\)</span> (full steps). Fix <span class="math inline">\(\theta \in [0,1]\)</span>, <span class="math inline">\(\lambda_1, \lambda_2 \ge 0\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>4.</strong> Concavity of <span class="math inline">\(g\)</span> (full steps). Fix <span class="math inline">\(\theta \in [0,1]\)</span>, <span class="math inline">\(\lambda_1, \lambda_2 \ge 0\)</span>. <span class="math display">\[g(\theta\lambda_1 + (1-\theta)\lambda_2) = \min_{\mathbf{x}} L(\mathbf{x}, \theta\lambda_1 + (1-\theta)\lambda_2) = \min_{\mathbf{x}} \big[\theta L(\mathbf{x},\lambda_1) + (1-\theta)L(\mathbf{x},\lambda_2)\big],\]</span> using that <span class="math inline">\(L\)</span> is affine in <span class="math inline">\(\lambda\)</span> for fixed <span class="math inline">\(\mathbf{x}\)</span>. Now for <em>every</em> <span class="math inline">\(\mathbf{x}\)</span>: <span class="math inline">\(\theta L(\mathbf{x},\lambda_1) + (1-\theta)L(\mathbf{x},\lambda_2) \ge \theta \min_{\mathbf{z}} L(\mathbf{z},\lambda_1) + (1-\theta)\min_{\mathbf{z}} L(\mathbf{z},\lambda_2) = \theta g(\lambda_1) + (1-\theta)g(\lambda_2)\)</span>, since each <span class="math inline">\(L(\mathbf{x}, \cdot)\)</span> is at least its own minimum and <span class="math inline">\(\theta, 1-\theta \ge 0\)</span>. The left side, minimized over <span class="math inline">\(\mathbf{x}\)</span>, is still <span class="math inline">\(\ge\)</span> the right side (a constant in <span class="math inline">\(\mathbf{x}\)</span>): <span class="math display">\[g(\theta\lambda_1 + (1-\theta)\lambda_2) \ge \theta g(\lambda_1) + (1-\theta)g(\lambda_2),\]</span> the concavity chord inequality. ∎</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — <span class="math inline">\(\min_x (x-3)^2\)</span> s.t. <span class="math inline">\(x \le 1\)</span>: <span class="math inline">\(h(x) = x - 1 \le 0\)</span>, <span class="math inline">\(L(x,\lambda) = (x-3)^2 + \lambda(x-1)\)</span>, <span class="math inline">\(\lambda \ge 0\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>5.</strong> <span class="math inline">\(\min_x (x-3)^2\)</span> s.t. <span class="math inline">\(x \le 1\)</span>: <span class="math inline">\(h(x) = x - 1 \le 0\)</span>, <span class="math inline">\(L(x,\lambda) = (x-3)^2 + \lambda(x-1)\)</span>, <span class="math inline">\(\lambda \ge 0\)</span>.</p>
+<ol type="i">
+<li><span class="math inline">\(x = 0\)</span>: <span class="math inline">\(L(0,\lambda) = 9 + \lambda(-1) = 9 - \lambda\)</span>. Over <span class="math inline">\(\lambda \ge 0\)</span> the max is at <span class="math inline">\(\lambda = 0\)</span>: value <span class="math inline">\(9\)</span>. <span class="math inline">\(J(0) = (0-3)^2 = 9\)</span> since <span class="math inline">\(0 \le 1\)</span> (feasible) ✓.</li>
+<li><span class="math inline">\(x = 2\)</span>: <span class="math inline">\(L(2,\lambda) = 1 + \lambda(1) = 1 + \lambda \to \infty\)</span> as <span class="math inline">\(\lambda \to \infty\)</span>. <span class="math inline">\(J(2) = \infty\)</span> since <span class="math inline">\(2 &gt; 1\)</span> (infeasible) ✓.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — <span class="math inline">\(\min_{x,y} x^2 + y^2\)</span> s.t. <span class="math inline">\(x + y \ge 1\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>6.</strong> <span class="math inline">\(\min_{x,y} x^2 + y^2\)</span> s.t. <span class="math inline">\(x + y \ge 1\)</span>.</p>
+<ol type="a">
+<li><span class="math inline">\(h(x,y) = 1 - x - y \le 0\)</span>; <span class="math inline">\(L = x^2 + y^2 + \lambda(1 - x - y)\)</span>, <span class="math inline">\(\lambda \ge 0\)</span>.</li>
+<li><span class="math inline">\(\frac{\partial L}{\partial x} = 2x - \lambda = 0\)</span>, <span class="math inline">\(\frac{\partial L}{\partial y} = 2y - \lambda = 0 \Rightarrow x = y = \lambda/2\)</span>. Then <span class="math inline">\(g(\lambda) = 2(\lambda^2/4) + \lambda(1 - \lambda) = \lambda - \lambda^2/2\)</span>. Dual <span class="math inline">\(\max_{\lambda \ge 0} g\)</span>: <span class="math inline">\(g' = 1 - \lambda = 0 \Rightarrow \lambda^\star = 1\)</span>; <span class="math inline">\(d^\star = g(1) = 1 - 1/2 = 1/2\)</span>.</li>
+<li>Weak duality: <span class="math inline">\(p^\star \ge d^\star = 1/2\)</span>.</li>
+<li>Primal: by Cauchy–Schwarz, <span class="math inline">\(x^2 + y^2 \ge (x+y)^2/2 \ge 1/2\)</span> on the feasible set (since <span class="math inline">\(x+y \ge 1\)</span>). Equality at <span class="math inline">\(x = y = 1/2\)</span>, which is feasible (<span class="math inline">\(1/2 + 1/2 = 1 \ge 1\)</span> ✓). So <span class="math inline">\(p^\star = 1/2 = d^\star\)</span> — gap <span class="math inline">\(0\)</span>. (Convex: Hessian <span class="math inline">\(\mathrm{diag}(2,2) \succ 0\)</span>; <span class="math inline">\(h\)</span> linear — strong duality applies.)</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — KKT at <span class="math inline">\((1, 2)\)</span> for <span class="math inline">\(\min x^2\)</span> s.t. <span class="math inline">\(1 - x \le 0\)</span>: stationarity <span class="math inline">\(2(1) - 2 = 0\)</span> ✓; complementary slackness <span class="math inline">\(2(1-1) = 0\)</span> ✓; primal feasibility <span class="math inline">\(1 - 1 = 0 \le 0\)</span> ✓; dual feasibility <span class="math inline">\(2 \ge 0\)</span> ✓.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>7.</strong> KKT at <span class="math inline">\((1, 2)\)</span> for <span class="math inline">\(\min x^2\)</span> s.t. <span class="math inline">\(1 - x \le 0\)</span>: stationarity <span class="math inline">\(2(1) - 2 = 0\)</span> ✓; complementary slackness <span class="math inline">\(2(1-1) = 0\)</span> ✓; primal feasibility <span class="math inline">\(1 - 1 = 0 \le 0\)</span> ✓; dual feasibility <span class="math inline">\(2 \ge 0\)</span> ✓.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 8 — Testing <span class="math inline">\((x, u) = (0, 0)\)</span>: stationarity <span class="math inline">\(2(0) - 0 = 0\)</span> ✓ (holds!); CS <span class="math inline">\(0 \cdot (1-0) = 0\)</span> ✓ (holds!); dual feasibility <span class="math inline">\(0 \ge 0\)</span> ✓ (holds!); primal feasibility <span class="math inline">\(1 - 0 = 1 \le 0\)</span> ✗ <strong>fails</strong>. The proposal is not even feasible. Moral: stationarity alone certifies nothing — exactly §10.8’s warning that first-order conditions need the full interrogation. Here the missing interrogation is feasibility, and KKT supplies it.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>8.</strong> Testing <span class="math inline">\((x, u) = (0, 0)\)</span>: stationarity <span class="math inline">\(2(0) - 0 = 0\)</span> ✓ (holds!); CS <span class="math inline">\(0 \cdot (1-0) = 0\)</span> ✓ (holds!); dual feasibility <span class="math inline">\(0 \ge 0\)</span> ✓ (holds!); primal feasibility <span class="math inline">\(1 - 0 = 1 \le 0\)</span> ✗ <strong>fails</strong>. The proposal is not even feasible. Moral: stationarity alone certifies nothing — exactly §10.8’s warning that first-order conditions need the full interrogation. Here the missing interrogation is feasibility, and KKT supplies it.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 9 — <span class="math inline">\(\min 2x_1 + 3x_2\)</span> s.t. <span class="math inline">\(x_1 + x_2 \ge 4\)</span>, <span class="math inline">\(x_1, x_2 \ge 0\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>9.</strong> <span class="math inline">\(\min 2x_1 + 3x_2\)</span> s.t. <span class="math inline">\(x_1 + x_2 \ge 4\)</span>, <span class="math inline">\(x_1, x_2 \ge 0\)</span>.</p>
+<ol type="a">
+<li>Standard form: <span class="math inline">\(h_1 = 4 - x_1 - x_2 \le 0\)</span>, <span class="math inline">\(h_2 = -x_1 \le 0\)</span>, <span class="math inline">\(h_3 = -x_2 \le 0\)</span>.</li>
+<li><span class="math inline">\(L = 2x_1 + 3x_2 + u_1(4 - x_1 - x_2) - u_2x_1 - u_3x_2\)</span>. KKT: stationarity <span class="math inline">\(2 - u_1 - u_2 = 0\)</span>, <span class="math inline">\(3 - u_1 - u_3 = 0\)</span>; CS <span class="math inline">\(u_1(4-x_1-x_2) = 0\)</span>, <span class="math inline">\(u_2 x_1 = 0\)</span>, <span class="math inline">\(u_3 x_2 = 0\)</span>; PF the three <span class="math inline">\(h_i \le 0\)</span>; DF <span class="math inline">\(u_1, u_2, u_3 \ge 0\)</span>.</li>
+<li>Guess: <span class="math inline">\(h_1\)</span> active, <span class="math inline">\(x_2 = 0\)</span> (cheaper variable <span class="math inline">\(x_1\)</span> does all the work), so <span class="math inline">\(u_3 = 0\)</span> free, <span class="math inline">\(u_1 &gt; 0\)</span>, <span class="math inline">\(u_2 = 0\)</span> (since <span class="math inline">\(x_1 &gt; 0\)</span> expected). Then stationarity: <span class="math inline">\(2 - u_1 = 0 \Rightarrow u_1 = 2\)</span>; <span class="math inline">\(3 - 2 - u_3 = 0 \Rightarrow u_3 = 1\)</span>. CS: <span class="math inline">\(h_1 = 0 \Rightarrow x_1 + x_2 = 4\)</span>; with <span class="math inline">\(x_2 = 0\)</span>: <span class="math inline">\(\mathbf{x}^\star = (4, 0)\)</span>. Verify: PF: <span class="math inline">\(4 - 4 - 0 = 0 \le 0\)</span> ✓, <span class="math inline">\(-4 \le 0\)</span> ✓, <span class="math inline">\(0 \le 0\)</span> ✓. CS: <span class="math inline">\(2(0) = 0\)</span> ✓, <span class="math inline">\(0 \cdot 4 = 0\)</span> ✓, <span class="math inline">\(1 \cdot 0 = 0\)</span> ✓. DF: <span class="math inline">\(2, 0, 1 \ge 0\)</span> ✓. <span class="math inline">\(f^\star = 2(4) + 3(0) = 8\)</span>. (Sanity: on <span class="math inline">\(x_1 + x_2 = 4\)</span>, <span class="math inline">\(f = 2x_1 + 3(4-x_1) = 12 - x_1\)</span>, minimized at the largest feasible <span class="math inline">\(x_1 = 4\)</span>. ✓) LP ⇒ convex ⇒ globally optimal.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 10 — Certificate theorem (full steps). Let the problem be convex (<span class="math inline">\(f\)</span> convex, each <span class="math inline">\(h_i\)</span> convex, equalities affine) and <span class="math inline">\((\mathbf{x}^\star, \mathbf{u}^\star)\)</span> satisfy KKT.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>10.</strong> Certificate theorem (full steps). Let the problem be convex (<span class="math inline">\(f\)</span> convex, each <span class="math inline">\(h_i\)</span> convex, equalities affine) and <span class="math inline">\((\mathbf{x}^\star, \mathbf{u}^\star)\)</span> satisfy KKT.</p>
+<ol type="i">
+<li>Primal feasibility gives <span class="math inline">\(\mathbf{x}^\star\)</span> feasible, so <span class="math inline">\(p^\star \le f(\mathbf{x}^\star)\)</span> (the min over the feasible set is at most the value at one feasible point).</li>
+<li>For fixed <span class="math inline">\(\mathbf{u}^\star \ge 0\)</span>, <span class="math inline">\(L(\cdot, \mathbf{u}^\star) = f + \sum u_i^\star h_i\)</span> is convex (nonneg-weighted sum of convex functions). Stationarity <span class="math inline">\(\nabla_{\mathbf{x}} L(\mathbf{x}^\star, \mathbf{u}^\star) = \mathbf{0}\)</span> plus convexity ⇒ <span class="math inline">\(\mathbf{x}^\star\)</span> globally minimizes <span class="math inline">\(L(\cdot, \mathbf{u}^\star)\)</span> (§12.10). Hence <span class="math inline">\(g(\mathbf{u}^\star) = \min_{\mathbf{x}} L(\mathbf{x}, \mathbf{u}^\star) = L(\mathbf{x}^\star, \mathbf{u}^\star) = f(\mathbf{x}^\star) + \sum_i u_i^\star h_i(\mathbf{x}^\star) = f(\mathbf{x}^\star)\)</span>, using complementary slackness <span class="math inline">\(u_i^\star h_i(\mathbf{x}^\star) = 0\)</span>.</li>
+<li><span class="math inline">\(d^\star = \max_{\mathbf{u} \ge 0} g(\mathbf{u}) \ge g(\mathbf{u}^\star) = f(\mathbf{x}^\star)\)</span>.</li>
+<li>Chain: <span class="math inline">\(f(\mathbf{x}^\star) = g(\mathbf{u}^\star) \le d^\star \le p^\star \le f(\mathbf{x}^\star)\)</span>, the middle inequality being weak duality. Equality throughout: <span class="math inline">\(\boxed{p^\star = d^\star = f(\mathbf{x}^\star)}\)</span>. So KKT alone — no optimizer run — certifies <span class="math inline">\(\mathbf{x}^\star\)</span> primal-optimal, <span class="math inline">\(\mathbf{u}^\star\)</span> dual-optimal, and zero duality gap. ∎</li>
+</ol>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./12-convex-sets-functions.html" class="pagination-link" aria-label="12. Convex sets and convex functions">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">12. Convex sets and convex functions</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./14-probability-basics.html" class="pagination-link" aria-label="14. Probability basics: experiments, sample spaces, Bayes">
+        <span class="nav-page-text"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

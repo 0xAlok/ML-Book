@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Chapter 40: End-to-end model training and debugging – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./41-neuron-mlp-scratch.html" rel="next">
+<link href="./39-model-evaluation-cv.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./36-numpy-pandas.html">Part V — Machine Learning in Practice</a></li><li class="breadcrumb-item"><a href="./40-end-to-end-debugging.html"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#the-end-to-end-runbook-the-courses-eight-steps" id="toc-the-end-to-end-runbook-the-courses-eight-steps" class="nav-link active" data-scroll-target="#the-end-to-end-runbook-the-courses-eight-steps">40.1 The end-to-end runbook: the course’s eight steps</a></li>
+  <li><a href="#the-debugging-playbook-symptom-diagnosis-fix" id="toc-the-debugging-playbook-symptom-diagnosis-fix" class="nav-link" data-scroll-target="#the-debugging-playbook-symptom-diagnosis-fix">40.2 The debugging playbook: symptom → diagnosis → fix</a></li>
+  <li><a href="#reading-the-instruments" id="toc-reading-the-instruments" class="nav-link" data-scroll-target="#reading-the-instruments">40.3 Reading the instruments</a></li>
+  <li><a href="#the-suspiciously-good-checklist-the-books" id="toc-the-suspiciously-good-checklist-the-books" class="nav-link" data-scroll-target="#the-suspiciously-good-checklist-the-books">40.4 The “suspiciously good” checklist (the book’s)</a></li>
+  <li><a href="#where-this-goes-next" id="toc-where-this-goes-next" class="nav-link" data-scroll-target="#where-this-goes-next">40.5 Where this goes next</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./36-numpy-pandas.html">Part V — Machine Learning in Practice</a></li><li class="breadcrumb-item"><a href="./40-end-to-end-debugging.html"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Everything in §40.1 comes from the MLP Week-1 Lecture 1–5 deck, “End to end Machine Learning Project” (the wine-quality project — the course’s own canonical workflow, from problem framing to launch); §§40.2–40.4 replay the debugging cases already built in Chapters 36–39, plus one new catch found by re-reading the deck itself (§40.2’s case 5). This is the last chapter of Part V, and it is a synthesis: the runbook is the course’s, and the playbook below it is <strong>the book’s</strong> — assembled from the chapters’ own experiments, not from the course slides.</p>
+<p><strong>A word on what was actually run.</strong> The position is the same as Chapters 37–39: sklearn is not installed on this machine, so no <code>sklearn</code> call below was executed here. Deck code and numbers are transcribed from the slides — verbatim unless a slide typo forced a fix (each fix is logged in <code>reviews/40-end-to-end-debugging.md</code>). Every <em>number</em> beside the code is either <strong>[recorded]</strong> — printed as output in the course material itself — or <strong>[verified]</strong> — worked by hand in this session from definitions (confusion-matrix arithmetic, grid-size counting, index sets). numpy is installed, so every numpy-only check was re-run and is marked <strong>[verified-NumPy]</strong>. The boundary matters more than usual in this chapter: the taxonomy, the checklists, and every “the book’s” label are the book’s synthesis; the cases, code, and numbers are the course’s or the earlier chapters’.</p>
+<p><strong>Notation.</strong> <span class="math inline">\(X \in \mathbb{R}^{n \times d}\)</span> as usual (<span class="math inline">\(n\)</span> points, <span class="math inline">\(d\)</span> features, points as rows — the book’s <span class="math inline">\((n, d)\)</span>, §36.1).</p>
+<section id="the-end-to-end-runbook-the-courses-eight-steps" class="level2">
+<h2 class="anchored" data-anchor-id="the-end-to-end-runbook-the-courses-eight-steps">40.1 The end-to-end runbook: the course’s eight steps</h2>
+<p>The deck opens with eight steps and then walks a wine-quality project through every one of them. As a runbook, with the book’s chapters doing each step’s machinery:</p>
+<p><strong>i) Look at the big picture.</strong> Frame the problem: “What is input and output? What is the business objective? … Is this a classification, regression or some other task?” Then select the performance measure — the deck’s menu: regression → MSE or MAE (§37.5’s shelf); classification → precision, recall, F1-score, accuracy (§38.8–38.9’s ledger). Then the deck’s underlined rule: “List down various assumptions about the task. Review with domain experts … <strong>Make sure all assumptions are reviewed and approved before coding!</strong>” (exclamation mark in the original). Debugging lesson zero lives here: a metric chosen <em>after</em> seeing results is a metric chosen to flatter.</p>
+<p><strong>ii) Get the data.</strong> “It’s a good practice to create a function for downloading and extracting the data.” The deck’s wine flow: <code>pd.read_csv(data_url, sep=";")</code> → 1599 rows, 12 columns — 11 features + label <code>quality</code>, quality <span class="math inline">\(\in [3, 8]\)</span> [recorded] (§36.7’s verified re-run).</p>
+<p><strong>iii) Discover and visualize.</strong> <code>head()</code>, <code>info()</code>, <code>describe()</code>, <code>value_counts()</code> (“lots of samples of average wines” — qualities 5 and 6 dominate), histograms, <code>corr()</code> (“only captures linear relationship”), heatmaps, scatter matrices. The deck’s two discipline lines: “Before any further exploration, <strong>it’s a good idea to separate test set and do not look at it</strong> in order to have a clean evaluation set” — because “when we look at the test set, we are likely to notice patterns in that and based on that we may select certain models. This leads to biased estimation on test set … This is called <strong>data snooping bias</strong>.” And the deck’s humility note: “Visualization and data exploration do not have to be absolutely thorough … <strong>Exploration is an iterative process</strong>: Once we build model and obtain more insights, we can come back to this step.” (§36.6’s seeded split; §39.6’s spend-once doctrine.)</p>
+<p><strong>iv) Prepare the data.</strong> “It’s a good practice to make a copy of the data and apply preprocessing on that copy. This ensures that in case something goes wrong, we will at least have original copy of the data intact.” The deck’s four moves: separate features and labels; handle missing values and outliers (<code>isna().sum()</code>; impute — <code>SimpleImputer(strategy="median")</code> learning the medians <span class="math inline">\([7.9, 0.52, 0.26, \dots, 10.2]\)</span> on the <em>training</em> features [recorded]; drop; or keep-as-NaN when the value can’t exist — §36.7’s discipline); scale features (“Most ML algorithms do not perform well when input features are on very different scales” — “Scaling of target label is generally not required”); transforms (log, square root). Then the deck’s slide-57 law, the sentence this whole part of the book is built on: “<strong>Note that all these transformers are learnt on the training data and then applied on the training and test data to transform them. Never learn these transformers on the full dataset.</strong>” (§37.8’s machinery exists to make this structural.)</p>
+<p><strong>v) Select and train — baseline first.</strong> “It’s a good practice to build a quick baseline model on the preprocessed data and get an idea about model performance.” The deck’s baseline: <code>LinearRegression()</code> → train MSE <span class="math inline">\(0.4207\)</span>, test MSE <span class="math inline">\(0.3976\)</span> [recorded]. Then the deck’s cautionary tale — <code>DecisionTreeRegressor()</code>: train MSE <span class="math inline">\(0.0\)</span>, test MSE <span class="math inline">\(0.5813\)</span> [recorded] — “Note that the training error is <span class="math inline">\(0\)</span>, while the test error is <span class="math inline">\(0.58\)</span>. <strong>This is an example of an overfitted model</strong>.” (§23.9 on paper; §39.4 as code.) Then robust comparison: <code>cross_val_score(..., scoring="neg_mean_squared_error", cv=10)</code> — linear regression <span class="math inline">\(0.4316 \pm 0.0836\)</span> [recorded]; decision tree <span class="math inline">\(0.6852 \pm 0.1667\)</span> [recorded]; random forest <span class="math inline">\(0.3457 \pm 0.0736\)</span> [recorded] — “LinReg has better MSE and more precise estimation compared to DT.” (The deck’s verdict, printed under the numbers.)</p>
+<p><strong>vi) Fine-tune.</strong> <code>GridSearchCV(forest_reg, param_grid, cv=5, scoring='neg_mean_squared_error', return_train_score=True)</code> over <span class="math inline">\(18\)</span> combinations (<span class="math inline">\(12 + 6\)</span>, two grids) <span class="math inline">\(\times\)</span> <span class="math inline">\(5\)</span> folds <span class="math inline">\(= 90\)</span> fits [recorded arithmetic]; <code>best_params_</code> <span class="math inline">\(\to\)</span> <code>{'max_features': 6, 'n_estimators': 30}</code> [recorded]; “GridSearchCV is initialized with <code>refit=True</code> option, which <strong>retrains the best estimator on the full training set</strong>.” Big spaces: <code>RandomizedSearchCV</code> — “enables us to search hyperparameter space with appropriate budget control.” (§39.6–39.7; the <span class="math inline">\(18 \times 5 = 90\)</span> count is the deck’s own.) Then the deck’s debugging-adjacent line, quoted whole because it is the motto of §40.2: “<strong>It is also useful to analyze the errors in prediction and understand its causes and fix them</strong>” — plus <code>feature_importances_</code>, “based on this information, we may drop features that are not so important.”</p>
+<p><strong>vii) Evaluate once, then present.</strong> The test set, spent exactly once (§39.6’s doctrine): transform the test features, predict, one metric — test MSE <span class="math inline">\(0.3535\)</span> [recorded] — and the deck’s honest extra: “It’s a good idea to get 95% confidence interval of the evaluation metric,” <span class="math inline">\((0.2916, 0.4153)\)</span> [recorded] via <code>stats.t.interval</code>. Then present: “highlights learnings, assumptions and systems limitation. Document everything, create clear visualizations.”</p>
+<p><strong>viii) Launch, monitor, maintain.</strong> The deck’s three words: <strong>Launch</strong> — “Plug in input sources and write test cases”; <strong>Monitoring</strong> — “system outages, degradation of model performance, sampling predictions for human evaluation, regular assessment of data quality, which is critical for model performance”; <strong>Maintenance</strong> — “train model regularly every fixed interval with fresh data.” The runbook doesn’t end at the test score; it ends when the model is serving and someone is watching it.</p>
+<p><strong>The deck’s framing line</strong>, worth keeping above the whole runbook: “ML is usually a small piece in a big project… <strong>Typically 10-15% of time is spent on ML.</strong> A lot more time is spent on capturing and processing data needed for ML and taking decisions based on output of ML module.”</p>
+<p><strong>eg 1 (the runbook on one line each).</strong> The §36.8 house table through the deck’s steps: (i) big picture — regression, price in dollars, metric MAE; (ii) get — the inline CSV; (iii) explore — <code>describe()</code>, rooms <span class="math inline">\(=\)</span> NaN in row 9 (§36.8); (iv) prepare — median-impute rooms on the train rows only; (v) baseline — <code>DummyRegressor(strategy="mean")</code> floor first, then <code>LinearRegression</code> (§37.4, <span class="math inline">\(R^2 = 0.9619\)</span> [verified-NumPy]); (vi) tune — none needed at <span class="math inline">\(n = 10\)</span>; (vii) evaluate once — on the §36.6 seeded split’s test rows; (viii) launch — <span class="math inline">\(n/a\)</span>, it’s ten houses. Every step already done somewhere in Chapters 36–39; this chapter is the index.</p>
+<p><strong>Basically, …</strong> “The course’s end-to-end project is eight steps in one sentence: <em>frame it, fetch it, look at it, clean it, baseline it, tune it, grade it once, ship it and watch it.</em> The middle six steps are Chapters 36–39; this chapter is the checklist that keeps them in order — and the rest of the chapter is what to check when a step’s output looks wrong.”</p>
+<!-- Original matplotlib illustration drawn for this chapter (not reused from any URL): debugging-playbook flowchart — one entry "something looks wrong", three branches (crash, scores too bad, scores too good), each pointing at the playbook cases and chapter sections -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/40-debugging-flowchart.png" class="img-fluid figure-img"></p>
+<figcaption>Debugging-playbook flowchart: one entry box (“something looks wrong”) branches into three. “It crashed / raised” points to “check shapes first — the (n,d) convention, §36.1 Note; the broadcasting ValueError, §36.3”. “Scores are too bad” points to “shuffle? baseline? metric/threshold? seed? — §38.10-A, §37.2 Note, §38.8–38.9, §36.6”. “Scores are too good” points to “run the suspiciously-good checklist — leaks, test reuse, duplicated rows, §40.4”.</figcaption>
+</figure>
+</div>
+</section>
+<section id="the-debugging-playbook-symptom-diagnosis-fix" class="level2">
+<h2 class="anchored" data-anchor-id="the-debugging-playbook-symptom-diagnosis-fix">40.2 The debugging playbook: symptom → diagnosis → fix</h2>
+<p>Every case below is one the book has already met — the course’s own experiments, or the deck itself. Same shape each time: the <strong>symptom</strong> (what the screen shows), the <strong>diagnosis</strong> (what’s actually wrong), the <strong>fix</strong>.</p>
+<p><strong>Case 1 — the shape/convention bug.</strong> <em>Symptom:</em> <code>ValueError</code> at <code>fit</code> or <code>predict</code>, or — worse — code that runs and silently computes garbage. <em>Diagnosis:</em> the <span class="math inline">\((d, n)\)</span> habit (§36.1’s Note) fed where the <span class="math inline">\((n, d)\)</span> convention is expected, or an axis collapse read backwards (§36.4’s collapse rule). <em>Fix:</em> <code>print(X.shape)</code> first, always — in <code>(60000, 28, 28)</code> the <em>first</em> axis is the sample axis; convert with <code>.T</code> or <code>reshape</code> the moment the sample axis isn’t first. §36.3’s rule of thumb: “That error is your friend — it means you mixed up the <span class="math inline">\((n, d)\)</span> convention.” The cheapest bug to find and the most common one to make.</p>
+<p><strong>eg 2 (the broadcast that tells on you) [verified-NumPy].</strong> Mean-centering with a transposed mean:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.arange(<span class="dv">6</span>).reshape(<span class="dv">3</span>, <span class="dv">2</span>)     <span class="co"># (3, 2): 3 points, 2 features</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> X.mean(axis<span class="op">=</span><span class="dv">0</span>)                <span class="co"># (2,) per-feature means: [2., 3.]</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">-</span> mu                             <span class="co"># (3,2)-(2,) -&gt; fine: mu stretched down the rows</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>X <span class="op">-</span> mu[:, np.newaxis]              <span class="co"># (2,1) against (3,2) -&gt; ValueError: shapes (3,2) and (2,1) not aligned</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The <code>(2,1)</code> column form broadcasts against the <em>first</em> axis and dies; the flat <code>(2,)</code> form aligns on the trailing axis and works. If the subtraction had silently succeeded with the wrong alignment, every downstream number would be nonsense — the <code>ValueError</code> is the good outcome.</p>
+<p><strong>Case 2 — the shuffle disaster (§38.10, Experiment A).</strong> <em>Symptom:</em> accuracy <span class="math inline">\(0.5486\)</span>, precision <span class="math inline">\(1.0000\)</span>, recall <span class="math inline">\(0.0703\)</span> [recorded] — the confusion matrix <span class="math inline">\((TN, FP, FN, TP) = (196, 0, 172, 13)\)</span> [recorded]: the perceptron predicts <span class="math inline">\(-1\)</span> for nearly everything. <em>Diagnosis:</em> <code>shuffle=False</code> with training rows stacked <span class="math inline">\(+1\)</span>s-then-<span class="math inline">\(-1\)</span>s; SGD “estimates the gradient with one sample at a time” (§38.6), so 863 fives drag the weights deep into five-territory before 1032 threes arrive, and it never recovers. <em>Fix:</em> shuffle the training data before fitting — the default, and the slide’s rule, “not hygiene, it is load-bearing.”</p>
+<p><strong>Case 3 — the PCA double-fit leak (§38.10, Experiment B).</strong> <em>Symptom:</em> ten PCA components, perceptron, accuracy <span class="math inline">\(0.5564\)</span> — barely above coin-flip [recorded]. <em>Diagnosis:</em> the solution’s first attempt ran <code>pca.fit(x_train1)</code> <strong>and</strong> <code>pca.fit(x_test1)</code> — test statistics learned into the projection, <em>and</em> train and test projected onto different bases. <em>Fix:</em> fit once, on train only (<code>p.transform(x_test1)</code>) — or, structurally, <code>make_pipeline(pca, clf)</code> so the leak is un-writable (§37.8’s Note). The corrected run: accuracy <span class="math inline">\(0.9213\)</span> [verified] — the leak had cost 36 points.</p>
+<p><strong>Case 4 — scale-outside-CV (§39.9).</strong> <em>Symptom:</em> CV numbers that look a shade rosier than the honest pipeline — nothing crashes, nothing screams. <em>Diagnosis:</em> the scaler (or imputer, or PCA) was <code>fit</code> <em>outside</em> the fold loop, so every fold’s “training” statistics already saw the validation rows. <em>Fix:</em> put the whole pipeline <em>inside</em> <code>GridSearchCV</code>; the grid addresses steps with <code>poly__degree</code>-style double underscores (§37.8), and every fold refits every learning step on its own rows.</p>
+<p><strong>Case 5 — the deck’s own slip (found by re-reading).</strong> <em>Symptom:</em> none visible — the numbers print fine. <em>Diagnosis:</em> the wine deck’s own test-evaluation snippet, in <em>both</em> places it evaluates the test set, calls <code>transform_pipeline.fit_transform(wine_features_test)</code> — refitting the imputer medians and the scaler’s <span class="math inline">\(\mu, \sigma\)</span> on the <strong>test rows</strong>, in direct violation of the deck’s own slide-57 law (“Never learn these transformers on the full dataset,” §40.1-iv). <em>Fix:</em> one method call — <code>.transform(wine_features_test)</code>, the statistics learned on train replayed on test. The book’s catch, logged in the review; the course’s numbers are kept as [recorded] regardless.</p>
+<p><strong>Case 6 — the no-baseline trap (§37.2’s Note, §39.1).</strong> <em>Symptom:</em> “<span class="math inline">\(R^2 = 0.05\)</span> — is that good?” <em>Diagnosis:</em> no floor was ever built, so the question is unanswerable. <em>Fix:</em> <code>DummyRegressor(strategy="mean")</code> first — a constant predictor scores exactly <span class="math inline">\(0.0\)</span> (§37.5’s second landmark), so anything above zero is learning and anything at-or-below is noise. §39.1’s discipline: beat the dummy first, then tune.</p>
+<p><strong>Case 7 — the wrong metric / threshold (§38.8–38.9).</strong> <em>Symptom:</em> accuracy <span class="math inline">\(99\%\)</span>, model useless — the classic rare-class story (a disease classifier that never predicts disease). <em>Diagnosis:</em> the metric doesn’t match the job (§40.1-i’s “select the performance measure” — skipped or chosen late). <em>Fix:</em> read the confusion matrix (§38.8’s ledger: precision = purity of the alarms, recall = completeness of the net), move the threshold at <em>prediction</em> time (free, no retraining — §38.9’s second lever), or penalize rare-class mistakes at <em>training</em> time with <code>class_weight</code> (§38.5’s first lever). Multiclass: pick the <code>average=</code> (§38.9) that matches the question — <code>macro</code> gives rare classes an equal vote.</p>
+<p><strong>Case 8 — the silent seed (§36.6, §39.2’s Note).</strong> <em>Symptom:</em> the numbers change every run; a colleague can’t reproduce your split. <em>Diagnosis:</em> no seed was set — or worse, a seed was set where it does nothing: the slide’s <code>KFold(n_splits=5, random_state=42)</code> never sets <code>shuffle=True</code>, so <code>random_state</code> is silently inert (logged in §39’s review). <em>Fix:</em> seed deliberately (<code>random_state=42</code>, <code>np.random.seed</code>), and verify the flag actually takes effect — reproducibility is §36.6’s “controlled substance.”</p>
+<p><strong>Note (the seed that resets itself).</strong> The deck’s own <code>split_train_test</code> calls <code>np.random.seed(42)</code> <em>inside</em> the function body — so every call replays the identical permutation for same-length data (§36.6’s problem 6-ii). Fine for “same test set every run”; a trap the moment you expect two calls to give two <em>different</em> splits. Seed once, at the top, outside the function.</p>
+<p><strong>Case 9 — the mis-sized search (§39.7).</strong> <em>Symptom:</em> sklearn prints, verbatim [recorded]:</p>
+<pre><code>UserWarning: The total space of parameters 8 is smaller than n_iter=10.
+Running 8 iterations. For exhaustive searches, use GridSearchCV.</code></pre>
+<p><em>Diagnosis:</em> <code>RandomizedSearchCV</code> on a tiny <em>discrete</em> space (<span class="math inline">\(2 \times 4 = 8\)</span> combos) degenerates into grid search. <em>Fix:</em> grid for small/exhaustive spaces, random sampling for large or continuous ones — “with appropriate budget control” is the deck’s phrase, and the warning is the instrument telling you the budget was spent wrong.</p>
+<p><strong>Basically, …</strong> “Nine cases, one pattern: <em>the pipeline looked right and the numbers lied.</em> Shapes lie silently (case 1) or loudly (the <code>ValueError</code> — take the loud one). Order lies to SGD (case 2). <code>fit</code> lies to the test set (cases 3, 4, 5 — all the same disease: something learned where it should only have applied). Metrics lie by answering the wrong question (cases 6, 7). Randomness lies by not repeating (case 8). And the search lies by warning you in plain English while you scroll past it (case 9).”</p>
+</section>
+<section id="reading-the-instruments" class="level2">
+<h2 class="anchored" data-anchor-id="reading-the-instruments">40.3 Reading the instruments</h2>
+<p>The numbers the workflow prints are a dashboard. What each reading means, in the book’s vocabulary:</p>
+<p><strong>i) Negative <span class="math inline">\(R^2\)</span>.</strong> §37.5’s third landmark: the model is <em>worse than predicting the mean</em> — “the model can be arbitrarily worse.” Not “a bit off” — a sign error in the pipeline, a target leaked wrong, or a model fit on nonsense. Don’t tune it; debug it (start at case 1).</p>
+<p><strong>ii) Train error tiny, test error large.</strong> §23.9’s overfitting signature, in the deck’s own numbers: the tree’s train MSE <span class="math inline">\(0.0\)</span> vs test <span class="math inline">\(0.5813\)</span> [recorded] — “This is an example of an overfitted model.” (§39.4’s learning-curve version: the gap.)</p>
+<p><strong>iii) Both errors high and flat.</strong> Underfit — the model can’t express the pattern; more data won’t help (§39.4’s first reading). Change the model: features, capacity, less regularization.</p>
+<p><strong>iv) The gap that won’t close.</strong> Overfit that needs the <em>model</em> changed, not the data (§39.4’s third reading) — and note §38.10’s Experiment C cuts the other way: regularization is not fairy dust; on the PCA-compressed digits, L2 <em>cost</em> 17 points of accuracy (<span class="math inline">\(0.9213 \to 0.7480\)</span> [recorded]) and even L1 cost 5. So “the gap won’t close” has two possible prescriptions — more capacity <em>or</em> less regularization — and the book’s honest answer is: that’s what the validation set (§39.6) is for.</p>
+<p><strong>v) <code>fit_time</code> exploding in <code>cross_validate</code>.</strong> The deck’s own arithmetic: <span class="math inline">\(18\)</span> combos <span class="math inline">\(\times\)</span> <span class="math inline">\(5\)</span> folds <span class="math inline">\(= 90\)</span> fits. If each fit is minutes, the search is days — shrink the grid, sample the space (§39.7), or reach for the <code>*CV</code> estimators’ efficient paths (§39.8).</p>
+<p><strong>eg 3 (three dashboards, read aloud).</strong> (a) <code>learning_curve</code> prints train error <span class="math inline">\(0.02\)</span>, CV error <span class="math inline">\(0.61\)</span>, and the CV curve is still falling at the largest <span class="math inline">\(n\)</span> → overfit that data can cure: buy rows. (b) Train error <span class="math inline">\(0.80\)</span>, CV error <span class="math inline">\(0.82\)</span>, both flat from <span class="math inline">\(n = 200\)</span> to <span class="math inline">\(n = 2000\)</span> → underfit: buy capacity (§39.4’s readings, applied). (c) Test accuracy <span class="math inline">\(1.0000\)</span> on the first run → don’t celebrate; run §40.4.</p>
+<p><strong>Basically, …</strong> “The dashboard speaks in four sentences: <em>negative <span class="math inline">\(R^2\)</span></em> = something is broken, not untuned. <em>Train tiny, test huge</em> = memorizing (the deck’s tree). <em>Both high and flat</em> = too simple. <em>A gap that won’t close</em> = change the model — but remember the digits: sometimes the fix is <em>less</em> regularization, not more. And <em>perfect</em> = suspicious, always.”</p>
+</section>
+<section id="the-suspiciously-good-checklist-the-books" class="level2">
+<h2 class="anchored" data-anchor-id="the-suspiciously-good-checklist-the-books">40.4 The “suspiciously good” checklist (the book’s)</h2>
+<p>When a score lands near perfection — accuracy <span class="math inline">\(1.0\)</span>, error <span class="math inline">\(\approx 0\)</span> — on the first serious run, the book’s checklist, in suspicion order. (This is the book’s synthesis, not the course’s: the course supplies the cases, the checklist is the assembly.)</p>
+<p><strong>i) Was something <code>fit</code> on the test set?</strong> The PCA double-fit (§38.10-B) is the canonical form: any transformer or imputer that learned statistics from test rows. Grep for <code>fit</code> on anything named <code>test</code>.</p>
+<p><strong>ii) Were statistics learned on the full dataset?</strong> §37.8’s Note, §36.7’s imputation rule, the deck’s slide-57 law: scaler <span class="math inline">\(\mu/\sigma\)</span>, imputer medians, PCA bases — if any were computed before the split (or outside the fold loop, §39.9), test information is in the training statistics. The pipeline is the structural fix; the checklist is the audit.</p>
+<p><strong>iii) Was the test set spent more than once?</strong> §39.6’s doctrine: tuning on test, then reporting on the same test, is selection bias wearing a lab coat. Retrain-on-train+validation is fine; choosing <em>anything</em> on the test set is not.</p>
+<p><strong>iv) Are there duplicated rows across the split?</strong> The course never names this one, so the book flags it as its own addition: near-duplicate rows (same sensor reading logged twice, a template repeated) put the same information in train and test, and the test score measures memorization. <code>df.duplicated().sum()</code> before the split is the two-second check.</p>
+<p><strong>v) Is a feature secretly the label?</strong> Target leakage in its plainest form: a column that <em>is</em> the answer (or is computed from it — a “days until default” column in a default-prediction task). The deck’s Step-1 discipline (“list the assumptions… approved before coding”) is the prevention; the checklist is the autopsy.</p>
+<p><strong>Basically, …</strong> “Perfect scores are guilty until proven innocent. The five suspects: <em>fit on test</em>, <em>statistics from the full dataset</em>, <em>the test set spent twice</em>, <em>duplicated rows</em>, <em>a feature that is the label.</em> Check them in order, and most ‘amazing’ models confess by suspect two.”</p>
+</section>
+<section id="where-this-goes-next" class="level2">
+<h2 class="anchored" data-anchor-id="where-this-goes-next">40.5 Where this goes next</h2>
+<p><strong>i) The contract survives — including inside neural nets.</strong> <code>GridSearchCV</code> honors the estimator contract (§39.10), <code>MLPClassifier</code>/<code>MLPRegressor</code> honor it too (the Week-12 slide: <code>fit(X_train, y_train)</code>, <code>predict</code>, <code>predict_proba</code>, <code>score</code> → <span class="math inline">\(R^2\)</span> [recorded]) — and §37.10/§38.11 already said the perceptron of §38.4 <em>is</em> Chapter 41’s neuron with a sign snapped on top. So Part VI inherits this chapter whole: debugging a neural net starts with the same playbook — shapes first (the <span class="math inline">\((n, d)\)</span> convention is load-bearing in every layer), then scale (§37.3’s scaling sermon returns with a vengeance for SGD-trained nets), then shuffle, then the leak audit.</p>
+<p><strong>ii) The runbook doesn’t end at the test score.</strong> The deck’s Step 8 is the last word of Part V: launch with test cases, monitor for degradation and data-quality drift, retrain on fresh data on a schedule. A model is a system with a maintenance contract, not a number.</p>
+<p><strong>iii) What this part built.</strong> Chapters 36–40, one sentence each: 36 turned math into arrays; 37 taught the estimator contract on regression; 38 replayed it on classification; 39 made evaluation honest; 40 is the checklist that keeps the other four honest in practice. Part VI (Chapters 41–47) builds the models this discipline will debug.</p>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li><strong>The eight steps.</strong> (i) List the deck’s eight end-to-end steps in order. (ii) Which step does “data snooping bias” belong to, and what causes it — quote the deck’s definition. (iii) The deck says “typically 10-15% of time is spent on ML” — in one line, where does the rest go?</li>
+<li><strong>The broadcast that tells on you.</strong> <code>X = np.arange(6).reshape(3, 2)</code> (eg 2). (i) Compute <code>mu = X.mean(axis=0)</code> by hand. (ii) Give the result of <code>X - mu</code> and explain the broadcasting rule that makes it work. (iii) Say exactly why <code>X - mu[:, np.newaxis]</code> raises <code>ValueError</code>, and why that error is the <em>good</em> outcome.</li>
+<li><strong>The shuffle case.</strong> §38.10-A’s confusion matrix: <span class="math inline">\((TN, FP, FN, TP) = (196, 0, 172, 13)\)</span>. (i) Verify accuracy <span class="math inline">\(0.5486\)</span>, precision <span class="math inline">\(1.0\)</span>, recall <span class="math inline">\(0.0703\)</span> from the four counts. (ii) In two lines, explain why <code>shuffle=False</code> produces exactly this signature — near-perfect precision, catastrophic recall — given the stacked <span class="math inline">\(+1\)</span>s-then-<span class="math inline">\(-1\)</span>s training rows. (iii) Name the constructor argument and its correct value.</li>
+<li><strong>Spot the leak.</strong> The deck evaluates its final model with <code>transform_pipeline.fit_transform(wine_features_test)</code> (case 5). (i) The pipeline was already <code>fit_transform</code>ed on the training features — say exactly what <code>fit_transform</code> re-learns on the test rows. (ii) Quote the deck’s own rule this violates. (iii) Write the corrected line, and say which §37.8 discipline it restores.</li>
+<li><strong>Read the dashboard.</strong> (i) The deck’s decision tree: train MSE <span class="math inline">\(0.0\)</span>, test MSE <span class="math inline">\(0.5813\)</span> [recorded]. Diagnose in §23.9’s vocabulary and quote the deck’s own verdict. (ii) <code>Ridge</code> reports test <span class="math inline">\(R^2 = -0.4\)</span>. Say what this means using §37.5’s landmarks, and whether the next step is tuning or debugging. (iii) A learning curve shows train error <span class="math inline">\(0.8\)</span>, CV error <span class="math inline">\(0.82\)</span>, both flat from <span class="math inline">\(n = 200\)</span> to <span class="math inline">\(n = 2000\)</span>. Diagnose per §39.4 and name the fix direction — data, capacity, or regularization?</li>
+<li><strong>Search arithmetic.</strong> (i) The deck’s grid: two parameter dicts (<span class="math inline">\(3 \times 4 = 12\)</span> and <span class="math inline">\(2 \times 3 = 6\)</span> combos), <code>cv=5</code>. Reproduce the <span class="math inline">\(18 \times 5 = 90\)</span> fits count. (ii) Quote sklearn’s <code>UserWarning</code> from §39.7’s Lasso search verbatim [recorded] and say what sklearn did instead of the requested <code>n_iter=10</code>. (iii) In one line each: when is randomized search the better choice, and when is grid search?</li>
+<li><strong>Spend the test set once.</strong> (i) List §39.6’s five HPT steps in order. (ii) The deck reports its final test MSE <span class="math inline">\(0.3535\)</span> with a 95% CI of <span class="math inline">\((0.2916, 0.4153)\)</span> [recorded] — which step of the doctrine does the CI belong to, and what does the interval add over the point estimate? (iii) <code>GridSearchCV</code>’s <code>refit=True</code> default implements which of the five steps automatically?</li>
+<li><strong>Error analysis, the deck’s way.</strong> (i) Quote the deck’s error-analysis line verbatim [recorded]. (ii) <code>sorted(zip(feature_importances, feature_list), reverse=True)</code> — say what decision this sorted list supports, in the deck’s words. (iii) The deck’s CV comparison: linear regression <span class="math inline">\(0.4316 \pm 0.0836\)</span>, decision tree <span class="math inline">\(0.6852 \pm 0.1667\)</span>, random forest <span class="math inline">\(0.3457 \pm 0.0736\)</span> [recorded]. State the deck’s verdict and say which two numbers (mean and spread) it rests on.</li>
+<li><strong>The suspiciously-good audit.</strong> A teammate’s first serious run reports test accuracy <span class="math inline">\(1.0000\)</span>. (i) List the book’s §40.4 checklist in order. (ii) For suspects (i) and (ii), name the concrete code smell you’d grep for. (iii) The course never names suspect (iv) — say what it is and give the two-second pandas check.</li>
+</ol>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — The eight steps
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>The deck’s eight steps, in order: 1. Look at the big picture. 2. Get the data. 3. Discover and visualize the data to gain insights. 4. Prepare the data for ML algorithms. 5. Select a model and train it. 6. Fine-tune your model. 7. Present your solution. 8. Launch, monitor and maintain your system. [recorded]</p></li>
+<li><p>Step 3 (discover/visualize). The deck’s definition: “When we look at the test set, we are likely to notice patterns in that and based on that we may select certain models. This leads to biased estimation on test set, which may not generalize well in practice. This is called data snooping bias.” [recorded] — the remedy is to separate the test set <em>before</em> exploring and never look at it.</p></li>
+<li><p>“A lot more time is spent on capturing and processing data needed for ML and taking decisions based on output of ML module” — data plumbing and downstream decisions, with “strong collaboration with domain experts, product managers and eng-teams.” [recorded]</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — The broadcast that tells on you
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><code>X = [[0,1],[2,3],[4,5]]</code>; column means: <span class="math inline">\((0+2+4)/3 = 2\)</span>, <span class="math inline">\((1+3+5)/3 = 3\)</span> → <code>mu = [2., 3.]</code>. [verified-NumPy]</p></li>
+<li><p><code>X - mu</code>: <code>(3,2) - (2,)</code> — the <code>(2,)</code> aligns on the trailing axis and is stretched down all 3 rows:</p></li>
+</ol>
+<pre><code>[[0-2, 1-3],    [[-2., -2.],
+ [2-2, 3-3],  =  [ 0.,  0.],
+ [4-2, 5-3]]     [ 2.,  2.]]</code></pre>
+<p>[verified-NumPy]</p>
+<ol start="3" type="i">
+<li><code>mu[:, np.newaxis]</code> has shape <code>(2,1)</code>. Broadcasting <code>(3,2)</code> against <code>(2,1)</code>: trailing axes <span class="math inline">\(2\)</span> vs <span class="math inline">\(1\)</span> → the <span class="math inline">\(1\)</span> stretches to <span class="math inline">\(2\)</span>; next axes <span class="math inline">\(3\)</span> vs <span class="math inline">\(2\)</span> → neither is <span class="math inline">\(1\)</span>, so it errors: <code>ValueError: operands could not be broadcast together with shapes (3,2) (2,1)</code>. [verified-NumPy] It is the good outcome because the alternative — a <em>silent</em> wrong-alignment subtraction — would poison every downstream number with no warning; the <code>ValueError</code> points at exactly the line where the convention was mixed up (§36.3’s “that error is your friend”).</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — The shuffle case
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>Accuracy <span class="math inline">\(= (TP+TN)/(TP+TN+FP+FN) = (13+196)/381 = 209/381 \approx 0.5486\)</span> [verified]. Precision <span class="math inline">\(= TP/(TP+FP) = 13/(13+0) = 1.0\)</span> [verified]. Recall <span class="math inline">\(= TP/(TP+FN) = 13/(13+172) = 13/185 \approx 0.0703\)</span> [verified]. They match the recorded numbers to every shown digit.</p></li>
+<li><p>With <code>shuffle=False</code>, SGD sees all 863 <span class="math inline">\(+1\)</span> rows first: the perceptron walks deep into five-territory, racking up positive predictions it believes in — then the 1032 <span class="math inline">\(-1\)</span> rows arrive and it over-corrects, ending up predicting <span class="math inline">\(-1\)</span> almost everywhere. The 13 rows it still calls positive are ones it is sure about (hence precision <span class="math inline">\(1.0\)</span>), but it finds only 13 of the 185 true positives (hence recall <span class="math inline">\(0.0703\)</span>).</p></li>
+<li><p><code>shuffle=True</code> in the <code>Perceptron</code> constructor (it is the default; the course’s eg set it <code>False</code> explicitly).</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — Spot the leak
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><code>fit_transform</code> on the test set re-learns everything the pipeline learns: the <code>SimpleImputer</code>’s per-feature medians and the <code>StandardScaler</code>’s per-feature <span class="math inline">\(\mu, \sigma\)</span> — computed from the <em>test</em> rows this time.</p></li>
+<li><p>The deck’s own slide-57 law: “Note that all these transformers are learnt on the training data and then applied on the training and test data to transform them. Never learn these transformers on the full dataset.” [recorded]</p></li>
+<li><p><code>wine_features_test_tr = transform_pipeline.transform(wine_features_test)</code> — replaying the train-learned statistics on test. This restores §37.8’s discipline: <code>fit</code> learns on the training set, <code>transform</code> applies the learned transformation to new data; the test set only ever sees <code>transform</code>.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — Read the dashboard
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>Train MSE <span class="math inline">\(0.0\)</span>, test MSE <span class="math inline">\(0.5813\)</span>: textbook <strong>overfitting</strong> — the model memorized the training rows (zero training error) and fails on fresh data. The deck’s own verdict: “Note that the training error is <span class="math inline">\(0\)</span>, while the test error is <span class="math inline">\(0.58\)</span>. This is an example of an overfitted model.” [recorded]</p></li>
+<li><p><span class="math inline">\(R^2 = -0.4\)</span>: §37.5’s third landmark — the model is <em>worse than always predicting the mean</em> (“the model can be arbitrarily worse” than the constant predictor). This is not an untuned model; it is a broken pipeline (sign error, leak, or nonsense features). Debug first — start at §40.2’s case 1 — don’t tune.</p></li>
+<li><p>Both errors high (<span class="math inline">\(\approx 0.8\)</span>) and flat over a <span class="math inline">\(10\times\)</span> increase in <span class="math inline">\(n\)</span>: <strong>underfit</strong> (§39.4’s first reading) — the model class can’t express the pattern, and more data will not help. Buy capacity (more/better features, a richer model) or reduce regularization — not more data.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — Search arithmetic
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>Grid 1: <span class="math inline">\(3\)</span> values of <code>n_estimators</code> <span class="math inline">\(\times\)</span> <span class="math inline">\(4\)</span> values of <code>max_features</code> <span class="math inline">\(= 12\)</span> combos. Grid 2: <span class="math inline">\(2\)</span> values of <code>n_estimators</code> <span class="math inline">\(\times\)</span> <span class="math inline">\(3\)</span> values of <code>max_features</code> <span class="math inline">\(= 6\)</span> combos. Total <span class="math inline">\(12 + 6 = 18\)</span> combinations; with <code>cv=5</code>, each combination is trained <span class="math inline">\(5\)</span> times: <span class="math inline">\(18 \times 5 = 90\)</span> fits. [verified]</p></li>
+<li><p>The warning, verbatim [recorded]:</p></li>
+</ol>
+<pre><code>UserWarning: The total space of parameters 8 is smaller than n_iter=10.
+Running 8 iterations. For exhaustive searches, use GridSearchCV.</code></pre>
+<p>sklearn ran only the <span class="math inline">\(8\)</span> existing combinations instead of the requested <span class="math inline">\(10\)</span> samples.</p>
+<ol start="3" type="i">
+<li>Randomized search is better on large or continuous spaces, where a fixed budget of <code>n_iter</code> samples beats an exponential grid; grid search is better on small discrete spaces where exhaustive enumeration is affordable.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — Spend the test set once
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>§39.6’s five steps: 1. Split train/validation/test. 2. Train every hyperparameter combination on train (<code>n_jobs=-1</code>; <code>error_score</code> to survive bad combos). 3. Evaluate each on validation; pick the best. 4. Retrain the winner on train+validation. 5. Evaluate once on test.</p></li>
+<li><p>The CI belongs to step 5 — the final, once-spent test evaluation. The point estimate (<span class="math inline">\(0.3535\)</span>) says where the error landed; the 95% interval <span class="math inline">\((0.2916, 0.4153)\)</span> says how much that number could wobble on a different test draw — the same “one split is a noisy number” honesty as §39.1, quantified.</p></li>
+<li><p>Step 4: with the default <code>refit=True</code>, <code>GridSearchCV</code> automatically refits the winning combination on the whole training data, so <code>best_estimator_</code> is ready to predict.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 8 — Error analysis, the deck’s way
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>“It is also useful to analyze the errors in prediction and understand its causes and fix them.” [recorded]</p></li>
+<li><p>The sorted <code>(importance, feature)</code> list ranks features by how much the forest relied on them; the deck’s decision: “Based on this information, we may drop features that are not so important.” [recorded]</p></li>
+<li><p>The deck’s verdict: “LinReg has better MSE and more precise estimation compared to DT.” [recorded] It rests on both numbers per model: the <em>mean</em> CV MSE (linear <span class="math inline">\(0.4316\)</span> &lt; tree <span class="math inline">\(0.6852\)</span> — better) and the <em>standard deviation</em> (linear <span class="math inline">\(0.0836\)</span> &lt; tree <span class="math inline">\(0.1667\)</span> — more precise). The forest beats both (<span class="math inline">\(0.3457 \pm 0.0736\)</span>), which is why the deck tunes it next.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 9 — The suspiciously-good audit
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>§40.4’s checklist, in order: (1) was something <code>fit</code> on the test set? (2) were statistics learned on the full dataset? (3) was the test set spent more than once? (4) are there duplicated rows across the split? (5) is a feature secretly the label?</p></li>
+<li><p>Suspect (1): grep for <code>fit(</code> applied to anything named <code>test</code> — <code>pca.fit(x_test)</code>, <code>scaler.fit_transform(X_all)</code> before the split. Suspect (2): any <code>fit</code>/<code>fit_transform</code> on the whole <code>X</code> before <code>train_test_split</code>, or a transformer <code>fit</code> outside the CV fold loop.</p></li>
+<li><p>Suspect (iv): near-duplicate rows leaking the same information into both train and test, so the score measures memorization, not generalization. The two-second check: <code>df.duplicated().sum()</code> before the split (the book’s addition — flagged as such in the review log).</p></li>
+</ol>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./39-model-evaluation-cv.html" class="pagination-link" aria-label="Chapter 39: Model evaluation, cross-validation, hyperparameter tuning">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./41-neuron-mlp-scratch.html" class="pagination-link" aria-label="Chapter 41: The artificial neuron and MLPs from scratch">
+        <span class="nav-page-text"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

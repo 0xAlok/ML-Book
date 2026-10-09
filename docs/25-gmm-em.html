@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>25. GMMs and the EM algorithm – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./26-k-means.html" rel="next">
+<link href="./24-pca.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./22-what-is-ml.html">Part III — Machine Learning Foundations</a></li><li class="breadcrumb-item"><a href="./25-gmm-em.html"><span class="chapter-title">25. GMMs and the EM algorithm</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#the-other-answer-to-understand-the-data" id="toc-the-other-answer-to-understand-the-data" class="nav-link active" data-scroll-target="#the-other-answer-to-understand-the-data">25.1 The other answer to “understand the data”</a></li>
+  <li><a href="#the-motivating-example-three-types-of-students" id="toc-the-motivating-example-three-types-of-students" class="nav-link" data-scroll-target="#the-motivating-example-three-types-of-students">25.2 The motivating example: three types of students</a></li>
+  <li><a href="#the-gaussian-mixture-model" id="toc-the-gaussian-mixture-model" class="nav-link" data-scroll-target="#the-gaussian-mixture-model">25.3 The Gaussian mixture model</a></li>
+  <li><a href="#first-caution-the-component-labels-are-meaningless" id="toc-first-caution-the-component-labels-are-meaningless" class="nav-link" data-scroll-target="#first-caution-the-component-labels-are-meaningless">25.4 First caution: the component labels are meaningless</a></li>
+  <li><a href="#the-latent-variable-view-naming-the-hidden-crowd" id="toc-the-latent-variable-view-naming-the-hidden-crowd" class="nav-link" data-scroll-target="#the-latent-variable-view-naming-the-hidden-crowd">25.5 The latent-variable view: naming the hidden crowd</a></li>
+  <li><a href="#the-mle-question-and-why-it-is-ugly" id="toc-the-mle-question-and-why-it-is-ugly" class="nav-link" data-scroll-target="#the-mle-question-and-why-it-is-ugly">25.6 The MLE question — and why it is ugly</a></li>
+  <li><a href="#the-chicken-and-egg-insight" id="toc-the-chicken-and-egg-insight" class="nav-link" data-scroll-target="#the-chicken-and-egg-insight">25.7 The chicken-and-egg insight</a></li>
+  <li><a href="#the-e-step-responsibilities" id="toc-the-e-step-responsibilities" class="nav-link" data-scroll-target="#the-e-step-responsibilities">25.8 The E-step: responsibilities</a></li>
+  <li><a href="#the-m-step-responsibility-weighted-mle" id="toc-the-m-step-responsibility-weighted-mle" class="nav-link" data-scroll-target="#the-m-step-responsibility-weighted-mle">25.9 The M-step: responsibility-weighted MLE</a></li>
+  <li><a href="#the-em-algorithm-alternate-until-convergence" id="toc-the-em-algorithm-alternate-until-convergence" class="nav-link" data-scroll-target="#the-em-algorithm-alternate-until-convergence">25.10 The EM algorithm: alternate until convergence</a></li>
+  <li><a href="#worked-two-em-iterations-by-hand" id="toc-worked-two-em-iterations-by-hand" class="nav-link" data-scroll-target="#worked-two-em-iterations-by-hand">25.11 Worked: two EM iterations by hand</a></li>
+  <li><a href="#where-this-goes-next-and-the-close-of-part-iii" id="toc-where-this-goes-next-and-the-close-of-part-iii" class="nav-link" data-scroll-target="#where-this-goes-next-and-the-close-of-part-iii">25.12 Where this goes next — and the close of Part III</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./22-what-is-ml.html">Part III — Machine Learning Foundations</a></li><li class="breadcrumb-item"><a href="./25-gmm-em.html"><span class="chapter-title">25. GMMs and the EM algorithm</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">25. GMMs and the EM algorithm</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Two promises converge here. §24.11(iii) promised a different answer to “understand the data”: PCA compresses by <em>subspaces</em>; Chapter 25 compresses by <em>probability</em> — fit a mixture of Gaussians to the data instead of a flat floor through it. §22.13 sketched the density-estimation task (learn a probability mapping <span class="math inline">\(P\)</span> with the smallest negative log-likelihood) and named the Gaussian mixture model as its illustration, deferring the model and how to fit it to this chapter. This chapter is both promises kept: the mixture model (§§25.2–25.5), why fitting it by maximum likelihood is hard (§25.6), and the iterative algorithm that fits it anyway (§§25.7–25.10), with every number worked by hand (§25.11). Everything comes from the MLF Week 12 lecture “Gaussian Mixture Models and Expectation Maximisation” (Prof.&nbsp;Harish Guruprasad Ramaswamy, IIT Madras) and the MLT Week 4 live-session problems on EM.</p>
+<p><strong>Notation.</strong> Data <span class="math inline">\(D = \{x_1, \ldots, x_n\}\)</span>, <span class="math inline">\(x_i \in \mathbb{R}^d\)</span> (same subscript convention as Chapter 24). The number of mixture components is <span class="math inline">\(K\)</span>, fixed before fitting. Parameters are packaged as <span class="math inline">\(\theta = \{\pi_k, \mu_k, \Sigma_k\}_{k=1}^{K}\)</span>. <span class="math inline">\(N(x \mid \mu_k, \Sigma_k)\)</span> is the Gaussian density from §19.6: in <span class="math inline">\(d\)</span> dimensions, <span class="math display">\[N(x \mid \mu_k, \Sigma_k) = \frac{1}{(2\pi)^{d/2}\sqrt{\det\Sigma_k}}\exp\!\left(-\tfrac12 (x-\mu_k)^T\Sigma_k^{-1}(x-\mu_k)\right),\]</span> and in <span class="math inline">\(d = 1\)</span>, <span class="math inline">\(N(x \mid \mu_k, \sigma_k^2) = \frac{1}{\sqrt{2\pi\sigma_k^2}}\exp\!\left(-\frac{(x-\mu_k)^2}{2\sigma_k^2}\right)\)</span>.</p>
+<section id="the-other-answer-to-understand-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="the-other-answer-to-understand-the-data">25.1 The other answer to “understand the data”</h2>
+<p>PCA (§24) looked at unlabelled data and asked for the best low-dimensional <em>floor</em> through it — a subspace. There is a second, equally natural question: <strong>what probability distribution generated these points?</strong> That is density estimation (§22.13): learn a function <span class="math inline">\(p(x)\)</span> that is large where the data is dense and small elsewhere, integrating to <span class="math inline">\(1\)</span>.</p>
+<ol type="i">
+<li><strong>PCA compresses by geometry.</strong> Keep the directions of maximum variance; throw away the rest.</li>
+<li><strong>GMMs compress by probability.</strong> Don’t project anything — instead, describe the data’s <em>shape</em> as a weighted sum of Gaussian hills.</li>
+<li>Same unsupervised spirit (§22.11): no labels, no <span class="math inline">\(y_i\)</span>. Different model of what “structure” means.</li>
+</ol>
+<p><strong>Basically, …</strong> “PCA says: the data is a cloud — squash it onto the best flat floor. GMMs say: the data is several overlapping clouds — describe each cloud by its own bell curve, and say how much of the data each bell owns.”</p>
+</section>
+<section id="the-motivating-example-three-types-of-students" class="level2">
+<h2 class="anchored" data-anchor-id="the-motivating-example-three-types-of-students">25.2 The motivating example: three types of students</h2>
+<p>The lecture’s motivating example. An exam (multiple choice, with negative marking) is written by three types of students:</p>
+<ol type="i">
+<li>Type 1 mostly picks option A (doesn’t study): scores <span class="math inline">\(\sim\)</span> normal with mean <span class="math inline">\(-4\)</span>, variance <span class="math inline">\(0.5\)</span> — the <strong>red</strong> curve.</li>
+<li>Type 2 picks A/B/C/D uniformly at random: scores <span class="math inline">\(\sim\)</span> normal with mean <span class="math inline">\(0\)</span>, variance <span class="math inline">\(1\)</span> — the <strong>green</strong> curve.</li>
+<li>Type 3 studies and answers properly: scores <span class="math inline">\(\sim\)</span> normal with mean <span class="math inline">\(5\)</span>, variance <span class="math inline">\(1\)</span> — the <strong>blue</strong> curve.</li>
+</ol>
+<p><span class="math inline">\(40\%\)</span> of students are type 1, <span class="math inline">\(30\%\)</span> type 2, <span class="math inline">\(30\%\)</span> type 3. Nobody advertises their type: the teacher only sees a column of marks. The histogram of many marks has <strong>three peaks</strong> — near <span class="math inline">\(-4\)</span>, near <span class="math inline">\(0\)</span>, near <span class="math inline">\(5\)</span> — a <em>multimodal</em> distribution.</p>
+<p><strong>The point.</strong> Every distribution met so far (normal, exponential, uniform…) has a <em>single</em> peak. No single-peak density can capture three-peaked data. The right model is a <strong>mixture of Gaussians</strong>: <span class="math inline">\(0.4 \times\)</span> (red curve) <span class="math inline">\(+ 0.3 \times\)</span> (green curve) <span class="math inline">\(+ 0.3 \times\)</span> (blue curve). Not plain addition — each curve already integrates to <span class="math inline">\(1\)</span>, so adding them integrates to <span class="math inline">\(3\)</span>; the weights <span class="math inline">\(0.4, 0.3, 0.3\)</span> rescale so the total integrates to <span class="math inline">\(1\)</span>, and they record <em>what fraction of students live in each mode</em>.</p>
+<!-- Original matplotlib illustration drawn for this chapter (not reused from any URL): the three unweighted Gaussian components of the lecture's exam-score example (red/green/blue dashed) and their weighted mixture (black solid), showing three peaks -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/25-gmm-em-mixture.png" class="img-fluid figure-img"></p>
+<figcaption>The three Gaussian components of the lecture’s exam-score example (dashed red, green, blue) and their weighted mixture (solid black): one Gaussian has one peak, the mixture has three.</figcaption>
+</figure>
+</div>
+<p><strong>Basically, …</strong> “The class is secretly three different crowds mixed together. Each crowd’s scores form one bell curve. The overall histogram is the three bells stacked with weights <span class="math inline">\(0.4, 0.3, 0.3\)</span> — which is why it has three humps no single bell could make.”</p>
+<p><strong>Note (adding densities <span class="math inline">\(\neq\)</span> adding random variables).</strong> If you <em>add</em> normal random variables you get another normal (§19.7) — one peak, always. Adding <em>densities</em> is a different operation entirely: it produces the mixture. Don’t confuse the two.</p>
+</section>
+<section id="the-gaussian-mixture-model" class="level2">
+<h2 class="anchored" data-anchor-id="the-gaussian-mixture-model">25.3 The Gaussian mixture model</h2>
+<p><strong>Def (Gaussian mixture density).</strong> With <span class="math inline">\(K\)</span> components, <span class="math display">\[\boxed{f_X(x) = \sum_{k=1}^{K} \pi_k\, N(x \mid \mu_k, \Sigma_k)}.\]</span> Each component <span class="math inline">\(k\)</span> is a full Gaussian (§19.6); the <strong>mixture weights</strong> <span class="math inline">\(\pi_k\)</span> blend them.</p>
+<p><strong>The parameters.</strong> For each component <span class="math inline">\(k\)</span>: - <span class="math inline">\(\pi_k\)</span> — a scalar: <em>what fraction of the data comes from component <span class="math inline">\(k\)</span></em>; <span class="math inline">\(\pi_k \ge 0\)</span> and <span class="math inline">\(\sum_{k=1}^{K}\pi_k = 1\)</span>. - <span class="math inline">\(\mu_k\)</span> — the component’s mean (<span class="math inline">\(d\)</span> numbers). - <span class="math inline">\(\Sigma_k\)</span> — the component’s covariance matrix (<span class="math inline">\(d(d+1)/2\)</span> numbers, §19.6).</p>
+<ol type="i">
+<li><strong>Why the weights.</strong> Each <span class="math inline">\(N(x \mid \mu_k, \Sigma_k)\)</span> integrates to <span class="math inline">\(1\)</span>; the weights make the mixture integrate to <span class="math inline">\(\sum_k \pi_k = 1\)</span> — a valid density.</li>
+<li><strong>The exam example is <span class="math inline">\(K = 3\)</span>, <span class="math inline">\(d = 1\)</span>:</strong> <span class="math inline">\(\pi = (0.4, 0.3, 0.3)\)</span>, <span class="math inline">\(\mu = (-4, 0, 5)\)</span>, <span class="math inline">\(\sigma^2 = (0.5, 1, 1)\)</span>.</li>
+<li><strong><span class="math inline">\(K\)</span> is an input, not estimated.</strong> The lecture assumes the number of components is known a priori; in practice people try several values of <span class="math inline">\(K\)</span>.</li>
+</ol>
+<p><strong>eg 1 (reading the mixture density).</strong> For the exam example, the density at <span class="math inline">\(x = 0\)</span>: - red: <span class="math inline">\(0.4 \cdot N(0 \mid -4, 0.5) = 0.4 \cdot \frac{1}{\sqrt{2\pi\cdot 0.5}}e^{-16} \approx 2.5\times10^{-8}\)</span>, - green: <span class="math inline">\(0.3 \cdot N(0 \mid 0, 1) = 0.3 \cdot \frac{1}{\sqrt{2\pi}} \approx 0.1197\)</span>, - blue: <span class="math inline">\(0.3 \cdot N(0 \mid 5, 1) = 0.3 \cdot \frac{1}{\sqrt{2\pi}}e^{-12.5} \approx 4.5\times10^{-7}\)</span>, <span class="math display">\[f_X(0) \approx \boxed{0.1197},\]</span> almost entirely the green component’s doing — a score of <span class="math inline">\(0\)</span> is green territory. (Problem 1 asks for <span class="math inline">\(f_X(-4)\)</span> and <span class="math inline">\(f_X(5)\)</span>: same arithmetic, different winner.)</p>
+<p><strong>Basically, …</strong> “A GMM is <span class="math inline">\(K\)</span> bell curves plus <span class="math inline">\(K\)</span> percentages. To score a point, ask each bell how likely the point is, weight by that bell’s percentage, and add. The percentages are the model’s way of saying how much of the data each bell owns.”</p>
+</section>
+<section id="first-caution-the-component-labels-are-meaningless" class="level2">
+<h2 class="anchored" data-anchor-id="first-caution-the-component-labels-are-meaningless">25.4 First caution: the component labels are meaningless</h2>
+<p><strong>Def (unidentifiability by label swap).</strong> Reordering the components changes nothing about the density.</p>
+<p><strong>eg 2 (the lecture’s swap).</strong> Two-component model, parameter set A: <span class="math inline">\(\pi_1 = 0.5, \mu_1 = 1, \sigma_1^2 = 1\)</span>; <span class="math inline">\(\pi_2 = 0.5, \mu_2 = -1, \sigma_2^2 = 1\)</span>. Parameter set B: <span class="math inline">\(\pi_1 = 0.5, \mu_1 = -1, \sigma_1^2 = 1\)</span>; <span class="math inline">\(\pi_2 = 0.5, \mu_2 = 1, \sigma_2^2 = 1\)</span>. As vectors these look different — but <span class="math display">\[f_A(x) = 0.5\,N(x\mid 1,1) + 0.5\,N(x\mid -1,1) = f_B(x),\]</span> purely because addition commutes. No data can ever distinguish A from B.</p>
+<p><strong>The rule.</strong> Indexing is bookkeeping, nothing more: pick an order and stay consistent. (This also means the fitted model is never unique — a fact §25.10 will need.)</p>
+<p><strong>Basically, …</strong> “Calling the left bell ‘component 1’ and the right bell ‘component 2’ — or the other way round — describes the same mixture. The names are stickers; the density doesn’t read them.”</p>
+</section>
+<section id="the-latent-variable-view-naming-the-hidden-crowd" class="level2">
+<h2 class="anchored" data-anchor-id="the-latent-variable-view-naming-the-hidden-crowd">25.5 The latent-variable view: naming the hidden crowd</h2>
+<p>Same model, more useful notation. Introduce a <strong>latent (hidden) variable</strong> <span class="math inline">\(Z\)</span> = <em>which component generated the point</em>.</p>
+<ol type="i">
+<li><strong>Component choice:</strong> <span class="math inline">\(\boxed{P(Z = k) = \pi_k}\)</span> — rolling a <span class="math inline">\(K\)</span>-faced die with face probabilities <span class="math inline">\(\pi_1, \ldots, \pi_K\)</span> (in the exam story: which <em>type</em> of student you are).</li>
+<li><strong>Point given the component:</strong> <span class="math inline">\(\boxed{X \mid Z = k \sim N(\mu_k, \Sigma_k)}\)</span> — once the type is fixed, the score is that type’s Gaussian.</li>
+<li><strong>Recovering the mixture (marginalization):</strong> <span class="math inline">\(Z\)</span> is summed out, <span class="math display">\[\boxed{P(X) = \sum_{k=1}^{K} P(Z = k)\,P(X \mid Z = k) = \sum_{k=1}^{K} \pi_k\, N(x \mid \mu_k, \Sigma_k)},\]</span> exactly §25.3’s density. Nothing new mathematically — just a name for the crowd membership.</li>
+</ol>
+<p><strong>Generative story.</strong> To draw one data point: (1) sample <span class="math inline">\(Z = k\)</span> with probability <span class="math inline">\(\pi_k\)</span>; (2) sample <span class="math inline">\(x\)</span> from <span class="math inline">\(N(\mu_k, \Sigma_k)\)</span>. If you could <em>see</em> <span class="math inline">\(Z\)</span>, the data would arrive colour-coded — red points from the red bell, green from green, blue from blue — and everything would be easy (§25.7). You can’t: <span class="math inline">\(Z\)</span> is hidden. The lecture is explicit that “probabilities and densities” are used interchangeably here; the level of rigour doesn’t need more.</p>
+<p><strong>Basically, …</strong> “Give every point a secret colour = which bell made it. If you knew the colours, fitting would be trivial. You don’t — the colours are invisible — but naming them (<span class="math inline">\(Z\)</span>) lets us talk precisely about what we’re missing.”</p>
+</section>
+<section id="the-mle-question-and-why-it-is-ugly" class="level2">
+<h2 class="anchored" data-anchor-id="the-mle-question-and-why-it-is-ugly">25.6 The MLE question — and why it is ugly</h2>
+<p>We fit parametric families by maximum likelihood (§20.3). Try it here. Data <span class="math inline">\(x_1, \ldots, x_n\)</span>, <span class="math inline">\(K\)</span> known, parameters <span class="math inline">\(\theta = \{\pi_k, \mu_k, \Sigma_k\}\)</span>.</p>
+<p><strong>Likelihood.</strong> By independence (§20.2), the likelihood is the product of one mixture density per point: <span class="math display">\[L(\theta) = \prod_{i=1}^{n}\left(\sum_{k=1}^{K} \pi_k\, N(x_i \mid \mu_k, \Sigma_k)\right).\]</span> <strong>Negative log-likelihood</strong> (the risk <span class="math inline">\(R(\theta)\)</span>, §20.2): <span class="math display">\[\boxed{R(\theta) = -\sum_{i=1}^{n}\log\!\left(\sum_{k=1}^{K} \pi_k\, N(x_i \mid \mu_k, \Sigma_k)\right)}.\]</span></p>
+<p><strong>The problem.</strong> There is a <strong>summation inside the log</strong>. A product inside a log splits into a sum (§20.2: <span class="math inline">\(\log\prod = \sum\log\)</span>) — clean. A sum inside a log does not split — ugly. You can still write down the gradient of <span class="math inline">\(R(\theta)\)</span>, but setting it to <span class="math inline">\(0\)</span> and solving for the parameters is not possible in closed form: every parameter appears inside every log-of-sum. (Problem 3 makes this concrete for <span class="math inline">\(\mu_1\)</span>.)</p>
+<ol type="i">
+<li><strong>Not hopeless, just unsatisfying.</strong> Generic optimizers (gradient descent, §10) could attack <span class="math inline">\(R(\theta)\)</span> directly — but the lecture wants a more intuitive solution.</li>
+<li><strong>The intuition comes from §25.5’s colours.</strong> The difficulty is entirely the hidden <span class="math inline">\(Z\)</span>: if we knew which point came from which component, estimation would be Chapter 20 again. That observation is the whole algorithm.</li>
+</ol>
+<p><strong>Basically, …</strong> “<span class="math inline">\(\log(\text{sum})\)</span> is the villain. <span class="math inline">\(\log\)</span> of a product breaks apart nicely; <span class="math inline">\(\log\)</span> of a sum refuses. So the usual move — differentiate, set to zero, solve — dies on the spot. The way out: stop fighting the sum, and use the hidden colours instead.”</p>
+</section>
+<section id="the-chicken-and-egg-insight" class="level2">
+<h2 class="anchored" data-anchor-id="the-chicken-and-egg-insight">25.7 The chicken-and-egg insight</h2>
+<p>Two facts, both easy, each assuming the other:</p>
+<ol type="i">
+<li><strong>If you knew the colours (<span class="math inline">\(Z\)</span>), the parameters are trivial.</strong> Take all red points: their sample mean estimates <span class="math inline">\(\mu_{\text{red}}\)</span> (§20.6), their sample covariance estimates <span class="math inline">\(\Sigma_{\text{red}}\)</span> (§20.7), and the fraction of red points estimates <span class="math inline">\(\pi_{\text{red}}\)</span>. Ridiculously easy — just Chapter 20 per colour.</li>
+<li><strong>If you knew the parameters, the colours are (mostly) easy.</strong> Handed <span class="math inline">\(x = 0.2\)</span> with the exam parameters, you’d bet green with near-certainty; <span class="math inline">\(x = 6.2\)</span> screams blue; <span class="math inline">\(x = -5.3\)</span> screams red. Only boundary points are genuinely ambiguous — <span class="math inline">\(x = -2\)</span> could be red or green (§25.8 computes exactly how ambiguous).</li>
+</ol>
+<p><strong>The catch.</strong> You have neither. This is the <strong>chicken-and-egg problem</strong>: parameters give colours, colours give parameters, and you’re holding nothing.</p>
+<p><strong>The standard escape</strong> (the lecture’s analogy): <em>create a random chicken first.</em> Initialize the parameters to some valid random values. From that chicken hatch an egg (compute colours). From that egg hatch a better chicken (recompute parameters). Repeat — and hope the generations converge to a realistic chicken <em>and</em> egg. That loop is the EM algorithm.</p>
+<p><strong>Basically, …</strong> “Parameters and colour-assignments each determine the other. Since you have neither, guess one at random, derive the other, derive the first back — and keep going. Each round’s guess is a little less random than the last.”</p>
+</section>
+<section id="the-e-step-responsibilities" class="level2">
+<h2 class="anchored" data-anchor-id="the-e-step-responsibilities">25.8 The E-step: responsibilities</h2>
+<p>Fix the parameters. For point <span class="math inline">\(x_i\)</span>, ask: <em>what is the probability it came from component <span class="math inline">\(k\)</span>?</em> That is <span class="math inline">\(P(Z_i = k \mid x_i)\)</span> — and Bayes’ rule (§14) answers it, since we know both pieces (<span class="math inline">\(P(Z_i=k) = \pi_k\)</span>, <span class="math inline">\(X_i \mid Z_i = k \sim N(\mu_k, \Sigma_k)\)</span>):</p>
+<p><span class="math display">\[\boxed{\gamma(z_{ik}) \;:=\; P(Z_i = k \mid x_i) = \frac{\pi_k\, N(x_i \mid \mu_k, \Sigma_k)}{\sum_{j=1}^{K} \pi_j\, N(x_i \mid \mu_j, \Sigma_j)}}.\]</span></p>
+<p><strong>Def (responsibilities).</strong> <span class="math inline">\(\gamma(z_{ik})\)</span> is the <strong>responsibility</strong> component <span class="math inline">\(k\)</span> takes for point <span class="math inline">\(x_i\)</span>: how much of the blame/credit for that point belongs to bell <span class="math inline">\(k\)</span>.</p>
+<ol type="i">
+<li><strong>Rows sum to 1:</strong> <span class="math inline">\(\sum_{k=1}^{K}\gamma(z_{ik}) = 1\)</span> — the numerator summed over <span class="math inline">\(k\)</span> <em>is</em> the denominator. Every point’s total responsibility is fully distributed.</li>
+<li><strong>Soft, not hard:</strong> <span class="math inline">\(\gamma(z_{ik}) \in [0,1]\)</span>. A point is not <em>assigned</em> to one component; each component takes a <em>share</em> of it.</li>
+<li><strong>The extreme case:</strong> if <span class="math inline">\(\gamma(z_{ik})\)</span> is <span class="math inline">\(1\)</span> for exactly one <span class="math inline">\(k\)</span> and <span class="math inline">\(0\)</span> for the rest, the point is fully assigned — keep this case in mind for §25.9.</li>
+</ol>
+<p><strong>eg 3 (the lecture’s ambiguous point, computed).</strong> Exam parameters; <span class="math inline">\(x = -2\)</span>: - numerator: red <span class="math inline">\(0.4\cdot N(-2\mid -4,0.5) = 0.4\cdot 0.010333 = 0.004133\)</span>; green <span class="math inline">\(0.3\cdot N(-2\mid 0,1) = 0.3\cdot 0.053991 = 0.016197\)</span>; blue <span class="math inline">\(\approx 0\)</span>; - denominator: <span class="math inline">\(0.004133 + 0.016197 \approx 0.020331\)</span>; <span class="math display">\[\boxed{\gamma = (0.2033,\; 0.7967,\; 0.0000)}.\]</span> So <span class="math inline">\(x = -2\)</span> is <span class="math inline">\(79.7\%\)</span> green, <span class="math inline">\(20.3\%\)</span> red — exactly the lecture’s “could have come from either” made quantitative.</p>
+<p><strong>eg 4 (the unambiguous point).</strong> <span class="math inline">\(x = 0.2\)</span>: green numerator <span class="math inline">\(0.3\cdot 0.391043 = 0.117313\)</span>, denominator <span class="math inline">\(\approx 0.117314\)</span>, <span class="math display">\[\boxed{\gamma \approx (0.00000,\; 0.99999,\; 0.00001)},\]</span> i.e.&nbsp;green takes essentially full responsibility — the lecture’s “almost certainly the green cluster”, now with the number attached.</p>
+<p><strong>Basically, …</strong> “The E-step re-colours every point <em>softly</em>: instead of stamping ‘red’ on it, you write down a probability vector — <span class="math inline">\(20\%\)</span> red, <span class="math inline">\(80\%\)</span> green. Bayes’ rule does the stamping: each bell’s claim is its weight times its density at the point, normalized.”</p>
+</section>
+<section id="the-m-step-responsibility-weighted-mle" class="level2">
+<h2 class="anchored" data-anchor-id="the-m-step-responsibility-weighted-mle">25.9 The M-step: responsibility-weighted MLE</h2>
+<p>Now reverse direction: responsibilities known, re-estimate the parameters. Start from the extreme case (§25.8(iii)), where each point belongs to exactly one component:</p>
+<ul>
+<li><span class="math inline">\(\mu_k\)</span> = sample mean of the points assigned to <span class="math inline">\(k\)</span> (§20.6),</li>
+<li><span class="math inline">\(\Sigma_k\)</span> = sample covariance of the points assigned to <span class="math inline">\(k\)</span> (§20.7),</li>
+<li><span class="math inline">\(\pi_k\)</span> = fraction of points assigned to <span class="math inline">\(k\)</span>.</li>
+</ul>
+<p>With soft responsibilities, “the points assigned to <span class="math inline">\(k\)</span>” becomes “all points, weighted by <span class="math inline">\(\gamma(z_{ik})\)</span>”. Define the <strong>effective count</strong> <span class="math display">\[\boxed{N_k = \sum_{i=1}^{n}\gamma(z_{ik})}\]</span> (“a proxy for the number of points assigned to component <span class="math inline">\(k\)</span>” — the lecture’s phrase). Then:</p>
+<p><span class="math display">\[\boxed{\mu_k = \frac{1}{N_k}\sum_{i=1}^{n}\gamma(z_{ik})\,x_i}, \qquad \boxed{\pi_k = \frac{N_k}{n}},\]</span> <span class="math display">\[\boxed{\Sigma_k = \frac{1}{N_k}\sum_{i=1}^{n}\gamma(z_{ik})\,(x_i - \mu_k)(x_i - \mu_k)^T}.\]</span></p>
+<ol type="i">
+<li><strong>Each is Chapter 20’s MLE with weights.</strong> Set all <span class="math inline">\(\gamma(z_{ik}) \in \{0,1\}\)</span> and these collapse to §20.6’s <span class="math inline">\(\hat\mu = \bar x\)</span>, §20.7’s <span class="math inline">\(\hat\Sigma\)</span>, and the plain fraction — the unweighted MLEs.</li>
+<li><strong>Denominator <span class="math inline">\(n\)</span>, not <span class="math inline">\(n-1\)</span></strong> — same as §20.6’s Note: MLE averages, it doesn’t debias.</li>
+<li><strong>Where they come from.</strong> Holding the responsibilities fixed, each update maximizes the responsibility-weighted log-likelihood. For <span class="math inline">\(\mu_k\)</span> in <span class="math inline">\(d=1\)</span>: minimizing <span class="math inline">\(-\sum_i \gamma(z_{ik})\log N(x_i\mid\mu_k,\sigma_k^2)\)</span> and setting the derivative to <span class="math inline">\(0\)</span> gives <span class="math inline">\(-\sum_i\gamma(z_{ik})(x_i-\mu_k)/\sigma_k^2 = 0\)</span>, i.e.&nbsp;the <span class="math inline">\(\mu_k\)</span> formula above. The <span class="math inline">\(\Sigma_k\)</span> formula is the same weighted-MLE argument as §20.7; <span class="math inline">\(\pi_k = N_k/n\)</span> follows from maximizing <span class="math inline">\(\sum_i\sum_k\gamma(z_{ik})\log\pi_k\)</span> under <span class="math inline">\(\sum_k\pi_k = 1\)</span> (Lagrange, §11 — Problem 7).</li>
+</ol>
+<p><strong>Note.</strong> The lecture presents these updates intuitively (“the sample mean/covariance of the points the component is responsible for”) and notes the full theory behind <em>why</em> they are the right updates belongs to a later course. The formulas above <em>are</em> those updates.</p>
+<p><strong>Basically, …</strong> “The M-step rebuilds each bell from the points it is responsible for — but a point that is <span class="math inline">\(80\%\)</span> green counts as <span class="math inline">\(0.8\)</span> of a green point. Mean = weighted average, covariance = weighted spread, weight = total responsibility divided by <span class="math inline">\(n\)</span>. It is Chapter 20’s MLE, wearing responsibility-weights.”</p>
+</section>
+<section id="the-em-algorithm-alternate-until-convergence" class="level2">
+<h2 class="anchored" data-anchor-id="the-em-algorithm-alternate-until-convergence">25.10 The EM algorithm: alternate until convergence</h2>
+<p>Put §§25.8–25.9 together. <strong>EM = Expectation–Maximisation.</strong></p>
+<ol type="i">
+<li><strong>Initialize</strong> <span class="math inline">\(\pi_k, \mu_k, \Sigma_k\)</span> to valid random values (the random chicken).</li>
+<li><strong>E-step:</strong> compute all responsibilities <span class="math inline">\(\gamma(z_{ik})\)</span> from the current parameters (§25.8).</li>
+<li><strong>M-step:</strong> recompute <span class="math inline">\(\pi_k, \mu_k, \Sigma_k\)</span> from the responsibilities (§25.9).</li>
+<li><strong>Repeat (ii)–(iii)</strong> until convergence — the parameters (or the log-likelihood) stop changing.</li>
+</ol>
+<p><strong>What the lecture actually promises.</strong> Honestly, not much beyond the loop: “you can keep on alternating till you have reached convergence”, with the <em>hope</em> that each generation’s chicken is more realistic than the last. The theorem-level story (why these updates are principled, what exactly converges) is deferred to a later course. So here is the precise, no-more-than-is-known status:</p>
+<ol type="i">
+<li><strong>No global-optimum guarantee.</strong> EM climbs to a <em>local</em> optimum / stationary point of the likelihood, not necessarily the best one. Where you land depends on where you start — <strong>initialization matters</strong>.</li>
+<li><strong>Non-uniqueness is built in.</strong> §25.4’s label swaps mean the optimum was never unique to begin with; different runs may return permuted-but-identical solutions.</li>
+<li><strong><span class="math inline">\(K\)</span> stays fixed</strong> throughout — it was your input (§25.3(iii)), not something EM discovers.</li>
+</ol>
+<p><strong>Basically, …</strong> “Guess, re-colour, rebuild, repeat — until nothing moves anymore. It works remarkably well in practice, but it is hill-climbing from a random start: different starts can reach different hills. The lecture shows you the loop; the proof that the loop is sensible is a later course’s job.”</p>
+</section>
+<section id="worked-two-em-iterations-by-hand" class="level2">
+<h2 class="anchored" data-anchor-id="worked-two-em-iterations-by-hand">25.11 Worked: two EM iterations by hand</h2>
+<p>Data (1-D), <span class="math inline">\(n = 6\)</span>: <span class="math inline">\(x = \{-3, -2, -1, 4, 5, 6\}\)</span> — two visible clusters. <span class="math inline">\(K = 2\)</span>. Deliberately mediocre initialization: <span class="math display">\[\pi_1 = \pi_2 = 0.5, \qquad \mu_1 = -1,\ \mu_2 = 2, \qquad \sigma_1^2 = \sigma_2^2 = 4.\]</span> (Initial log-likelihood: <span class="math inline">\(-17.468\)</span>.)</p>
+<p><strong>Iteration 1, E-step.</strong> Responsibilities <span class="math inline">\(\gamma(z_{i1}), \gamma(z_{i2})\)</span>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(x_i\)</span></th>
+<th><span class="math inline">\(-3\)</span></th>
+<th><span class="math inline">\(-2\)</span></th>
+<th><span class="math inline">\(-1\)</span></th>
+<th><span class="math inline">\(4\)</span></th>
+<th><span class="math inline">\(5\)</span></th>
+<th><span class="math inline">\(6\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\gamma(z_{i1})\)</span></td>
+<td><span class="math inline">\(0.9325\)</span></td>
+<td><span class="math inline">\(0.8670\)</span></td>
+<td><span class="math inline">\(0.7549\)</span></td>
+<td><span class="math inline">\(0.0675\)</span></td>
+<td><span class="math inline">\(0.0331\)</span></td>
+<td><span class="math inline">\(0.0159\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\gamma(z_{i2})\)</span></td>
+<td><span class="math inline">\(0.0675\)</span></td>
+<td><span class="math inline">\(0.1330\)</span></td>
+<td><span class="math inline">\(0.2451\)</span></td>
+<td><span class="math inline">\(0.9325\)</span></td>
+<td><span class="math inline">\(0.9669\)</span></td>
+<td><span class="math inline">\(0.9841\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>eg, <span class="math inline">\(x = -3\)</span>: <span class="math inline">\(N(-3\mid-1,4) = \frac{1}{\sqrt{8\pi}}e^{-4/8} = 0.199471\cdot e^{-0.5} = 0.120985\)</span>; <span class="math inline">\(N(-3\mid 2,4) = 0.199471\cdot e^{-25/8} = 0.008764\)</span>; <span class="math inline">\(\gamma(z_{11}) = \frac{0.5\cdot0.120985}{0.5\cdot0.120985 + 0.5\cdot0.008764} = \frac{0.120985}{0.129749} = \boxed{0.9325}\)</span>. (Every row sums to <span class="math inline">\(1\)</span> — check the first: <span class="math inline">\(0.9325 + 0.0675 = 1.0000\)</span> ✓.)</p>
+<p><strong>Iteration 1, M-step.</strong> Effective counts: <span class="math inline">\(N_1 = 0.9325+0.8670+0.7549+0.0675+0.0331+0.0159 = \boxed{2.6709}\)</span>, <span class="math inline">\(N_2 = 6 - 2.6709 = \boxed{3.3291}\)</span>. - <span class="math inline">\(\mu_1 = \frac{0.9325(-3)+0.8670(-2)+0.7549(-1)+0.0675(4)+0.0331(5)+0.0159(6)}{2.6709} = \frac{-4.7553}{2.6709} = \boxed{-1.78}\)</span>, - <span class="math inline">\(\mu_2 = \frac{0.0675(-3)+0.1330(-2)+0.2451(-1)+0.9325(4)+0.9669(5)+0.9841(6)}{3.3291} = \frac{13.7553}{3.3291} = \boxed{4.13}\)</span>, - <span class="math inline">\(\sigma_1^2 = 2.48,\ \sigma_2^2 = 5.73\)</span> (weighted average squared deviations about the <em>new</em> means), - <span class="math inline">\(\pi_1 = 2.6709/6 = \boxed{0.445},\ \pi_2 = \boxed{0.555}\)</span>. Log-likelihood after the M-step: <span class="math inline">\(\boxed{-14.360}\)</span> (up from <span class="math inline">\(-17.468\)</span>).</p>
+<p><strong>Iteration 2, E-step</strong> (with the updated parameters):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(x_i\)</span></th>
+<th><span class="math inline">\(-3\)</span></th>
+<th><span class="math inline">\(-2\)</span></th>
+<th><span class="math inline">\(-1\)</span></th>
+<th><span class="math inline">\(4\)</span></th>
+<th><span class="math inline">\(5\)</span></th>
+<th><span class="math inline">\(6\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\gamma(z_{i1})\)</span></td>
+<td><span class="math inline">\(0.9871\)</span></td>
+<td><span class="math inline">\(0.9698\)</span></td>
+<td><span class="math inline">\(0.9148\)</span></td>
+<td><span class="math inline">\(0.0015\)</span></td>
+<td><span class="math inline">\(0.0001\)</span></td>
+<td><span class="math inline">\(0.0000\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\gamma(z_{i2})\)</span></td>
+<td><span class="math inline">\(0.0129\)</span></td>
+<td><span class="math inline">\(0.0302\)</span></td>
+<td><span class="math inline">\(0.0852\)</span></td>
+<td><span class="math inline">\(0.9985\)</span></td>
+<td><span class="math inline">\(0.9999\)</span></td>
+<td><span class="math inline">\(1.0000\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Iteration 2, M-step.</strong> <span class="math inline">\(N_1 = 2.8734\)</span>, <span class="math inline">\(N_2 = 3.1266\)</span>; <span class="math display">\[\boxed{\mu_1 = -2.02,\ \mu_2 = 4.74}, \qquad \boxed{\sigma_1^2 = 0.68,\ \sigma_2^2 = 2.29}, \qquad \boxed{\pi_1 = 0.479,\ \pi_2 = 0.521}.\]</span> Log-likelihood: <span class="math inline">\(\boxed{-12.294}\)</span> — up again.</p>
+<p><strong>Reading the numbers.</strong> The means walk toward the true clusters: <span class="math inline">\(\mu_1: -1 \to -1.78 \to -2.02\)</span> (left cluster sits at <span class="math inline">\(\approx -2\)</span>), <span class="math inline">\(\mu_2: 2 \to 4.13 \to 4.74\)</span> (right cluster at <span class="math inline">\(\approx 5\)</span>). Responsibilities <em>sharpen</em> — <span class="math inline">\(x = -3\)</span> goes from <span class="math inline">\(93\%\)</span> to <span class="math inline">\(98.7\%\)</span> component-1 — and the inflated initial variances collapse as each bell stops trying to cover both clusters. Run to 20 iterations: <span class="math inline">\(\mu = (-2.00, 5.00)\)</span>, <span class="math inline">\(\sigma^2 = (0.667, 0.667)\)</span>, <span class="math inline">\(\pi = (0.5, 0.5)\)</span>, log-likelihood <span class="math inline">\(-11.456\)</span>, stable to 4 decimals — the sample statistics of the two clusters, recovered from a bad start.</p>
+<!-- Original matplotlib illustration drawn for this chapter (not reused from any URL): the two weighted 1-D Gaussian components of the hand-worked example at initialization and after two EM iterations, showing them migrating onto the two data clusters -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/25-gmm-em-em-iterations.png" class="img-fluid figure-img"></p>
+<figcaption>Weighted component Gaussians of the hand-worked example at initialization (top: two broad overlapping bells) and after two EM iterations (bottom: one bell on each cluster), with the six data points as black dots.</figcaption>
+</figure>
+</div>
+<p><strong>Basically, …</strong> “Two rounds are enough to watch the magic: the bells slide onto the clusters, the colour-assignments harden, the likelihood climbs. EM is just §§25.8–25.9 on repeat — and the numbers above are the proof that repeating works.”</p>
+</section>
+<section id="where-this-goes-next-and-the-close-of-part-iii" class="level2">
+<h2 class="anchored" data-anchor-id="where-this-goes-next-and-the-close-of-part-iii">25.12 Where this goes next — and the close of Part III</h2>
+<ol type="i">
+<li><strong>Clustering, the soft way.</strong> The lecture’s closing application: run EM on a GMM and you have “one of the building blocks of clustering”. Each point ends with a responsibility vector, not a single label — <em>soft</em> clustering. (The hard-assignment cousin, k-means, is Chapter 26’s job.)</li>
+<li><strong>The theory behind the updates.</strong> The lecture is upfront: the updates are intuitively right, and they are also “theoretically well founded” — but that foundation is a later course’s material, not this chapter’s.</li>
+<li><strong>Part III, closed.</strong> §22.11 framed unsupervised learning as “understanding data” and named two tasks: dimensionality reduction and density estimation. Chapter 24 answered with <em>subspaces</em> (PCA: the best floor through the data). This chapter answers with <em>probability</em> (GMMs: the best mixture of bells for the data, fitted by EM). Same spirit, different model of structure — the unsupervised arc is complete.</li>
+<li><strong>What Part IV adds.</strong> The models so far were few and classical — regression, PCA, mixtures. Part IV (MLT) widens the toolbox: k-means, kernels, regularization, trees, SVMs, ensembles. The probability machinery of Part II stays underneath all of it.</li>
+</ol>
+<p><strong>Basically, …</strong> “Part III in one line: Chapter 22 asked what ML is, 23 fitted lines, 24 found floors, 25 fitted bells. You now own the classical unsupervised toolkit — compress by subspace, or describe by mixture. Part IV spends that toolkit on the modern zoo.”</p>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li><strong>Trimodal arithmetic (the exam example).</strong> With <span class="math inline">\(\pi = (0.4,0.3,0.3)\)</span>, <span class="math inline">\(\mu = (-4,0,5)\)</span>, <span class="math inline">\(\sigma^2 = (0.5,1,1)\)</span>: (i) compute <span class="math inline">\(f_X(-4)\)</span> and <span class="math inline">\(f_X(5)\)</span> the way eg 1 computed <span class="math inline">\(f_X(0)\)</span>. (ii) The three values are <span class="math inline">\(\approx 0.2257\)</span>, <span class="math inline">\(0.1197\)</span>, <span class="math inline">\(0.1197\)</span> — which peak of the histogram is tallest, and why (weights <span class="math inline">\(\times\)</span> widths)?</li>
+<li><strong>Labels don’t matter.</strong> Write the mixture density for the lecture’s parameter set A (<span class="math inline">\(\pi_1 = 0.5, \mu_1 = 1, \sigma_1^2 = 1\)</span>; <span class="math inline">\(\pi_2 = 0.5, \mu_2 = -1, \sigma_2^2 = 1\)</span>) and for set B (same, with <span class="math inline">\(\mu_1,\mu_2\)</span> swapped). Show the two densities are identical functions.</li>
+<li><strong>Why direct MLE is ugly (guided).</strong> 1-D data <span class="math inline">\(\{a, b\}\)</span>, <span class="math inline">\(K = 2\)</span>, <span class="math inline">\(\sigma_1^2 = \sigma_2^2 = 1\)</span> and <span class="math inline">\(\pi_1 = \pi_2 = \tfrac12\)</span> known; estimate <span class="math inline">\(\mu_1, \mu_2\)</span>. (i) Write <span class="math inline">\(R(\mu_1,\mu_2)\)</span>. (ii) Compute <span class="math inline">\(\partial R/\partial\mu_1\)</span> and express it through the responsibilities <span class="math inline">\(\gamma(z_{i1})\)</span>. (iii) Set it to <span class="math inline">\(0\)</span>: what equation must <span class="math inline">\(\mu_1\)</span> satisfy? Explain why this is not a closed-form solution (where does <span class="math inline">\(\mu_1\)</span> appear?).</li>
+<li><strong>E-step arithmetic (MLT Week 4 live session).</strong> A 3-component GMM; for <span class="math inline">\(x = 6\)</span>: <span class="math inline">\(P(x\mid z=1) = 0.2\)</span>, <span class="math inline">\(P(x\mid z=2) = 0.3\)</span>, <span class="math inline">\(P(x\mid z=3) = 0.5\)</span>; <span class="math inline">\(\pi_1 = 0.4\)</span>, <span class="math inline">\(\pi_2 = 0.3\)</span>, <span class="math inline">\(\pi_3 = 0.3\)</span>. Compute the posterior <span class="math inline">\(P(z=k\mid x)\)</span> for <span class="math inline">\(k = 1,2,3\)</span>. Which component most likely generated <span class="math inline">\(x = 6\)</span>?</li>
+<li><strong>Fill the responsibilities (MLT Week 4 live session).</strong> 1-D data <span class="math inline">\(X = [-3,-1,1,3]\)</span>, <span class="math inline">\(K = 3\)</span>. An E-step produced <span class="math display">\[R = \begin{pmatrix} 0.3 &amp; a &amp; 0.5 \\ b &amp; 1 &amp; b \\ c &amp; 0.5 &amp; c \\ 0.1 &amp; 0.4 &amp; d \end{pmatrix},\]</span> each row = one point’s responsibilities. (i) Use <span class="math inline">\(\sum_k R_{ik} = 1\)</span> to find <span class="math inline">\(a,b,c,d\)</span>. (ii) Compute the M-step means <span class="math inline">\(\mu_1,\mu_2,\mu_3\)</span> and their sum.</li>
+<li><strong>M-step arithmetic (MLT Week 4 live session).</strong> Data <span class="math inline">\(\{2,1,3,2,1,2,0,-3,0,2\}\)</span> (<span class="math inline">\(n = 10\)</span>), <span class="math inline">\(K = 3\)</span>. At some EM round the E-step gave, for component 3, <span class="math inline">\(\lambda_{3i} = P(z_i = 3\mid x_i)\)</span>: <span class="math inline">\([0.2, 0.3, 0.1, 0.6, 0.1, 0.5, 0.4, 0.7, 0.1, 0.2]\)</span>. Compute <span class="math inline">\(\pi_3\)</span> and <span class="math inline">\(\mu_3\)</span> after the M-step.</li>
+<li><strong>The <span class="math inline">\(\pi_k\)</span> update, derived.</strong> With responsibilities fixed, the <span class="math inline">\(\pi\)</span>-dependent part of the objective is <span class="math inline">\(\sum_{i=1}^{n}\sum_{k=1}^{K}\gamma(z_{ik})\log\pi_k\)</span>, subject to <span class="math inline">\(\sum_{k=1}^{K}\pi_k = 1\)</span>. Use a Lagrange multiplier (§11) to show <span class="math inline">\(\boxed{\pi_k = N_k/n}\)</span>.</li>
+<li><strong>True or false, one-line justification:</strong> (i) <span class="math inline">\(\sum_{k=1}^{K}\gamma(z_{ik}) = 1\)</span> for every data point <span class="math inline">\(i\)</span>. (ii) EM is guaranteed to find the global maximum of the likelihood. (iii) If every <span class="math inline">\(\gamma(z_{ik}) \in \{0,1\}\)</span>, the M-step is exactly the per-cluster sample mean, sample covariance, and data fraction. (iv) Swapping two components’ labels changes the fitted mixture density. (v) A GMM with <span class="math inline">\(K = 1\)</span> can capture trimodal data.</li>
+</ol>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — Trimodal arithmetic.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>1. Trimodal arithmetic.</strong></p>
+<ol type="i">
+<li><span class="math inline">\(f_X(x) = 0.4\,N(x\mid-4,0.5) + 0.3\,N(x\mid 0,1) + 0.3\,N(x\mid 5,1)\)</span>.</li>
+</ol>
+<p>At <span class="math inline">\(x = -4\)</span>: - red: <span class="math inline">\(0.4\cdot\frac{1}{\sqrt{2\pi\cdot0.5}}e^{0} = 0.4\cdot 0.564190 = 0.225676\)</span>, - green: <span class="math inline">\(0.3\cdot\frac{1}{\sqrt{2\pi}}e^{-(-4)^2/2} = 0.3\cdot 0.398942\cdot e^{-8} = 0.119683\cdot 0.000335 = 0.000040\)</span>, - blue: <span class="math inline">\(0.3\cdot\frac{1}{\sqrt{2\pi}}e^{-(-9)^2/2} \approx 0\)</span>, <span class="math display">\[\boxed{f_X(-4) \approx 0.2257}.\]</span></p>
+<p>At <span class="math inline">\(x = 5\)</span>: - blue: <span class="math inline">\(0.3\cdot\frac{1}{\sqrt{2\pi}}e^{0} = 0.119683\)</span>, - green: <span class="math inline">\(0.3\cdot\frac{1}{\sqrt{2\pi}}e^{-25/2} = 0.119683\cdot e^{-12.5} = 0.119683\cdot 3.73\times10^{-6} \approx 0.000000\)</span>, - red <span class="math inline">\(\approx 0\)</span>, <span class="math display">\[\boxed{f_X(5) \approx 0.1197}.\]</span></p>
+<ol start="2" type="i">
+<li>Tallest peak at <span class="math inline">\(x = -4\)</span> (<span class="math inline">\(0.2257 &gt; 0.1197\)</span>). Each peak’s height is <span class="math inline">\(\approx \pi_k/\sqrt{2\pi\sigma_k^2}\)</span> (the other components contribute negligibly at a peak): red <span class="math inline">\(\frac{0.4}{\sqrt{\pi}} = 0.2257\)</span>, green <span class="math inline">\(\frac{0.3}{\sqrt{2\pi}} = 0.1197\)</span>, blue the same <span class="math inline">\(0.1197\)</span>. Red wins twice over: largest weight (<span class="math inline">\(0.4\)</span>) <em>and</em> narrowest bell (<span class="math inline">\(\sigma^2 = 0.5\)</span> concentrates its mass into a taller spike). This is §22.13’s “mass spent in one place is mass denied elsewhere” — the narrow red bell spends its <span class="math inline">\(0.4\)</span> of mass in a tight neighbourhood, so its density there is high.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — Labels don’t matter.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>2. Labels don’t matter.</strong></p>
+<p>Set A: <span class="math inline">\(f_A(x) = 0.5\,N(x\mid 1,1) + 0.5\,N(x\mid -1,1)\)</span>.</p>
+<p>Set B: <span class="math inline">\(f_B(x) = 0.5\,N(x\mid -1,1) + 0.5\,N(x\mid 1,1)\)</span>.</p>
+<p>For every <span class="math inline">\(x\)</span>, <span class="math inline">\(f_B(x) - f_A(x) = 0\)</span> by commutativity of addition: the two summands are identical, only their order differs. Hence <span class="math inline">\(f_A \equiv f_B\)</span> as functions — no dataset, however large, can distinguish the two parameter vectors. This is §25.4’s unidentifiability.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — Why direct MLE is ugly.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>3. Why direct MLE is ugly.</strong></p>
+<ol type="i">
+<li><p><span class="math inline">\(N(x\mid\mu,1) = \frac{1}{\sqrt{2\pi}}e^{-(x-\mu)^2/2}\)</span>, so <span class="math display">\[R(\mu_1,\mu_2) = -\log\!\left(\tfrac12 N(a\mid\mu_1,1)+\tfrac12 N(a\mid\mu_2,1)\right) - \log\!\left(\tfrac12 N(b\mid\mu_1,1)+\tfrac12 N(b\mid\mu_2,1)\right).\]</span></p></li>
+<li><p><span class="math inline">\(\frac{\partial}{\partial\mu_1}\log N(x\mid\mu_1,1) = x - \mu_1\)</span>. By the chain rule on each log-of-sum, with <span class="math inline">\(D_i = \tfrac12 N(x_i\mid\mu_1,1)+\tfrac12 N(x_i\mid\mu_2,1)\)</span> (<span class="math inline">\(x_1 = a\)</span>, <span class="math inline">\(x_2 = b\)</span>): <span class="math display">\[\frac{\partial R}{\partial\mu_1} = -\sum_{i=1}^{2}\frac{\tfrac12\,\partial_{\mu_1}N(x_i\mid\mu_1,1)}{D_i} = -\sum_{i=1}^{2}(x_i-\mu_1)\,\frac{N(x_i\mid\mu_1,1)}{N(x_i\mid\mu_1,1)+N(x_i\mid\mu_2,1)}.\]</span> The fraction is exactly the responsibility (with <span class="math inline">\(\pi_1 = \pi_2\)</span> cancelling): <span class="math display">\[\boxed{\frac{\partial R}{\partial\mu_1} = -(a-\mu_1)\,\gamma(z_{11}) - (b-\mu_1)\,\gamma(z_{12})}.\]</span></p></li>
+<li><p>Setting to zero: <span class="math inline">\(\gamma(z_{11})(a-\mu_1) + \gamma(z_{12})(b-\mu_1) = 0\)</span>, i.e. <span class="math display">\[\mu_1 = \frac{\gamma(z_{11})\,a + \gamma(z_{12})\,b}{\gamma(z_{11}) + \gamma(z_{12})}.\]</span> Not a closed-form solution: <span class="math inline">\(\gamma(z_{i1}) = N(x_i\mid\mu_1,1)/[N(x_i\mid\mu_1,1)+N(x_i\mid\mu_2,1)]\)</span> itself contains <span class="math inline">\(\mu_1\)</span> (and <span class="math inline">\(\mu_2\)</span>) inside the Gaussian densities — <span class="math inline">\(\mu_1\)</span> appears on both sides of the equation. It is a <em>fixed-point equation</em>, not a formula. This is precisely the lecture’s point: you can write the gradient, but “you cannot set it to <span class="math inline">\(0\)</span> and solve for it”. (Note the silver lining: the fixed-point equation <em>is</em> the M-step update — EM solves it by iteration, freezing <span class="math inline">\(\gamma\)</span> in the E-step and solving for <span class="math inline">\(\mu_1\)</span> in the M-step.)</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — E-step arithmetic.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>4. E-step arithmetic.</strong></p>
+<p>Numerators <span class="math inline">\(\pi_k P(x\mid z=k)\)</span>: - <span class="math inline">\(k=1\)</span>: <span class="math inline">\(0.4\times 0.2 = 0.08\)</span>, - <span class="math inline">\(k=2\)</span>: <span class="math inline">\(0.3\times 0.3 = 0.09\)</span>, - <span class="math inline">\(k=3\)</span>: <span class="math inline">\(0.3\times 0.5 = 0.15\)</span>.</p>
+<p>Denominator: <span class="math inline">\(0.08+0.09+0.15 = 0.32\)</span>. Posteriors: <span class="math display">\[\boxed{P(z=1\mid x) = \tfrac{0.08}{0.32} = 0.25},\quad \boxed{P(z=2\mid x) = \tfrac{0.09}{0.32} = 0.28125},\quad \boxed{P(z=3\mid x) = \tfrac{0.15}{0.32} = 0.46875}.\]</span> Component 3 has the highest posterior — most likely to have generated <span class="math inline">\(x = 6\)</span>. (Note: the largest <em>likelihood</em> alone doesn’t decide; the posterior weights it by <span class="math inline">\(\pi_k\)</span>. Here they agree, but in general the <span class="math inline">\(\pi_k\)</span> factor matters.)</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — Fill the responsibilities.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>5. Fill the responsibilities.</strong></p>
+<ol type="i">
+<li>Rows must sum to 1:</li>
+</ol>
+<ul>
+<li>Row 1: <span class="math inline">\(0.3 + a + 0.5 = 1 \Rightarrow \boxed{a = 0.2}\)</span>.</li>
+<li>Row 2: <span class="math inline">\(b + 1 + b = 1 \Rightarrow \boxed{b = 0}\)</span>.</li>
+<li>Row 3: <span class="math inline">\(c + 0.5 + c = 1 \Rightarrow \boxed{c = 0.25}\)</span>.</li>
+<li>Row 4: <span class="math inline">\(0.1 + 0.4 + d = 1 \Rightarrow \boxed{d = 0.5}\)</span>.</li>
+</ul>
+<p><span class="math display">\[R = \begin{pmatrix} 0.3 &amp; 0.2 &amp; 0.5 \\ 0 &amp; 1 &amp; 0 \\ 0.25 &amp; 0.5 &amp; 0.25 \\ 0.1 &amp; 0.4 &amp; 0.5 \end{pmatrix}.\]</span></p>
+<ol start="2" type="i">
+<li>M-step means <span class="math inline">\(\mu_k = \sum_i R_{ik}x_i / \sum_i R_{ik}\)</span> with <span class="math inline">\(X = [-3,-1,1,3]\)</span>:</li>
+</ol>
+<ul>
+<li><span class="math inline">\(N_1 = 0.3+0+0.25+0.1 = 0.65\)</span>; <span class="math inline">\(\mu_1 = \frac{0.3(-3)+0(-1)+0.25(1)+0.1(3)}{0.65} = \frac{-0.9+0+0.25+0.3}{0.65} = \frac{-0.35}{0.65} = \boxed{-0.5385}\)</span>,</li>
+<li><span class="math inline">\(N_2 = 0.2+1+0.5+0.4 = 2.1\)</span>; <span class="math inline">\(\mu_2 = \frac{0.2(-3)+1(-1)+0.5(1)+0.4(3)}{2.1} = \frac{-0.6-1+0.5+1.2}{2.1} = \frac{0.1}{2.1} = \boxed{0.0476}\)</span>,</li>
+<li><span class="math inline">\(N_3 = 0.5+0+0.25+0.5 = 1.25\)</span>; <span class="math inline">\(\mu_3 = \frac{0.5(-3)+0(-1)+0.25(1)+0.5(3)}{1.25} = \frac{-1.5+0+0.25+1.5}{1.25} = \frac{0.25}{1.25} = \boxed{0.2}\)</span>.</li>
+</ul>
+<p><span class="math display">\[\boxed{\mu_1+\mu_2+\mu_3 = -0.5385 + 0.0476 + 0.2 = -0.2909 \approx -0.29}.\]</span> (The MLT live-session slide reports <span class="math inline">\(-0.53 + 0.04 + 0.2 = -0.29\)</span> — same answer up to its one-decimal rounding.)</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — M-step arithmetic.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>6. M-step arithmetic.</strong></p>
+<p><span class="math inline">\(\lambda_{3i} = [0.2, 0.3, 0.1, 0.6, 0.1, 0.5, 0.4, 0.7, 0.1, 0.2]\)</span>, <span class="math inline">\(x = [2,1,3,2,1,2,0,-3,0,2]\)</span>, <span class="math inline">\(n = 10\)</span>.</p>
+<p>Effective count: <span class="math inline">\(N_3 = \sum_i\lambda_{3i} = 0.2+0.3+0.1+0.6+0.1+0.5+0.4+0.7+0.1+0.2 = \boxed{3.2}\)</span>.</p>
+<p><span class="math display">\[\boxed{\pi_3 = N_3/n = 3.2/10 = 0.32}.\]</span></p>
+<p>Weighted sum: <span class="math inline">\(\sum_i\lambda_{3i}x_i = 0.2(2)+0.3(1)+0.1(3)+0.6(2)+0.1(1)+0.5(2)+0.4(0)+0.7(-3)+0.1(0)+0.2(2)\)</span> <span class="math inline">\(= 0.4+0.3+0.3+1.2+0.1+1.0+0-2.1+0+0.4 = \boxed{1.6}\)</span>.</p>
+<p><span class="math display">\[\boxed{\mu_3 = 1.6/3.2 = 0.5}.\]</span></p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — The <span class="math inline">\(\pi_k\)</span> update, derived.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>7. The <span class="math inline">\(\pi_k\)</span> update, derived.</strong></p>
+<p>Maximize <span class="math inline">\(J(\pi) = \sum_{i=1}^{n}\sum_{k=1}^{K}\gamma(z_{ik})\log\pi_k\)</span> subject to <span class="math inline">\(g(\pi) = \sum_{k=1}^{K}\pi_k - 1 = 0\)</span>. Lagrangian (§11): <span class="math display">\[\mathcal{L}(\pi,\lambda) = \sum_{i,k}\gamma(z_{ik})\log\pi_k - \lambda\!\left(\sum_{k=1}^{K}\pi_k - 1\right).\]</span> <span class="math display">\[\frac{\partial\mathcal{L}}{\partial\pi_j} = \frac{\sum_{i=1}^{n}\gamma(z_{ij})}{\pi_j} - \lambda = \frac{N_j}{\pi_j} - \lambda = 0 \quad\Rightarrow\quad \pi_j = \frac{N_j}{\lambda}.\]</span> Summing over <span class="math inline">\(j\)</span> and using the constraint: <span class="math inline">\(1 = \sum_j\pi_j = \frac{1}{\lambda}\sum_j N_j\)</span>. But <span class="math inline">\(\sum_j N_j = \sum_j\sum_i\gamma(z_{ij}) = \sum_i\underbrace{\sum_j\gamma(z_{ij})}_{=1} = n\)</span>. Hence <span class="math inline">\(\lambda = n\)</span> and <span class="math display">\[\boxed{\pi_k = \frac{N_k}{n}}.\]</span></p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 8 — True or false.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>8. True or false.</strong></p>
+<ol type="i">
+<li><p><strong>True.</strong> <span class="math inline">\(\sum_k\gamma(z_{ik}) = \sum_k \frac{\pi_k N(x_i\mid\mu_k,\Sigma_k)}{\sum_j\pi_j N(x_i\mid\mu_j,\Sigma_j)} = 1\)</span> — numerator sums to denominator (§25.8(i)).</p></li>
+<li><p><strong>False.</strong> EM converges to a <em>local</em> optimum / stationary point of the likelihood; which one depends on the initialization. No global guarantee (§25.10).</p></li>
+<li><p><strong>True.</strong> With <span class="math inline">\(\gamma(z_{ik})\in\{0,1\}\)</span>, <span class="math inline">\(N_k\)</span> is the count of points in cluster <span class="math inline">\(k\)</span>, and the M-step formulas become exactly the per-cluster sample mean (§20.6), sample covariance (§20.7), and fraction (§25.9(i)).</p></li>
+<li><p><strong>False.</strong> The mixture density is a sum — addition commutes — so permuted labels give the identical function (§25.4).</p></li>
+<li><p><strong>False.</strong> <span class="math inline">\(K = 1\)</span> is a single Gaussian: one peak, always. Trimodal data needs (at least) three components (§25.2).</p></li>
+</ol>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./24-pca.html" class="pagination-link" aria-label="24. PCA: variance maximization, eigendecomposition, kernel PCA">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./26-k-means.html" class="pagination-link" aria-label="26. K-means clustering">
+        <span class="nav-page-text"><span class="chapter-title">26. K-means clustering</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>10. Unconstrained optimization and gradient descent – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./11-constrained-optimization-lagrange.html" rel="next">
+<link href="./09-multivariable-calculus.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./01-sets-functions-preliminaries.html">Part I — Mathematical Foundations</a></li><li class="breadcrumb-item"><a href="./10-unconstrained-optimization-gradient-descent.html"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#the-problem-minimize-with-no-strings-attached" id="toc-the-problem-minimize-with-no-strings-attached" class="nav-link active" data-scroll-target="#the-problem-minimize-with-no-strings-attached">10.1 The problem: minimize, with no strings attached</a></li>
+  <li><a href="#the-school-method-and-where-it-breaks" id="toc-the-school-method-and-where-it-breaks" class="nav-link" data-scroll-target="#the-school-method-and-where-it-breaks">10.2 The school method, and where it breaks</a></li>
+  <li><a href="#the-iterative-idea-pick-a-direction-take-a-step-repeat" id="toc-the-iterative-idea-pick-a-direction-take-a-step-repeat" class="nav-link" data-scroll-target="#the-iterative-idea-pick-a-direction-take-a-step-repeat">10.3 The iterative idea: pick a direction, take a step, repeat</a></li>
+  <li><a href="#the-step-size-problem-too-big-oscillates-too-small-stalls" id="toc-the-step-size-problem-too-big-oscillates-too-small-stalls" class="nav-link" data-scroll-target="#the-step-size-problem-too-big-oscillates-too-small-stalls">10.4 The step-size problem: too big oscillates, too small stalls</a></li>
+  <li><a href="#the-gradient-descent-algorithm-one-dimension" id="toc-the-gradient-descent-algorithm-one-dimension" class="nav-link" data-scroll-target="#the-gradient-descent-algorithm-one-dimension">10.5 The gradient descent algorithm (one dimension)</a></li>
+  <li><a href="#why-the-negative-derivative-the-taylor-argument" id="toc-why-the-negative-derivative-the-taylor-argument" class="nav-link" data-scroll-target="#why-the-negative-derivative-the-taylor-argument">10.6 Why the negative derivative: the Taylor argument</a></li>
+  <li><a href="#the-multivariate-version-replace-the-derivative-by-the-gradient" id="toc-the-multivariate-version-replace-the-derivative-by-the-gradient" class="nav-link" data-scroll-target="#the-multivariate-version-replace-the-derivative-by-the-gradient">10.7 The multivariate version: replace the derivative by the gradient</a></li>
+  <li><a href="#optimality-conditions-the-gradient-finds-suspects-the-hessian-interrogates-them" id="toc-optimality-conditions-the-gradient-finds-suspects-the-hessian-interrogates-them" class="nav-link" data-scroll-target="#optimality-conditions-the-gradient-finds-suspects-the-hessian-interrogates-them">10.8 Optimality conditions: the gradient finds suspects, the Hessian interrogates them</a></li>
+  <li><a href="#what-gradient-descent-promises-and-what-it-does-not" id="toc-what-gradient-descent-promises-and-what-it-does-not" class="nav-link" data-scroll-target="#what-gradient-descent-promises-and-what-it-does-not">10.9 What gradient descent promises — and what it does not</a></li>
+  <li><a href="#this-is-training-and-where-this-goes-next" id="toc-this-is-training-and-where-this-goes-next" class="nav-link" data-scroll-target="#this-is-training-and-where-this-goes-next">10.10 This is training — and where this goes next</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./01-sets-functions-preliminaries.html">Part I — Mathematical Foundations</a></li><li class="breadcrumb-item"><a href="./10-unconstrained-optimization-gradient-descent.html"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="the-problem-minimize-with-no-strings-attached" class="level2">
+<h2 class="anchored" data-anchor-id="the-problem-minimize-with-no-strings-attached">10.1 The problem: minimize, with no strings attached</h2>
+<p>An optimization problem has an <strong>objective</strong> <span class="math inline">\(f\)</span> — a function you want to make as small (or as large) as possible — evaluated at a <strong>variable</strong> (in ML parlance, a <strong>parameter</strong>) <span class="math inline">\(\mathbf{x} \in \mathbb{R}^d\)</span>, plus possibly some <strong>constraints</strong> <span class="math inline">\(g_j(\mathbf{x}) \le 0\)</span> or <span class="math inline">\(h_j(\mathbf{x}) = 0\)</span> restricting where <span class="math inline">\(\mathbf{x}\)</span> may live.</p>
+<p><strong>Def.</strong> The <strong>unconstrained</strong> optimization problem = <span class="math display">\[\min_{\mathbf{x} \in \mathbb{R}^d} f(\mathbf{x}),\]</span> with <em>no</em> constraints on <span class="math inline">\(\mathbf{x}\)</span>: every point of <span class="math inline">\(\mathbb{R}^d\)</span> is allowed. Compare: the “cow and grass” setup from the lectures — minimize <span class="math inline">\((x_1 - 40)^2 + (x_2 - 40)^2\)</span> — is <em>constrained</em> by the rope and the fence. Here, those constraints are dropped: the cow can roam the whole plane.</p>
+<p><strong>Note:</strong> Maximizing is the same problem in disguise: <span class="math inline">\(\max f(\mathbf{x}) = -\min(-f(\mathbf{x}))\)</span>. Flip the sign and you are back to minimization.</p>
+<p><strong>Why ML cares.</strong> Training a model <em>is</em> an unconstrained minimization: the variable <span class="math inline">\(\mathbf{x}\)</span> is the vector of model parameters, the objective <span class="math inline">\(f\)</span> is the loss on the training data, and the “best classifier” of the lectures is the one with the least loss. This chapter builds the algorithm that does the minimizing. (Chapter 11 adds the constraints back; Chapter 43 scales the algorithm up to neural nets.)</p>
+<p><strong>Basically, …</strong> You have a hilly landscape <span class="math inline">\(f\)</span> and you may stand anywhere. Find the lowest point. Machine learning is exactly this: the landscape is the loss, the position is the model’s weights, and “training” is walking downhill until you can’t go lower.</p>
+</section>
+<section id="the-school-method-and-where-it-breaks" class="level2">
+<h2 class="anchored" data-anchor-id="the-school-method-and-where-it-breaks">10.2 The school method, and where it breaks</h2>
+<p>The method from school: write <span class="math inline">\(f'(x)\)</span>, set it to <span class="math inline">\(0\)</span>, solve for <span class="math inline">\(x\)</span>.</p>
+<p><strong>eg 1 — the easy case (full steps).</strong> Minimize <span class="math inline">\(f(x) = (x - 5)^2\)</span> over <span class="math inline">\(x \in \mathbb{R}\)</span>.</p>
+<ol type="i">
+<li><span class="math inline">\(f'(x) = 2(x - 5)\)</span>. Set <span class="math inline">\(= 0\)</span>: <span class="math inline">\(x = 5\)</span>.</li>
+<li><span class="math inline">\(f''(x) = 2 &gt; 0\)</span>, so (Chapter 8, §8.7.2) this is a local minimum.</li>
+<li>Since <span class="math inline">\(f(x) \ge 0\)</span> everywhere and <span class="math inline">\(f(5) = 0\)</span>, nothing can beat it: <span class="math inline">\(x = 5\)</span> is the <strong>global minimum</strong>, value <span class="math inline">\(0\)</span>.</li>
+</ol>
+<p><strong>Basically, …</strong> For <span class="math inline">\((x-5)^2\)</span> you can almost see the answer: squares are never negative, and <span class="math inline">\(5\)</span> makes it zero. The derivative method agrees: <span class="math inline">\(x = 5\)</span>.</p>
+<p>But this method only works when the equation <span class="math inline">\(f'(x) = 0\)</span> is <em>solvable</em>:</p>
+<p><strong>eg 2 — where the school method stalls.</strong> Minimize <span class="math inline">\(f(x) = 3x^6 + 2x^5 + 3x^3 + 5x^2 + 2\)</span>.</p>
+<ol type="i">
+<li><span class="math inline">\(f'(x) = 18x^5 + 10x^4 + 9x^2 + 10x\)</span>.</li>
+<li>Set <span class="math inline">\(= 0\)</span>: a degree-<span class="math inline">\(5\)</span> equation, <span class="math inline">\(18x^5 + 10x^4 + 9x^2 + 10x = 0\)</span>.</li>
+<li>There is no general formula for degree <span class="math inline">\(5\)</span> — so the “set derivative to zero and solve” recipe dead-ends. Worse: even if you found roots, you’d still have to decide which (if any) is the minimum.</li>
+</ol>
+<p><strong>Note:</strong> Computers cannot do the clever logical reasoning of eg 1 (“squares are non-negative, so <span class="math inline">\(5\)</span> must be the minimum”). They need a <em>mechanical</em> procedure: an algorithm that starts somewhere and improves, step by step. That is what we build next.</p>
+</section>
+<section id="the-iterative-idea-pick-a-direction-take-a-step-repeat" class="level2">
+<h2 class="anchored" data-anchor-id="the-iterative-idea-pick-a-direction-take-a-step-repeat">10.3 The iterative idea: pick a direction, take a step, repeat</h2>
+<p>Start with any guess <span class="math inline">\(x_0 \in \mathbb{R}\)</span> (arbitrary — say <span class="math inline">\(x_0 = 10\)</span>) and improve it: <span class="math display">\[x_{t+1} = x_t + d,\]</span> where <span class="math inline">\(d\)</span> is a <strong>direction</strong>: a signed step added to the current point. In one dimension there are only two directions — left (<span class="math inline">\(d &lt; 0\)</span>) or right (<span class="math inline">\(d &gt; 0\)</span>).</p>
+<p>For <span class="math inline">\(f(x) = (x - 5)^2\)</span>: if <span class="math inline">\(x &gt; 5\)</span>, the minimum lies to the left, so <span class="math inline">\(d\)</span> must be negative; if <span class="math inline">\(x &lt; 5\)</span>, <span class="math inline">\(d\)</span> must be positive. Two conclusions:</p>
+<ol type="i">
+<li>The good direction <strong>depends on where you are</strong>: <span class="math inline">\(d\)</span> must be a <em>function of <span class="math inline">\(x\)</span></em>, not a constant.</li>
+<li>The derivative carries the needed sign information: <span class="math inline">\(f'(x) = 2(x - 5)\)</span> is positive when <span class="math inline">\(x &gt; 5\)</span> and negative when <span class="math inline">\(x &lt; 5\)</span> — exactly the <em>opposite</em> of the direction we want. So choose <span class="math display">\[d = -f'(x).\]</span> Then <span class="math inline">\(d &lt; 0\)</span> when <span class="math inline">\(x &gt; 5\)</span> and <span class="math inline">\(d &gt; 0\)</span> when <span class="math inline">\(x &lt; 5\)</span>: always the correct side.</li>
+</ol>
+<p><strong>eg 3 — the first iteration (full steps).</strong> <span class="math inline">\(f(x) = (x-5)^2\)</span>, <span class="math inline">\(x_0 = 10\)</span>.</p>
+<ol type="i">
+<li><span class="math inline">\(f'(10) = 2(10 - 5) = 10\)</span>. Direction <span class="math inline">\(d = -10\)</span> (left — correct, the minimum is at <span class="math inline">\(5\)</span>).</li>
+<li><span class="math inline">\(x_1 = x_0 + d = 10 - 10 = 0\)</span>. We moved — but did we move <em>well</em>?</li>
+</ol>
+<p><strong>Basically, …</strong> You are somewhere on a hill and want to go down. The direction <span class="math inline">\(d\)</span> must change depending on where you stand — and the negative of the slope, <span class="math inline">\(-f'(x)\)</span>, always points the right way: downhill. This is the seed of the whole chapter.</p>
+</section>
+<section id="the-step-size-problem-too-big-oscillates-too-small-stalls" class="level2">
+<h2 class="anchored" data-anchor-id="the-step-size-problem-too-big-oscillates-too-small-stalls">10.4 The step-size problem: too big oscillates, too small stalls</h2>
+<p>Continue eg 3 with the rule <span class="math inline">\(x_{t+1} = x_t - f'(x_t)\)</span> (this is <span class="math inline">\(d = -f'(x)\)</span> with step size <span class="math inline">\(1\)</span>):</p>
+<ol type="i">
+<li><span class="math inline">\(x_0 = 10 \to x_1 = 10 - 10 = 0\)</span>.</li>
+<li><span class="math inline">\(f'(0) = 2(0 - 5) = -10\)</span>, so <span class="math inline">\(x_2 = 0 - (-10) = 10\)</span>.</li>
+<li><span class="math inline">\(x_3 = 0\)</span>, <span class="math inline">\(x_4 = 10\)</span>, … — we bounce between <span class="math inline">\(10\)</span> and <span class="math inline">\(0\)</span> forever and <em>never reach <span class="math inline">\(5\)</span></em>.</li>
+</ol>
+<p><strong>Note:</strong> The <em>direction</em> was right every time (left from <span class="math inline">\(10\)</span>, right from <span class="math inline">\(0\)</span>). The failure is the <em>amount</em> moved: each step overshoots the minimum and lands on the mirror image of where it started.</p>
+<p>The fix: scale the direction by a <strong>step size</strong> <span class="math inline">\(\eta_t &gt; 0\)</span> that may differ each round: <span class="math display">\[x_{t+1} = x_t - \eta_t f'(x_t).\]</span> If <span class="math inline">\(\eta_t = 1\)</span> always, we recover the oscillating rule. The question is how to choose the sequence <span class="math inline">\(\eta_0, \eta_1, \dots\)</span>.</p>
+<p><strong>Attempt 1: halve every time.</strong> <span class="math inline">\(\eta_t = \frac{1}{2^t}\)</span>: <span class="math inline">\(1, \frac{1}{2}, \frac{1}{4}, \frac{1}{8}, \dots\)</span>. Seems safe — steps shrink, no oscillation. But:</p>
+<p><strong>eg 4 — shrinking too fast (full steps).</strong> Suppose some function always returns direction <span class="math inline">\(d = 1\)</span> (always “move right”), and the minimum is at <span class="math inline">\(x^* = 5\)</span> while we start at <span class="math inline">\(x_0 = 2\)</span>.</p>
+<ol type="i">
+<li>With <span class="math inline">\(\eta_t = \frac{1}{2^t}\)</span>: <span class="math inline">\(x_1 = 2 + 1 = 3\)</span>, <span class="math inline">\(x_2 = 3 + \frac{1}{2} = 3.5\)</span>, <span class="math inline">\(x_3 = 3.5 + \frac{1}{4} = 3.75\)</span>, …</li>
+<li>Total distance ever travelled: <span class="math inline">\(1 + \frac{1}{2} + \frac{1}{4} + \cdots = \frac{1}{1 - 1/2} = 2\)</span> (geometric series).</li>
+<li>So the iterates approach <span class="math inline">\(2 + 2 = 4\)</span> — and <em>stop there</em>, forever short of <span class="math inline">\(x^* = 5\)</span>. The direction was right all along; the steps became too small too fast.</li>
+</ol>
+<p><strong>Attempt 2: shrink, but slower.</strong> <span class="math inline">\(\eta_t = \frac{1}{t+1}\)</span>: <span class="math inline">\(1, \frac{1}{2}, \frac{1}{3}, \frac{1}{4}, \dots\)</span>. Steps still shrink (no oscillation), but now the total budget <span class="math inline">\(\sum_{t=0}^{\infty} \frac{1}{t+1} = 1 + \frac{1}{2} + \frac{1}{3} + \cdots = \infty\)</span> (the harmonic series diverges). No matter how far <span class="math inline">\(x^*\)</span> is, the cumulative step budget is infinite — you can always get there.</p>
+<p><strong>Basically, …</strong> Step size has two enemies pulling opposite ways. Too big: you bounce back and forth across the valley forever (the <span class="math inline">\(10 \to 0 \to 10\)</span> dance). Too small: you run out of gas halfway there (stuck at <span class="math inline">\(4\)</span>, minimum at <span class="math inline">\(5\)</span>). The winning recipe: steps that shrink — so you stop bouncing — but whose <em>total</em> never runs out — so you always have enough road left to reach the minimum.</p>
+</section>
+<section id="the-gradient-descent-algorithm-one-dimension" class="level2">
+<h2 class="anchored" data-anchor-id="the-gradient-descent-algorithm-one-dimension">10.5 The gradient descent algorithm (one dimension)</h2>
+<p>Collecting the ideas: initialize anywhere, then iterate <span class="math display">\[\boxed{x_{t+1} = x_t - \eta_t f'(x_t)}, \qquad \text{e.g. } \eta_t = \frac{1}{t+1}.\]</span> All it needs is the ability to compute the derivative at a point — something a computer does mechanically. It is a <strong>first-order</strong> method: it uses only first-derivative information, never <span class="math inline">\(f''\)</span>.</p>
+<p><strong>Def.</strong> This procedure is <strong>gradient descent</strong>. (“Gradient” is the higher-dimensional name for the derivative — §10.7. The name is explained there; the algorithm is already here.)</p>
+<p><strong>eg 5 — step size <span class="math inline">\(1\)</span> diverges (full steps).</strong> <span class="math inline">\(f(x) = (3x - 9)^2\)</span>, <span class="math inline">\(x_0 = 2\)</span>, constant <span class="math inline">\(\eta = 1\)</span>.</p>
+<ol type="i">
+<li><span class="math inline">\(f'(x) = 2(3x - 9)\cdot 3 = 18x - 54\)</span>. (Check: minimum where <span class="math inline">\(18x - 54 = 0\)</span>, i.e.&nbsp;<span class="math inline">\(x = 3\)</span>, <span class="math inline">\(f(3) = 0\)</span>.)</li>
+<li><span class="math inline">\(x_1 = 2 - 1\cdot(18\cdot 2 - 54) = 2 - (-18) = 20\)</span>. Overshot: we leapt from <span class="math inline">\(2\)</span> past <span class="math inline">\(3\)</span> all the way to <span class="math inline">\(20\)</span>.</li>
+<li><span class="math inline">\(x_2 = 20 - (18\cdot 20 - 54) = 20 - 306 = -286\)</span>. Worse. <span class="math inline">\(f\)</span> explodes: <span class="math inline">\(9 \to 2601 \to 751689 \approx 7.5\times 10^5\)</span>.</li>
+</ol>
+<p><strong>eg 6 — a small step size converges (full steps).</strong> Same <span class="math inline">\(f\)</span>, same <span class="math inline">\(x_0 = 2\)</span>, but <span class="math inline">\(\eta = 0.05\)</span>.</p>
+<ol type="i">
+<li><span class="math inline">\(x_1 = 2 - 0.05(18\cdot 2 - 54) = 2 - 0.05(-18) = 2.9\)</span>.</li>
+<li><span class="math inline">\(x_2 = 2.9 - 0.05(18\cdot 2.9 - 54) = 2.9 - 0.05(-1.8) = 2.99\)</span>.</li>
+<li><span class="math inline">\(x_3 = 2.99 - 0.05(18\cdot 2.99 - 54) = 2.99 - 0.05(-0.18) = 2.999\)</span>.</li>
+<li><span class="math inline">\(f\)</span>: <span class="math inline">\(9 \to 0.09 \to 0.0009 \to 0.000009\)</span> — homing in on <span class="math inline">\(3\)</span>.</li>
+</ol>
+<p><strong>Note:</strong> Same function, same start, same direction — only <span class="math inline">\(\eta\)</span> changed, and the outcome flipped from blow-up to convergence. Step size is not a detail; it is half the algorithm. (This is why <span class="math inline">\(\eta\)</span>, the <strong>learning rate</strong>, becomes a hyperparameter to tune in Chapter 39.)</p>
+<p><strong>eg 7 — converging to a <em>local</em> minimum (full steps).</strong> <span class="math inline">\(f(x) = x^3 - x^2 - x + 5\)</span>, <span class="math inline">\(x_0 = 0.75\)</span>, <span class="math inline">\(\eta = 0.25\)</span>.</p>
+<ol type="i">
+<li><span class="math inline">\(f'(x) = 3x^2 - 2x - 1\)</span>. Critical points: <span class="math inline">\(3x^2 - 2x - 1 = (3x + 1)(x - 1) = 0\)</span>, so <span class="math inline">\(x = 1\)</span> and <span class="math inline">\(x = -\frac{1}{3}\)</span>. With <span class="math inline">\(f''(x) = 6x - 2\)</span>: <span class="math inline">\(f''(1) = 4 &gt; 0\)</span> (local min), <span class="math inline">\(f''(-\frac{1}{3}) = -4 &lt; 0\)</span> (local max).</li>
+<li><span class="math inline">\(f'(0.75) = 3(0.5625) - 1.5 - 1 = -0.8125\)</span>. <span class="math inline">\(x_1 = 0.75 - 0.25(-0.8125) = 0.953125 \approx 0.953\)</span>.</li>
+<li><span class="math inline">\(f'(0.953125) = 3(0.9084473) - 2(0.953125) - 1 \approx -0.1809\)</span>. <span class="math inline">\(x_2 = 0.953125 - 0.25(-0.1809) \approx 0.998\)</span>.</li>
+<li>The iterates crawl toward <span class="math inline">\(x = 1\)</span> — the <em>local</em> minimum nearest the start. The local maximum at <span class="math inline">\(-\frac{1}{3}\)</span> is never visited. Direction right, step size fine, destination local.</li>
+</ol>
+<p><strong>Basically, …</strong> Gradient descent is a blindfolded hiker who can only feel the slope under their feet: step downhill a little, feel again, repeat. The step size is the stride length — too long and you leap over the valley and bounce; too short and you fall asleep halfway. With a sensible stride, you reach the bottom of <em>your</em> valley.</p>
+</section>
+<section id="why-the-negative-derivative-the-taylor-argument" class="level2">
+<h2 class="anchored" data-anchor-id="why-the-negative-derivative-the-taylor-argument">10.6 Why the negative derivative: the Taylor argument</h2>
+<p>We pulled <span class="math inline">\(d = -f'(x)\)</span> out of a hat in §10.3 (it happened to work for <span class="math inline">\((x-5)^2\)</span>). Here is the real justification, from the Taylor series of Chapter 8.</p>
+<p><strong>Setup.</strong> We are at <span class="math inline">\(x\)</span> and consider stepping to <span class="math inline">\(x + \eta d\)</span>: direction <span class="math inline">\(d\)</span>, step size <span class="math inline">\(\eta &gt; 0\)</span> (small). First-order Taylor (§8.6, and the lectures’ key expansion): <span class="math display">\[f(x + \eta d) \approx f(x) + \eta\, d\, f'(x),\]</span> dropping the <span class="math inline">\(\eta^2, \eta^3, \dots\)</span> higher-order terms, which are negligible when <span class="math inline">\(\eta\)</span> is small. The change in <span class="math inline">\(f\)</span> is therefore <span class="math display">\[f(x + \eta d) - f(x) \approx \eta\, d\, f'(x).\]</span></p>
+<p><strong>The requirement.</strong> We minimize, so we want the new value <em>smaller</em>: <span class="math inline">\(f(x + \eta d) - f(x) &lt; 0\)</span>, i.e. <span class="math display">\[\eta\, d\, f'(x) &lt; 0.\]</span> Since <span class="math inline">\(\eta &gt; 0\)</span> cannot change the sign, this is equivalent to <span class="math display">\[d \cdot f'(x) &lt; 0:\]</span> the direction must point <em>against</em> the derivative.</p>
+<p><strong>The choice.</strong> Take <span class="math inline">\(d = -f'(x)\)</span>. Then <span class="math display">\[d \cdot f'(x) = -f'(x)\cdot f'(x) = -\,f'(x)^2 \le 0,\]</span> strictly negative unless <span class="math inline">\(f'(x) = 0\)</span> (in which case the algorithm stops — §10.9). So for small <span class="math inline">\(\eta\)</span>, the Taylor approximation <em>guarantees</em> the step decreases <span class="math inline">\(f\)</span>.</p>
+<p><strong>Gradient descent as iterated linear approximation.</strong> Chapter 9, §9.6 promised this, and here is the delivery. At <span class="math inline">\(x_t\)</span>, the linear approximation is <span class="math display">\[L_{x_t}(x) = f(x_t) + f'(x_t)\,(x - x_t).\]</span> Write the next point as <span class="math inline">\(x = x_t + \eta u\)</span> with <span class="math inline">\(|u| = 1\)</span> (a fixed-size step in a unit direction <span class="math inline">\(u\)</span>): <span class="math display">\[L_{x_t}(x_t + \eta u) = f(x_t) + \eta\, f'(x_t)\, u.\]</span> Minimizing <em>the linearization</em> over the unit direction <span class="math inline">\(u\)</span>: the term <span class="math inline">\(f'(x_t)\,u\)</span> is smallest when <span class="math inline">\(u\)</span> points opposite to <span class="math inline">\(f'(x_t)\)</span>, i.e.&nbsp;<span class="math inline">\(u = -f'(x_t)/|f'(x_t)|\)</span> (the one-dimensional Cauchy–Schwarz argument of §9.4). So the linear model’s minimizer is a step in the direction <span class="math inline">\(-f'(x_t)\)</span> — and absorbing <span class="math inline">\(|f'(x_t)|\)</span> into the step size gives the update <span class="math display">\[x_{t+1} = x_t - \eta\, f'(x_t).\]</span> That is: <strong>gradient descent = minimize the linear approximation at the current point, step there, re-approximate, repeat.</strong> The honest limitation of §8.6/§9.6 carries over: the linearization is only trustworthy <em>near</em> <span class="math inline">\(x_t\)</span> — which is exactly why <span class="math inline">\(\eta\)</span> must be small.</p>
+<p><strong>Basically, …</strong> Zoom in on the curve at your current point: it looks like a straight line with slope <span class="math inline">\(f'(x)\)</span>. Walk downhill along that line a little. You will land slightly lower (the line is accurate up close). Now zoom in at the new point and do it again. That loop <em>is</em> gradient descent.</p>
+</section>
+<section id="the-multivariate-version-replace-the-derivative-by-the-gradient" class="level2">
+<h2 class="anchored" data-anchor-id="the-multivariate-version-replace-the-derivative-by-the-gradient">10.7 The multivariate version: replace the derivative by the gradient</h2>
+<p>For <span class="math inline">\(f: \mathbb{R}^d \to \mathbb{R}\)</span>, the derivative generalizes to the <strong>gradient</strong> <span class="math inline">\(\nabla f\)</span> (Chapter 9, §9.2) — the vector of partial derivatives. Everything carries over with <span class="math inline">\(f'\)</span> swapped for <span class="math inline">\(\nabla f\)</span>:</p>
+<p><span class="math display">\[\boxed{\mathbf{x}_{t+1} = \mathbf{x}_t - \eta_t\, \nabla f(\mathbf{x}_t)},\]</span> a vector minus a scalar times a vector. This is why the algorithm is called <strong>gradient</strong> descent — in one dimension we were secretly doing it all along.</p>
+<p>The Taylor justification upgrades too (§9.8’s first-order term): <span class="math display">\[f(\mathbf{x} + \eta \mathbf{d}) \approx f(\mathbf{x}) + \eta\, \mathbf{d}^T \nabla f(\mathbf{x}),\]</span> so the decrease condition becomes <span class="math inline">\(\mathbf{d}^T \nabla f(\mathbf{x}) &lt; 0\)</span>. Choosing <span class="math inline">\(\mathbf{d} = -\nabla f(\mathbf{x})\)</span> gives <span class="math display">\[\mathbf{d}^T \nabla f(\mathbf{x}) = -\nabla f(\mathbf{x})^T \nabla f(\mathbf{x}) = -\lVert \nabla f(\mathbf{x}) \rVert^2 \le 0,\]</span> strict unless the gradient is <span class="math inline">\(\mathbf{0}\)</span>.</p>
+<p><strong>Descent directions and the steepest one.</strong> Any <span class="math inline">\(\mathbf{d}\)</span> with <span class="math inline">\(\mathbf{d}^T \nabla f(\mathbf{x}) &lt; 0\)</span> is a <strong>descent direction</strong> — a small step along it is guaranteed (by the linear approximation) to reduce <span class="math inline">\(f\)</span>. There are infinitely many: at a point in <span class="math inline">\(\mathbb{R}^2\)</span>, they fill the entire half-plane on the far side of the line perpendicular to <span class="math inline">\(\nabla f\)</span> (§9.4’s picture: the gradient partitions space into “uphill” and “downhill” halves). Among unit directions, the one minimizing the linearization is <span class="math inline">\(-\nabla f(\mathbf{x})/\lVert\nabla f(\mathbf{x})\rVert\)</span> — the <strong>steepest descent</strong> direction (§9.4, Cauchy–Schwarz). So gradient descent is also called the <strong>steepest descent</strong> algorithm: at every step it picks the locally fastest way down.</p>
+<p><strong>eg 8 — three kinds of directions (full steps).</strong> <span class="math inline">\(f(x_1, x_2) = x_1^2 + x_2^2\)</span> at <span class="math inline">\((3, 1)\)</span>; <span class="math inline">\(\nabla f(3, 1) = (6, 2)^T\)</span>.</p>
+<ol type="i">
+<li><span class="math inline">\(\mathbf{d} = (-6, -2)\)</span>: <span class="math inline">\(\mathbf{d}^T\nabla f = -36 - 4 = -40 &lt; 0\)</span> → descent (this is <span class="math inline">\(-\nabla f\)</span>, steepest descent).</li>
+<li><span class="math inline">\(\mathbf{d} = (1, 1)\)</span>: <span class="math inline">\(\mathbf{d}^T\nabla f = 6 + 2 = 8 &gt; 0\)</span> → <em>ascent</em>, <span class="math inline">\(f\)</span> increases.</li>
+<li><span class="math inline">\(\mathbf{d} = (-2, 6)\)</span>: <span class="math inline">\(\mathbf{d}^T\nabla f = -12 + 12 = 0\)</span> → perpendicular to the gradient: locally flat, neither up nor down.</li>
+</ol>
+<p><strong>eg 9 — two-dimensional iterations (full steps).</strong> Minimize the “cow” distance <span class="math inline">\(d(x_1, x_2) = (x_1 - 40)^2 + (x_2 - 40)^2\)</span> from <span class="math inline">\(\mathbf{x}_0 = (5, 2)\)</span>, with constant <span class="math inline">\(\eta = 0.1\)</span>.</p>
+<ol type="i">
+<li><span class="math inline">\(\nabla d(\mathbf{x}) = (2(x_1 - 40),\, 2(x_2 - 40))^T\)</span>. At <span class="math inline">\((5, 2)\)</span>: <span class="math inline">\((-70, -76)^T\)</span>.</li>
+<li><span class="math inline">\(\mathbf{x}_1 = (5, 2) - 0.1(-70, -76) = (12,\, 9.6)\)</span>. Both coordinates moved <em>up</em> — toward <span class="math inline">\(40\)</span>. (The negative gradient <span class="math inline">\((70, 76)\)</span> points straight at the grass.)</li>
+<li><span class="math inline">\(\nabla d(12, 9.6) = (-56, -60.8)^T\)</span>. <span class="math inline">\(\mathbf{x}_2 = (12, 9.6) + 0.1(56, 60.8) = (17.6,\, 15.68)\)</span>.</li>
+<li><span class="math inline">\(\nabla d(17.6, 15.68) = (-44.8, -48.64)^T\)</span>. <span class="math inline">\(\mathbf{x}_3 = (17.6, 15.68) + 0.1(44.8, 48.64) = (22.08,\, 20.544)\)</span>.</li>
+<li>Check the values: <span class="math inline">\(d(5,2) = 35^2 + 38^2 = 2669\)</span>; <span class="math inline">\(d(12,9.6) = 28^2 + 30.4^2 = 1708.16\)</span>; <span class="math inline">\(d(17.6,15.68) \approx 1093.22\)</span> — monotone decrease, as promised. Each coordinate’s error <span class="math inline">\((x_i - 40)\)</span> shrinks by the factor <span class="math inline">\((1 - 2\eta) = 0.8\)</span> per step: <span class="math inline">\(-35 \to -28 \to -22.4 \to -17.92\)</span>.</li>
+</ol>
+<p>The picture (right panel): every iterate cuts straight across the contours toward <span class="math inline">\((40, 40)\)</span>.</p>
+<!-- Original figure drawn for this chapter with matplotlib (not reused from any external source). -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/ch10-gradient-descent.png" class="img-fluid figure-img"></p>
+<figcaption>Left: gradient descent on f(x) = x^2 from x0 = 4 — with eta = 0.2 the iterates shrink toward 0, with eta = 1.2 they overshoot and diverge outward. Right: contour plot of (x1-40)^2 + (x2-40)^2 with the GD iterates from (5, 2) (eta = 0.1) marching toward the minimum at (40, 40).</figcaption>
+</figure>
+</div>
+<p><strong>Basically, …</strong> In many dimensions the slope becomes an arrow — the gradient — pointing the steepest way <em>up</em>. Flip it and walk a little: you descend as fast as locally possible. Recompute the arrow at the new spot (it will have turned a bit), flip, walk again. The contour picture shows the path: always crossing the “same height” lines at right angles, heading for the bottom of the bowl.</p>
+</section>
+<section id="optimality-conditions-the-gradient-finds-suspects-the-hessian-interrogates-them" class="level2">
+<h2 class="anchored" data-anchor-id="optimality-conditions-the-gradient-finds-suspects-the-hessian-interrogates-them">10.8 Optimality conditions: the gradient finds suspects, the Hessian interrogates them</h2>
+<p><strong>First-order necessary condition</strong> (Chapter 9, §9.9). If <span class="math inline">\(f\)</span> is minimized (or maximized) at <span class="math inline">\(\mathbf{v}\)</span>, then <span class="math display">\[\nabla f(\mathbf{v}) = \mathbf{0}.\]</span> A point with <span class="math inline">\(\nabla f(\mathbf{v}) = \mathbf{0}\)</span> is a <strong>critical point</strong>. Necessary, not sufficient: maxima and saddles also have vanishing gradient.</p>
+<p><strong>Second-order conditions.</strong> At a critical point <span class="math inline">\(\mathbf{v}\)</span>, the linear term of the Taylor expansion vanishes, so what remains is the quadratic term (§9.8): <span class="math display">\[f(\mathbf{v} + \mathbf{u}) \approx f(\mathbf{v}) + \tfrac{1}{2}\, \mathbf{u}^T \mathbf{H}(\mathbf{v})\, \mathbf{u},\]</span> where <span class="math inline">\(\mathbf{H}(\mathbf{v})\)</span> is the <strong>Hessian</strong> matrix of second partials at <span class="math inline">\(\mathbf{v}\)</span>. The sign of the quadratic form <span class="math inline">\(\mathbf{u}^T \mathbf{H}(\mathbf{v})\, \mathbf{u}\)</span> decides the verdict — this is Chapter 7’s bowl machinery (§7.9–§7.10), now applied at <span class="math inline">\(\mathbf{v}\)</span>:</p>
+<ol type="i">
+<li><span class="math inline">\(\mathbf{H}(\mathbf{v})\)</span> <strong>positive definite</strong> → the quadratic term is <span class="math inline">\(&gt; 0\)</span> in every direction → bowl → <strong>local minimum</strong>.</li>
+<li><span class="math inline">\(\mathbf{H}(\mathbf{v})\)</span> <strong>negative definite</strong> (<span class="math inline">\(-\mathbf{H}(\mathbf{v})\)</span> positive definite) → quadratic term <span class="math inline">\(&lt; 0\)</span> in every direction → upside-down bowl → <strong>local maximum</strong>.</li>
+<li><span class="math inline">\(\mathbf{H}(\mathbf{v})\)</span> <strong>indefinite</strong> (positive in some directions, negative in others) → up some ways, down others → <strong>saddle point</strong>.</li>
+<li><span class="math inline">\(\mathbf{H}(\mathbf{v})\)</span> merely semi-definite → <strong>inconclusive</strong> (flat in some direction; higher-order terms decide — the multivariable twin of <span class="math inline">\(f''(c) = 0\)</span> in §8.7.2).</li>
+</ol>
+<p>For <span class="math inline">\(2 \times 2\)</span>, the eigenvalue test of §7.9 becomes the quick check: with <span class="math inline">\(\mathbf{H} = \begin{pmatrix} a &amp; b \\ b &amp; c \end{pmatrix}\)</span> — positive definite iff <span class="math inline">\(a &gt; 0\)</span> and <span class="math inline">\(\det \mathbf{H} = ac - b^2 &gt; 0\)</span>; negative definite iff <span class="math inline">\(a &lt; 0\)</span> and <span class="math inline">\(\det \mathbf{H} &gt; 0\)</span>; indefinite iff <span class="math inline">\(\det \mathbf{H} &lt; 0\)</span>.</p>
+<p><strong>eg 10 — classifying all critical points of a 2-variable function (full steps).</strong> <span class="math inline">\(f(x, y) = x^3 - 3x + y^3 - 3y\)</span>.</p>
+<ol type="i">
+<li>First-order: <span class="math inline">\(\frac{\partial f}{\partial x} = 3x^2 - 3\)</span>, <span class="math inline">\(\frac{\partial f}{\partial y} = 3y^2 - 3\)</span>. Set both to <span class="math inline">\(0\)</span>: <span class="math inline">\(x = \pm 1\)</span>, <span class="math inline">\(y = \pm 1\)</span>. Four critical points: <span class="math inline">\((1, 1)\)</span>, <span class="math inline">\((-1, -1)\)</span>, <span class="math inline">\((1, -1)\)</span>, <span class="math inline">\((-1, 1)\)</span>.</li>
+<li>Hessian: <span class="math inline">\(\frac{\partial^2 f}{\partial x^2} = 6x\)</span>, <span class="math inline">\(\frac{\partial^2 f}{\partial x \partial y} = 0\)</span>, <span class="math inline">\(\frac{\partial^2 f}{\partial y^2} = 6y\)</span>. So <span class="math inline">\(\mathbf{H}(x, y) = \begin{pmatrix} 6x &amp; 0 \\ 0 &amp; 6y \end{pmatrix}\)</span> (symmetric ✓).</li>
+<li>At <span class="math inline">\((1, 1)\)</span>: <span class="math inline">\(\mathbf{H} = \begin{pmatrix} 6 &amp; 0 \\ 0 &amp; 6 \end{pmatrix}\)</span>, <span class="math inline">\(a = 6 &gt; 0\)</span>, <span class="math inline">\(\det = 36 &gt; 0\)</span> → positive definite → <strong>local minimum</strong>, <span class="math inline">\(f(1, 1) = 1 - 3 + 1 - 3 = -4\)</span>.</li>
+<li>At <span class="math inline">\((-1, -1)\)</span>: <span class="math inline">\(\mathbf{H} = \begin{pmatrix} -6 &amp; 0 \\ 0 &amp; -6 \end{pmatrix}\)</span>, <span class="math inline">\(a = -6 &lt; 0\)</span>, <span class="math inline">\(\det = 36 &gt; 0\)</span> → negative definite → <strong>local maximum</strong>, <span class="math inline">\(f(-1, -1) = -1 + 3 - 1 + 3 = 4\)</span>.</li>
+<li>At <span class="math inline">\((1, -1)\)</span>: <span class="math inline">\(\mathbf{H} = \begin{pmatrix} 6 &amp; 0 \\ 0 &amp; -6 \end{pmatrix}\)</span>, <span class="math inline">\(\det = -36 &lt; 0\)</span> → indefinite → <strong>saddle</strong>, <span class="math inline">\(f(1, -1) = 1 - 3 - 1 + 3 = 0\)</span>.</li>
+<li>At <span class="math inline">\((-1, 1)\)</span>: <span class="math inline">\(\mathbf{H} = \begin{pmatrix} -6 &amp; 0 \\ 0 &amp; 6 \end{pmatrix}\)</span>, <span class="math inline">\(\det = -36 &lt; 0\)</span> → indefinite → <strong>saddle</strong>, <span class="math inline">\(f(-1, 1) = -1 + 3 + 1 - 3 = 0\)</span>.</li>
+</ol>
+<p><strong>Basically, …</strong> The gradient going quiet only means “flat here” — it can’t tell a valley floor from a peak or a mountain pass. The Hessian is the follow-up detective: it measures the curvature in every direction. Curved up everywhere = valley (minimum); curved down everywhere = peak (maximum); up some ways, down others = pass (saddle).</p>
+</section>
+<section id="what-gradient-descent-promises-and-what-it-does-not" class="level2">
+<h2 class="anchored" data-anchor-id="what-gradient-descent-promises-and-what-it-does-not">10.9 What gradient descent promises — and what it does not</h2>
+<p><strong>What it promises.</strong> With a sensible step-size schedule (e.g.&nbsp;<span class="math inline">\(\eta_t = \frac{1}{t+1}\)</span>), the oscillations of §10.4 disappear: one can show the iterates converge, and the Taylor argument of §10.6 gives monotone decrease <span class="math inline">\(f(\mathbf{x}_{t+1}) &lt; f(\mathbf{x}_t)\)</span> for small <span class="math inline">\(\eta_t\)</span> (the <strong>descent</strong> in gradient <em>descent</em>). The algorithm needs only differentiability and a gradient oracle.</p>
+<p><strong>Why it stops at local minima.</strong> Look at the update: <span class="math inline">\(\mathbf{x}_{t+1} = \mathbf{x}_t - \eta_t \nabla f(\mathbf{x}_t)\)</span>. If <span class="math inline">\(\nabla f(\mathbf{x}_t) = \mathbf{0}\)</span>, then <span class="math inline">\(\mathbf{x}_{t+1} = \mathbf{x}_t\)</span> — the algorithm <em>cannot move</em>. It halts at the first critical point it slides into, which (eg 7) is typically a <em>local</em> minimum:</p>
+<p><strong>Def.</strong> <span class="math inline">\(\hat{\mathbf{x}}\)</span> is a <strong>local minimum</strong> = there exists <span class="math inline">\(\varepsilon &gt; 0\)</span> such that <span class="math inline">\(f(\hat{\mathbf{x}}) \le f(\mathbf{x})\)</span> for all <span class="math inline">\(\mathbf{x}\)</span> with <span class="math inline">\(\lVert\mathbf{x} - \hat{\mathbf{x}}\rVert &lt; \varepsilon\)</span> (lowest in <em>some</em> neighbourhood). The <strong>global minimum</strong> <span class="math inline">\(\mathbf{x}^*\)</span> satisfies <span class="math inline">\(f(\mathbf{x}^*) \le f(\mathbf{x})\)</span> for <em>all</em> <span class="math inline">\(\mathbf{x}\)</span>.</p>
+<p><strong>The honest scope.</strong></p>
+<ol type="i">
+<li>Gradient descent finds <strong>stationary points</strong> (critical points), not guaranteed global minima. A wiggly <span class="math inline">\(f\)</span> has many valleys; starting in one valley, you descend to <em>its</em> bottom and stop — the deeper valley next door stays invisible.</li>
+<li>It can even converge to a <strong>saddle point</strong> (tutorial caveat): at a saddle the gradient is also <span class="math inline">\(\mathbf{0}\)</span>, so the update also freezes there.</li>
+<li>With a bad <span class="math inline">\(\eta\)</span> it may not converge at all — oscillation (eg 5) or, for some functions and starts, an infinite cycle.</li>
+<li>No general-purpose algorithm can guarantee the global minimum of an arbitrary function — gradient descent settling for local minima is the best one can hope for without extra assumptions on <span class="math inline">\(f\)</span>.</li>
+</ol>
+<p><strong>The good news for ML.</strong> For the functions ML actually minimizes, local is often good enough: there is a large, important class — the <strong>convex</strong> functions of Chapter 12 — for which <em>every</em> local minimum is automatically a global minimum (the <span class="math inline">\((x-5)^2\)</span> of §10.2 is the baby example: one valley, so the local minimum <em>is</em> the global one). That is why gradient descent, despite its modest guarantees, powers machine learning.</p>
+<p><strong>A second-order alternative (one paragraph).</strong> Newton’s method uses curvature too: <span class="math inline">\(x_{t+1} = x_t - f'(x_t)/f''(x_t)\)</span> (in <span class="math inline">\(d\)</span> dimensions it needs the <em>inverse Hessian</em>). On <span class="math inline">\(f(x) = (3x-9)^2\)</span> from <span class="math inline">\(x_0 = 2\)</span> it lands on <span class="math inline">\(x = 3\)</span> in a <em>single</em> iteration — because <span class="math inline">\(f\)</span> is quadratic, its second-order Taylor model is exact (§9.8’s note). The price, per the tutorial: it needs second derivatives (expensive, and a Hessian inverse per step in higher dimensions), it fails when the Hessian is not invertible, it can cycle or land on a saddle, and each iteration costs far more. Gradient descent stays first-order — cheaper per step, slower to arrive.</p>
+<p><strong>Basically, …</strong> Gradient descent is a ball rolling downhill that stops at the bottom of whichever valley it started in — it can’t teleport to a deeper valley, and on a mountain pass it can get stuck too. For most ML losses, any valley bottom is fine (and for convex losses there is only one valley). Newton’s method is the same ball with a curvature sensor: faster, but heavier, and it can misfire.</p>
+<p><strong>Note:</strong> “Converges to a local minimum” also quietly assumes the gradient exists everywhere the iterates go — non-differentiable points (kinks like <span class="math inline">\(|x|\)</span>) need their own machinery, outside this chapter.</p>
+</section>
+<section id="this-is-training-and-where-this-goes-next" class="level2">
+<h2 class="anchored" data-anchor-id="this-is-training-and-where-this-goes-next">10.10 This is training — and where this goes next</h2>
+<p>Unconstrained gradient descent is not a warm-up exercise: <strong>it is the training loop</strong>. Every time a model is “trained” in this book, some version of <span class="math display">\[\boldsymbol{\theta}_{t+1} = \boldsymbol{\theta}_t - \eta_t\, \nabla L(\boldsymbol{\theta}_t)\]</span> runs — parameters <span class="math inline">\(\boldsymbol{\theta}\)</span>, loss <span class="math inline">\(L\)</span>, learning rate <span class="math inline">\(\eta_t\)</span>. The loss landscape is the hill; the weights are the hiker.</p>
+<p><strong>Where this goes next</strong></p>
+<ul>
+<li><strong>Chapter 11 (constrained optimization):</strong> the cow’s rope and fence return. When <span class="math inline">\(-\nabla f\)</span> points outside the allowed region, pure gradient descent breaks — Lagrange multipliers and projected gradient descent fix it.</li>
+<li><strong>Chapter 12 (convexity):</strong> the functions for which “local minimum = global minimum”, where gradient descent’s modest guarantee becomes the full prize.</li>
+<li><strong>Chapter 39 (hyperparameter tuning):</strong> <span class="math inline">\(\eta\)</span> — the learning rate — is the hyperparameter you will tune most. §10.4–10.5 showed why: it decides between convergence and chaos.</li>
+<li><strong>Chapter 43 (optimization for neural nets):</strong> the industrial version — stochastic gradients, momentum, adaptive step sizes (Adam and friends) — gradient descent scaled to millions of parameters.</li>
+</ul>
+<p>The through-line: Chapter 9 turned the gradient into a compass; this chapter turned the compass into an algorithm — step a little along <span class="math inline">\(-\nabla f\)</span>, re-approximate, repeat — and the Hessian into the judge that classifies where you land.</p>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li>Minimize <span class="math inline">\(f(x) = x^2 - 6x + 5\)</span> by the school method: compute <span class="math inline">\(f'\)</span>, solve <span class="math inline">\(f'(x) = 0\)</span>, classify with <span class="math inline">\(f''\)</span>, and argue the critical point is the global minimum.</li>
+<li>Run two gradient-descent iterations on <span class="math inline">\(f(x) = x^2\)</span> from <span class="math inline">\(x_0 = 4\)</span> with constant <span class="math inline">\(\eta = 0.1\)</span>. Verify <span class="math inline">\(f\)</span> decreases at each step.</li>
+<li>For <span class="math inline">\(f(x) = (x - 5)^2\)</span> from <span class="math inline">\(x_0 = 10\)</span>: (a) with constant <span class="math inline">\(\eta = 1\)</span>, compute <span class="math inline">\(x_1, x_2, x_3\)</span> and describe the behaviour; (b) with the schedule <span class="math inline">\(\eta_t = \frac{1}{t+1}\)</span> (<span class="math inline">\(t = 0, 1\)</span>), compute <span class="math inline">\(x_1, x_2\)</span> and describe the behaviour.</li>
+<li>Let <span class="math inline">\(S_n = 1 + \frac{1}{2} + \cdots + \frac{1}{2^{n-1}}\)</span> and <span class="math inline">\(H_n = 1 + \frac{1}{2} + \cdots + \frac{1}{n}\)</span>. Show <span class="math inline">\(S_n &lt; 2\)</span> for every <span class="math inline">\(n\)</span> (the <span class="math inline">\(\frac{1}{2^t}\)</span> budget is finite), while <span class="math inline">\(H_n \to \infty\)</span> (hint: <span class="math inline">\(\frac{1}{3} + \frac{1}{4} &gt; \frac{1}{2}\)</span>, <span class="math inline">\(\frac{1}{5} + \cdots + \frac{1}{8} &gt; \frac{1}{2}\)</span>, …). What does this say about the two step-size schedules of §10.4?</li>
+<li>For <span class="math inline">\(f(x_1, x_2) = x_1^2 + 4x_2^2\)</span>: (a) write down <span class="math inline">\(\nabla f\)</span>; (b) run two GD iterations from <span class="math inline">\((2, 3)\)</span> with <span class="math inline">\(\eta = 0.2\)</span>; (c) check that <span class="math inline">\(f\)</span> decreased at each step.</li>
+<li>For <span class="math inline">\(f(x, y) = x^2 + y^2\)</span> at the point <span class="math inline">\((2, -1)\)</span>: which of <span class="math inline">\(\mathbf{d}_1 = (1, 1)\)</span>, <span class="math inline">\(\mathbf{d}_2 = (-2, 1)\)</span>, <span class="math inline">\(\mathbf{d}_3 = (1, 2)\)</span> are descent directions? Interpret each dot product geometrically.</li>
+<li>Find all critical points and classify each (local min / local max / saddle) using the Hessian: (a) <span class="math inline">\(f(x, y) = x^2 + y^2 - 2x - 4y + 5\)</span>; (b) <span class="math inline">\(f(x, y) = -x^2 - y^2 + 4x\)</span>; (c) <span class="math inline">\(f(x, y) = x^2 - y^2\)</span>.</li>
+<li>Starting from the first-order Taylor approximation <span class="math inline">\(f(x + \eta d) \approx f(x) + \eta\, d\, f'(x)\)</span>, derive the sign condition that <span class="math inline">\(d\)</span> must satisfy for the step to decrease <span class="math inline">\(f\)</span>. Then verify that <span class="math inline">\(d = -f'(x)\)</span> satisfies it strictly whenever <span class="math inline">\(f'(x) \ne 0\)</span>.</li>
+<li>For <span class="math inline">\(f(x) = (x - a)^2\)</span> with a <em>constant</em> step size <span class="math inline">\(\eta\)</span>: (a) show <span class="math inline">\(x_{t+1} - a = (1 - 2\eta)(x_t - a)\)</span>; (b) deduce the exact range of <span class="math inline">\(\eta\)</span> for which the iterates converge to <span class="math inline">\(a\)</span>, and explain what goes wrong outside it.</li>
+<li>Take one Newton step <span class="math inline">\(x_1 = x_0 - f'(x_0)/f''(x_0)\)</span> on <span class="math inline">\(f(x) = (3x - 9)^2\)</span> from <span class="math inline">\(x_0 = 2\)</span>. Where do you land? Explain why it is exact in one step (hint: §9.8’s note on quadratics).</li>
+<li>Suppose gradient descent has “converged”, i.e.&nbsp;<span class="math inline">\(\mathbf{x}_{t+1} = \mathbf{x}_t\)</span> to machine precision. (a) What does the update rule imply about <span class="math inline">\(\nabla f(\mathbf{x}_t)\)</span>? (b) Why does this mean GD finds stationary points rather than guaranteed minima — and why might such a point be a saddle?</li>
+</ol>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — <span class="math inline">\(f(x) = x^2 - 6x + 5\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><span class="math inline">\(f'(x) = 2x - 6\)</span>. Set <span class="math inline">\(= 0\)</span>: <span class="math inline">\(2x = 6\)</span>, so <span class="math inline">\(x = 3\)</span> — the only critical point (<span class="math inline">\(f\)</span> is a polynomial, differentiable everywhere).</li>
+<li><span class="math inline">\(f''(x) = 2 &gt; 0\)</span>: local minimum at <span class="math inline">\(x = 3\)</span> (§8.7.2).</li>
+<li>Complete the square: <span class="math inline">\(f(x) = x^2 - 6x + 9 - 4 = (x - 3)^2 - 4 \ge -4 = f(3)\)</span> for all <span class="math inline">\(x\)</span>. So <span class="math inline">\(x = 3\)</span> is the <strong>global minimum</strong>, value <span class="math inline">\(-4\)</span>.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — <span class="math inline">\(f(x) = x^2\)</span>, <span class="math inline">\(f'(x) = 2x\)</span>, <span class="math inline">\(x_0 = 4\)</span>, <span class="math inline">\(\eta = 0.1\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><span class="math inline">\(x_1 = x_0 - \eta f'(x_0) = 4 - 0.1 \cdot 8 = 4 - 0.8 = 3.2\)</span>.</li>
+<li><span class="math inline">\(f'(3.2) = 6.4\)</span>. <span class="math inline">\(x_2 = 3.2 - 0.1 \cdot 6.4 = 3.2 - 0.64 = 2.56\)</span>.</li>
+<li>Values: <span class="math inline">\(f(4) = 16\)</span>, <span class="math inline">\(f(3.2) = 10.24\)</span>, <span class="math inline">\(f(2.56) = 6.5536\)</span>. <span class="math inline">\(16 &gt; 10.24 &gt; 6.5536\)</span>: decreasing at each step, homing in on <span class="math inline">\(0\)</span>.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — <span class="math inline">\(f(x) = (x - 5)^2\)</span>, <span class="math inline">\(f'(x) = 2(x - 5)\)</span>, <span class="math inline">\(x_0 = 10\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="a">
+<li>Constant <span class="math inline">\(\eta = 1\)</span>:</li>
+</ol>
+<ul>
+<li><span class="math inline">\(x_1 = 10 - 1 \cdot 2(10 - 5) = 10 - 10 = 0\)</span>.</li>
+<li><span class="math inline">\(x_2 = 0 - 1 \cdot 2(0 - 5) = 0 + 10 = 10\)</span>.</li>
+<li><span class="math inline">\(x_3 = 10 - 10 = 0\)</span>. Behaviour: pure oscillation <span class="math inline">\(10 \to 0 \to 10 \to 0 \to \cdots\)</span> — the step always overshoots the minimum at <span class="math inline">\(5\)</span> by the same amount, landing on the mirror image. It never converges.</li>
+</ul>
+<ol start="2" type="a">
+<li>Schedule <span class="math inline">\(\eta_t = \frac{1}{t+1}\)</span>:</li>
+</ol>
+<ul>
+<li><span class="math inline">\(t = 0\)</span>: <span class="math inline">\(\eta_0 = 1\)</span>. <span class="math inline">\(x_1 = 10 - 1 \cdot 10 = 0\)</span>.</li>
+<li><span class="math inline">\(t = 1\)</span>: <span class="math inline">\(\eta_1 = \frac{1}{2}\)</span>. <span class="math inline">\(f'(x_1) = 2(0 - 5) = -10\)</span>. <span class="math inline">\(x_2 = 0 - \frac{1}{2}(-10) = 5\)</span>. Behaviour: <span class="math inline">\(x_2 = 5\)</span> — the exact minimum, reached in two steps. Shrinking the step size killed the oscillation.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — <span class="math inline">\(S_n = 1 + \frac{1}{2} + \cdots + \frac{1}{2^{n-1}}\)</span> is geometric with ratio <span class="math inline">\(\frac{1}{2}\)</span>:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[S_n = \frac{1 - (1/2)^n}{1 - 1/2} = 2\bigl(1 - 2^{-n}\bigr) &lt; 2 \quad \text{for every } n,\]</span> and <span class="math inline">\(S_n \to 2\)</span>. So a step-size schedule <span class="math inline">\(\eta_t = \frac{1}{2^t}\)</span> has a <em>finite</em> total budget: starting anywhere, you can travel at most <span class="math inline">\(2\)</span> units — possibly stranding you short of the minimum (§10.4, eg 4).</p>
+<p><span class="math inline">\(H_n = 1 + \frac{1}{2} + \cdots + \frac{1}{n}\)</span>: group the terms after the first two: <span class="math display">\[\underbrace{\tfrac{1}{3} + \tfrac{1}{4}}_{&gt; 2\cdot \tfrac14 = \tfrac12} + \underbrace{\tfrac{1}{5} + \cdots + \tfrac{1}{8}}_{&gt; 4\cdot \tfrac18 = \tfrac12} + \underbrace{\tfrac{1}{9} + \cdots + \tfrac{1}{16}}_{&gt; 8\cdot \tfrac1{16} = \tfrac12} + \cdots\]</span> Each block exceeds <span class="math inline">\(\frac{1}{2}\)</span>, and there are infinitely many blocks, so <span class="math inline">\(H_n \to \infty\)</span>. The schedule <span class="math inline">\(\eta_t = \frac{1}{t+1}\)</span> still shrinks (no oscillation) but its <em>total</em> budget is infinite — you can reach a minimum no matter how far away it is. This is the two-enemies compromise of §10.4.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — <span class="math inline">\(f(x_1, x_2) = x_1^2 + 4x_2^2\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="a">
+<li><p><span class="math inline">\(\nabla f = \begin{pmatrix} 2x_1 \\ 8x_2 \end{pmatrix}\)</span>.</p></li>
+<li><p>From <span class="math inline">\((2, 3)\)</span>, <span class="math inline">\(\eta = 0.2\)</span>:</p></li>
+</ol>
+<ul>
+<li><span class="math inline">\(\nabla f(2, 3) = (4, 24)^T\)</span>. <span class="math inline">\(\mathbf{x}_1 = (2, 3) - 0.2(4, 24) = (2 - 0.8,\ 3 - 4.8) = (1.2,\ -1.8)\)</span>.</li>
+<li><span class="math inline">\(\nabla f(1.2, -1.8) = (2.4, -14.4)^T\)</span>. <span class="math inline">\(\mathbf{x}_2 = (1.2, -1.8) - 0.2(2.4, -14.4) = (1.2 - 0.48,\ -1.8 + 2.88) = (0.72,\ 1.08)\)</span>.</li>
+</ul>
+<ol start="3" type="a">
+<li><span class="math inline">\(f(2, 3) = 4 + 4\cdot 9 = 40\)</span>. <span class="math inline">\(f(1.2, -1.8) = 1.44 + 4\cdot 3.24 = 1.44 + 12.96 = 14.4\)</span>. <span class="math inline">\(f(0.72, 1.08) = 0.5184 + 4\cdot 1.1664 = 0.5184 + 4.6656 = 5.184\)</span>. <span class="math inline">\(40 &gt; 14.4 &gt; 5.184\)</span>: decreased both times. (The true minimum is <span class="math inline">\((0, 0)\)</span> with value <span class="math inline">\(0\)</span>.)</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — <span class="math inline">\(f(x, y) = x^2 + y^2\)</span>, <span class="math inline">\(\nabla f = (2x, 2y)^T\)</span>. At <span class="math inline">\((2, -1)\)</span>: <span class="math inline">\(\nabla f(2, -1) = (4, -2)^T\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li><span class="math inline">\(\mathbf{d}_1^T \nabla f = (1, 1)\cdot(4, -2) = 4 - 2 = 2 &gt; 0\)</span>: <strong>not</strong> a descent direction — it points partly uphill (angle <span class="math inline">\(&lt; 90^\circ\)</span> with the gradient).</li>
+<li><span class="math inline">\(\mathbf{d}_2^T \nabla f = (-2, 1)\cdot(4, -2) = -8 - 2 = -10 &lt; 0\)</span>: <strong>descent</strong> direction — it makes an obtuse angle with the gradient, pointing into the downhill half-plane.</li>
+<li><span class="math inline">\(\mathbf{d}_3^T \nabla f = (1, 2)\cdot(4, -2) = 4 - 4 = 0\)</span>: <strong>neither</strong> — perpendicular to the gradient, so a small step is locally flat (it runs along the contour, §9.5).</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — <strong>(a)</strong> <span class="math inline">\(f(x, y) = x^2 + y^2 - 2x - 4y + 5\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><span class="math inline">\(\nabla f = (2x - 2,\ 2y - 4)^T = \mathbf{0}\)</span> gives <span class="math inline">\((x, y) = (1, 2)\)</span> — the only critical point.</li>
+<li>Hessian: <span class="math inline">\(\mathbf{H} = \begin{pmatrix} 2 &amp; 0 \\ 0 &amp; 2 \end{pmatrix}\)</span>, constant.</li>
+<li><span class="math inline">\(a = 2 &gt; 0\)</span>, <span class="math inline">\(\det = 4 &gt; 0\)</span> → positive definite → <strong>local minimum</strong>. <span class="math inline">\(f(1, 2) = 1 + 4 - 2 - 8 + 5 = 0\)</span>. (Completing the square: <span class="math inline">\(f = (x-1)^2 + (y-2)^2 \ge 0\)</span> — it is in fact the global minimum.)</li>
+</ol>
+<p><strong>(b)</strong> <span class="math inline">\(f(x, y) = -x^2 - y^2 + 4x\)</span>.</p>
+<ol type="i">
+<li><span class="math inline">\(\nabla f = (-2x + 4,\ -2y)^T = \mathbf{0}\)</span> gives <span class="math inline">\((x, y) = (2, 0)\)</span>.</li>
+<li><span class="math inline">\(\mathbf{H} = \begin{pmatrix} -2 &amp; 0 \\ 0 &amp; -2 \end{pmatrix}\)</span>.</li>
+<li><span class="math inline">\(a = -2 &lt; 0\)</span>, <span class="math inline">\(\det = 4 &gt; 0\)</span> → negative definite → <strong>local maximum</strong>. <span class="math inline">\(f(2, 0) = -4 - 0 + 8 = 4\)</span>. (Indeed <span class="math inline">\(f = 4 - (x-2)^2 - y^2 \le 4\)</span>: the global maximum.)</li>
+</ol>
+<p><strong>(c)</strong> <span class="math inline">\(f(x, y) = x^2 - y^2\)</span>.</p>
+<ol type="i">
+<li><span class="math inline">\(\nabla f = (2x, -2y)^T = \mathbf{0}\)</span> gives <span class="math inline">\((0, 0)\)</span>.</li>
+<li><span class="math inline">\(\mathbf{H} = \begin{pmatrix} 2 &amp; 0 \\ 0 &amp; -2 \end{pmatrix}\)</span>.</li>
+<li><span class="math inline">\(\det = -4 &lt; 0\)</span> → indefinite → <strong>saddle point</strong>. Check: along the <span class="math inline">\(x\)</span>-axis <span class="math inline">\(f = x^2 \ge 0\)</span> (uphill), along the <span class="math inline">\(y\)</span>-axis <span class="math inline">\(f = -y^2 \le 0\)</span> (downhill) — up some ways, down others.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 8 — We want the step to a smaller value: <span class="math inline">\(f(x + \eta d) - f(x) &lt; 0\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>From the Taylor approximation, <span class="math display">\[f(x + \eta d) - f(x) \approx \eta\, d\, f'(x),\]</span> so the requirement becomes <span class="math inline">\(\eta\, d\, f'(x) &lt; 0\)</span>. Since <span class="math inline">\(\eta &gt; 0\)</span> is positive, it cannot flip the sign, so equivalently: <span class="math display">\[d \cdot f'(x) &lt; 0\]</span> (the direction must oppose the derivative — §10.6).</p>
+<p>Check <span class="math inline">\(d = -f'(x)\)</span>: <span class="math inline">\(d \cdot f'(x) = \bigl(-f'(x)\bigr)\cdot f'(x) = -\,f'(x)^2\)</span>. If <span class="math inline">\(f'(x) \ne 0\)</span>, then <span class="math inline">\(f'(x)^2 &gt; 0\)</span> and <span class="math inline">\(-f'(x)^2 &lt; 0\)</span> strictly. So the condition holds strictly: for small enough <span class="math inline">\(\eta\)</span>, the step <span class="math inline">\(x \to x + \eta d\)</span> is guaranteed to decrease <span class="math inline">\(f\)</span>. If <span class="math inline">\(f'(x) = 0\)</span>, then <span class="math inline">\(d = \mathbf{0}\)</span> and the algorithm does not move (§10.9).</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 9 — <span class="math inline">\(f(x) = (x - a)^2\)</span>, <span class="math inline">\(f'(x) = 2(x - a)\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="a">
+<li><p><span class="math inline">\(x_{t+1} = x_t - \eta \cdot 2(x_t - a)\)</span>. Subtract <span class="math inline">\(a\)</span> from both sides: <span class="math display">\[x_{t+1} - a = x_t - a - 2\eta(x_t - a) = (1 - 2\eta)(x_t - a).\]</span> The error <span class="math inline">\(e_t = x_t - a\)</span> evolves as <span class="math inline">\(e_{t+1} = (1 - 2\eta)\, e_t\)</span>, so <span class="math inline">\(e_t = (1 - 2\eta)^t e_0\)</span>.</p></li>
+<li><p><span class="math inline">\(|e_t| \to 0\)</span> iff <span class="math inline">\(|1 - 2\eta| &lt; 1\)</span>, i.e.&nbsp;<span class="math inline">\(-1 &lt; 1 - 2\eta &lt; 1\)</span>, i.e.&nbsp;<span class="math inline">\(0 &lt; \eta &lt; 1\)</span>.</p></li>
+</ol>
+<ul>
+<li>If <span class="math inline">\(\eta = 1\)</span>: <span class="math inline">\(1 - 2\eta = -1\)</span>, so <span class="math inline">\(e_t = (-1)^t e_0\)</span> — pure oscillation, the §10.4 example (<span class="math inline">\(10 \to 0 \to 10\)</span>).</li>
+<li>If <span class="math inline">\(\eta &gt; 1\)</span>: <span class="math inline">\(|1 - 2\eta| &gt; 1\)</span> — the error grows geometrically: divergence (eg 5’s blow-up).</li>
+<li>If <span class="math inline">\(\eta \le 0\)</span>: the “step” moves uphill or nowhere.</li>
+</ul>
+<p>Inside <span class="math inline">\((0, 1)\)</span> the error shrinks by a constant factor each step — linear (geometric) convergence to <span class="math inline">\(a\)</span>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 10 — <span class="math inline">\(f(x) = (3x - 9)^2\)</span>: <span class="math inline">\(f'(x) = 18x - 54\)</span>, <span class="math inline">\(f''(x) = 18\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[x_1 = x_0 - \frac{f'(x_0)}{f''(x_0)} = 2 - \frac{18\cdot 2 - 54}{18} = 2 - \frac{-18}{18} = 2 + 1 = 3.\]</span></p>
+<p>One step lands exactly on <span class="math inline">\(x = 3\)</span>, the minimizer (<span class="math inline">\(f(3) = 0\)</span>). Why: Newton’s step minimizes the <em>second-order</em> Taylor model <span class="math inline">\(f(x_t) + f'(x_t)(x - x_t) + \frac{1}{2}f''(x_t)(x - x_t)^2\)</span>, and since <span class="math inline">\(f\)</span> is itself quadratic, that model is <em>exact</em> (§9.8’s note) — minimizing the model is minimizing <span class="math inline">\(f\)</span>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 11 — (a) The update is <span class="math inline">\(\mathbf{x}_{t+1} = \mathbf{x}_t - \eta_t \nabla f(\mathbf{x}_t)\)</span>. If <span class="math inline">\(\mathbf{x}_{t+1} = \mathbf{x}_t\)</span>, then <span class="math inline">\(\eta_t \nabla f(\mathbf{x}_t) = \mathbf{0}\)</span>, and since <span class="math inline">\(\eta_t &gt; 0\)</span>:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-11" class="callout-11-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[\nabla f(\mathbf{x}_t) = \mathbf{0}.\]</span> The algorithm has reached a critical (stationary) point.</p>
+<ol start="2" type="a">
+<li>“Gradient zero” is the <em>first-order</em> condition shared by minima, maxima, and saddles (§10.8): the update cannot distinguish them, because at all of them the step is <span class="math inline">\(\mathbf{0}\)</span>. In particular, at a saddle point (e.g.&nbsp;<span class="math inline">\((0,0)\)</span> for <span class="math inline">\(f = x^2 - y^2\)</span>, where <span class="math inline">\(\nabla f = \mathbf{0}\)</span> but the Hessian is indefinite) gradient descent freezes just as it does at a minimum — the tutorial’s caveat. So GD’s guarantee is “converges to a stationary point (typically a local minimum)”, never “converges to the global minimum”.</li>
+</ol>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./09-multivariable-calculus.html" class="pagination-link" aria-label="9. Multivariable calculus: partial derivatives, gradients, Taylor series">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./11-constrained-optimization-lagrange.html" class="pagination-link" aria-label="11. Constrained optimization: Lagrange multipliers, projected gradient descent">
+        <span class="nav-page-text"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

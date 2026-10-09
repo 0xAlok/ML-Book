@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Chapter 35: Loss functions for classification – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./36-numpy-pandas.html" rel="next">
+<link href="./34-ensembles.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./26-k-means.html">Part IV — Machine Learning Techniques</a></li><li class="breadcrumb-item"><a href="./35-loss-functions.html"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#the-ideal-loss-and-why-its-unusable" id="toc-the-ideal-loss-and-why-its-unusable" class="nav-link active" data-scroll-target="#the-ideal-loss-and-why-its-unusable">35.1 The ideal loss — and why it’s unusable</a></li>
+  <li><a href="#one-yardstick-the-margin" id="toc-one-yardstick-the-margin" class="nav-link" data-scroll-target="#one-yardstick-the-margin">35.2 One yardstick: the margin</a></li>
+  <li><a href="#zero-one-loss-the-ideal-restated-in-margin-form" id="toc-zero-one-loss-the-ideal-restated-in-margin-form" class="nav-link" data-scroll-target="#zero-one-loss-the-ideal-restated-in-margin-form">35.3 Zero-one loss: the ideal, restated in margin form</a></li>
+  <li><a href="#hinge-loss-the-svms-bribe" id="toc-hinge-loss-the-svms-bribe" class="nav-link" data-scroll-target="#hinge-loss-the-svms-bribe">35.4 Hinge loss: the SVM’s bribe</a></li>
+  <li><a href="#squared-loss-regression-doing-classification" id="toc-squared-loss-regression-doing-classification" class="nav-link" data-scroll-target="#squared-loss-regression-doing-classification">35.5 Squared loss: regression doing classification</a></li>
+  <li><a href="#logistic-loss-cross-entropy-in-margin-form" id="toc-logistic-loss-cross-entropy-in-margin-form" class="nav-link" data-scroll-target="#logistic-loss-cross-entropy-in-margin-form">35.6 Logistic loss: cross-entropy in margin form</a></li>
+  <li><a href="#exponential-loss-adaboosts-engine" id="toc-exponential-loss-adaboosts-engine" class="nav-link" data-scroll-target="#exponential-loss-adaboosts-engine">35.7 Exponential loss: AdaBoost’s engine</a></li>
+  <li><a href="#the-perceptrons-loss-hinge-without-the-margin" id="toc-the-perceptrons-loss-hinge-without-the-margin" class="nav-link" data-scroll-target="#the-perceptrons-loss-hinge-without-the-margin">35.8 The perceptron’s loss: hinge without the margin</a></li>
+  <li><a href="#surrogate-losses-the-trade" id="toc-surrogate-losses-the-trade" class="nav-link" data-scroll-target="#surrogate-losses-the-trade">35.9 Surrogate losses: the trade</a></li>
+  <li><a href="#the-big-comparison-one-dataset-five-losses" id="toc-the-big-comparison-one-dataset-five-losses" class="nav-link" data-scroll-target="#the-big-comparison-one-dataset-five-losses">35.10 The big comparison: one dataset, five losses</a></li>
+  <li><a href="#why-adaboosts-weights-update-the-way-they-do" id="toc-why-adaboosts-weights-update-the-way-they-do" class="nav-link" data-scroll-target="#why-adaboosts-weights-update-the-way-they-do">35.11 Why AdaBoost’s weights update the way they do</a></li>
+  <li><a href="#strengths-and-limits-as-the-sources-list-them" id="toc-strengths-and-limits-as-the-sources-list-them" class="nav-link" data-scroll-target="#strengths-and-limits-as-the-sources-list-them">35.12 Strengths and limits (as the sources list them)</a></li>
+  <li><a href="#where-this-goes-next" id="toc-where-this-goes-next" class="nav-link" data-scroll-target="#where-this-goes-next">35.13 Where this goes next</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./26-k-means.html">Part IV — Machine Learning Techniques</a></li><li class="breadcrumb-item"><a href="./35-loss-functions.html"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">Chapter 35: Loss functions for classification</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Everything in §§35.1–35.9 comes from the MLT Week-12 PPT slides (the “loss-function view”: 0/1 loss and its NP-hardness, the four surrogate curves, the perceptron-as-SGD note, the SVM-as-regularization-plus-hinge decomposition, and the logistic-loss margin derivation), with the logistic-regression loss itself from the MITx 6.036 notes (§§31.9–31.10), the hinge loss from §33.3, and the AdaBoost updates from §34.6. §§35.10–35.11 follow ESL ch.&nbsp;14 (§§14.4–14.6: AdaBoost as forward stagewise exponential-loss minimization, the <span class="math inline">\(\beta_m\)</span> derivation, the population minimizer, the robustness comparison). The worked comparison in §35.10 and the figure use the chapter’s own tiny datasets, with every number recomputed independently (review log).</p>
+<p><strong>Notation.</strong> The §22.9 convention: instances <span class="math inline">\(x^{(i)}\)</span>, labels <span class="math inline">\(\boxed{y^{(i)} \in \{+1, -1\}}\)</span>. A classifier produces a real-valued <strong>score</strong> <span class="math inline">\(s^{(i)} = s(x^{(i)})\)</span> (e.g.&nbsp;<span class="math inline">\(w^T x^{(i)} + b\)</span>), and the predicted label is <span class="math inline">\(\operatorname{sign}(s^{(i)})\)</span>. The <strong>margin</strong> of example <span class="math inline">\(i\)</span> is <span class="math inline">\(\boxed{m^{(i)} = y^{(i)} s^{(i)}}\)</span>: positive means correct, negative means wrong, and its size says <em>how</em> correct or wrong. Nearly every classification loss is a function of this single number.</p>
+<section id="the-ideal-loss-and-why-its-unusable" class="level2">
+<h2 class="anchored" data-anchor-id="the-ideal-loss-and-why-its-unusable">35.1 The ideal loss — and why it’s unusable</h2>
+<p>The loss you actually care about is the one from §22.9: the <strong>misclassification (0/1) loss</strong>, the fraction of points you get wrong, <span class="math display">\[L(f) = \frac{1}{n}\sum_{i=1}^{n}\mathbf{1}\!\left(f(x^{(i)}) \ne y^{(i)}\right).\]</span> It is the scoreboard. But nobody trains with it, and the MLT Week-12 slides say why — three reasons:</p>
+<ol type="i">
+<li><strong>It is flat almost everywhere.</strong> §31.7 already made this point for the perceptron: any two hypotheses with the same mistake count “have the same <span class="math inline">\(J\)</span> value” — the loss cannot tell a near-miss from a confident error, “which makes it difficult to design an algorithm that searches through the space of hypotheses for a good one.”</li>
+<li><strong>It is not differentiable.</strong> §31.3’s note: the 0/1-style bill is piecewise constant in the weights, so gradient descent (Chapter 10) has no slope to follow — the gradient is zero wherever it exists.</li>
+<li><strong>Minimizing it over linear separators is NP-hard</strong> (the slide’s word, written in red next to the <span class="math inline">\(\min_w\)</span>). Even if you could handle i) and ii), the combinatorial problem itself is intractable.</li>
+</ol>
+<p>So every working algorithm trains on a <strong>surrogate</strong>: a stand-in loss that is smooth (or at least convex) and easy to minimize, while the 0/1 loss stays on as the judge. That trade is this chapter’s whole subject.</p>
+<p><strong>Basically, …</strong> “The 0/1 loss is the exam — but you can’t study for it directly. It’s flat (no slope to descend), jagged (no derivatives), and NP-hard to minimize anyway. So every algorithm picks a <em>practice</em> loss that behaves well under optimization and hopes the exam score follows.”</p>
+</section>
+<section id="one-yardstick-the-margin" class="level2">
+<h2 class="anchored" data-anchor-id="one-yardstick-the-margin">35.2 One yardstick: the margin</h2>
+<p>Before the zoo, one definition that organizes everything.</p>
+<p><strong>Def (margin).</strong> For score <span class="math inline">\(s^{(i)}\)</span> and label <span class="math inline">\(y^{(i)} \in \{+1,-1\}\)</span>, <span class="math display">\[\boxed{m^{(i)} = y^{(i)} \cdot s^{(i)}}.\]</span> <span class="math inline">\(m^{(i)} &gt; 0\)</span> = correct; <span class="math inline">\(m^{(i)} &lt; 0\)</span> = wrong; <span class="math inline">\(|m^{(i)}|\)</span> = confidence.</p>
+<p>Four regimes a point can be in: - <strong>Confident correct:</strong> <span class="math inline">\(m \gg 0\)</span> (e.g.&nbsp;<span class="math inline">\(m = 2\)</span>). - <strong>Correct but shaky:</strong> <span class="math inline">\(0 &lt; m &lt; 1\)</span> (right side of the boundary, but close). - <strong>Wrong:</strong> <span class="math inline">\(m &lt; 0\)</span>. - <strong>Confident wrong:</strong> <span class="math inline">\(m \ll 0\)</span>.</p>
+<p>Each loss below is a rule for turning this one number into a bill. They all agree that negative margins are mistakes to penalize; they disagree — sometimes violently — on how to price the <em>size</em>, and even on whether a bigger positive margin is always better (§35.5’s squared loss is the rebel).</p>
+<p><strong>Basically, …</strong> “Multiply the label by the score. Positive: right answer. Negative: wrong answer. Bigger: more confident. Every loss in this chapter is just a different pricing scheme for this one number.”</p>
+</section>
+<section id="zero-one-loss-the-ideal-restated-in-margin-form" class="level2">
+<h2 class="anchored" data-anchor-id="zero-one-loss-the-ideal-restated-in-margin-form">35.3 Zero-one loss: the ideal, restated in margin form</h2>
+<p><strong>Def (0/1 loss, per-example).</strong> <span class="math inline">\(\boxed{\ell_{0/1}(m) = \mathbf{1}(m &lt; 0)}\)</span> — <span class="math inline">\(1\)</span> if wrong, <span class="math inline">\(0\)</span> if right. The training objective is the average, <span class="math inline">\(\frac{1}{n}\sum_i \ell_{0/1}(m^{(i)})\)</span>, i.e.&nbsp;§22.9’s <span class="math inline">\(L(f)\)</span>.</p>
+<p><strong>Note (the <span class="math inline">\(m = 0\)</span> convention).</strong> The MLT slide writes <span class="math inline">\(\mathbf{1}(\hat w^T x \cdot y &lt; 0)\)</span> with a <em>strict</em> inequality; §22.9’s eg 9 instead defines <span class="math inline">\(\operatorname{sign}(0) = +1\)</span>, so a boundary point counts as a <span class="math inline">\(+1\)</span> prediction. This chapter follows the slide’s strict form; with no margin exactly <span class="math inline">\(0\)</span> in any worked example, the two agree everywhere here.</p>
+<p>Shape: a step — flat <span class="math inline">\(1\)</span> for all <span class="math inline">\(m &lt; 0\)</span>, flat <span class="math inline">\(0\)</span> for all <span class="math inline">\(m \ge 0\)</span>. That is §31.7’s flatness made visible: a point with <span class="math inline">\(m = -3\)</span> (confidently wrong) and one with <span class="math inline">\(m = -0.01\)</span> (barely wrong) pay <em>identically</em>.</p>
+<p><strong>eg 1 (0/1 on three margins).</strong> Margins <span class="math inline">\(m = 1.5, -0.2, 0.3\)</span>: <span class="math display">\[\ell_{0/1} = 0,\ 1,\ 0 \qquad\Rightarrow\qquad \text{average } = 1/3.\]</span> The barely-wrong point costs as much as a disaster would — the loss grades <em>whether</em>, never <em>how</em>.</p>
+<p><strong>Basically, …</strong> “Right: free. Wrong: one rupee — no matter how wrong. The perfect judge and the worst teacher.”</p>
+</section>
+<section id="hinge-loss-the-svms-bribe" class="level2">
+<h2 class="anchored" data-anchor-id="hinge-loss-the-svms-bribe">35.4 Hinge loss: the SVM’s bribe</h2>
+<p><strong>Def (hinge loss).</strong> <span class="math inline">\(\boxed{\ell_{\text{hinge}}(m) = \max(0,\, 1 - m)}.\)</span></p>
+<p>This is the <span class="math inline">\(\xi_i\)</span> of §33.3 — Chapter 33 promised (§33.10) its full treatment here. There, <span class="math inline">\(\xi_i = \max\big(1 - y^{(i)}(w^T x^{(i)} + b),\, 0\big)\)</span> was the “bribe” a point pays for violating the margin, and the MLT Week-12 slide re-derives exactly this: pushing each <span class="math inline">\(\xi_i\)</span> as low as its constraint allows gives <span class="math inline">\(\xi_i = \max(0, 1 - \hat w_i^T x_i y_i)\)</span>, turning the soft-margin primal into <span class="math display">\[\min_{w,b}\ \underbrace{\tfrac12\lVert w\rVert^2}_{\text{model-dependent}} + C\sum_{i=1}^{n}\underbrace{\max(0, 1 - y^{(i)}(w^T x^{(i)} + b))}_{\text{data-dependent loss}}\]</span> — “regularization + hinge loss,” in the slide’s words.</p>
+<p>How it grades the four regimes: - <span class="math inline">\(m \ge 1\)</span>: <span class="math inline">\(\boxed{0}\)</span> — satisfied, pays nothing. The SVM doesn’t just want correct; it wants correct <em>by a margin of 1</em>. - <span class="math inline">\(0 &lt; m &lt; 1\)</span>: <span class="math inline">\(1 - m &gt; 0\)</span> — <strong>correct, but still charged</strong>. A point barely on the right side pays almost <span class="math inline">\(1\)</span>. - <span class="math inline">\(m &lt; 0\)</span>: <span class="math inline">\(1 - m &gt; 1\)</span> — wrong, and charged more than the 0/1 loss’s flat <span class="math inline">\(1\)</span>, growing linearly with how wrong.</p>
+<p><strong>Note (convex, but not smooth).</strong> The subgradient w.r.t. <span class="math inline">\(w\)</span>: <span class="math inline">\(-xy\)</span> when <span class="math inline">\(w^Txy &lt; 1\)</span> (the loss’s active region — including correct-but-shaky points, not just mistakes), <span class="math inline">\(0\)</span> when <span class="math inline">\(w^Txy &gt; 1\)</span>, and the whole interval between <span class="math inline">\(-xy\)</span> and <span class="math inline">\(0\)</span> at the kink <span class="math inline">\(w^Txy = 1\)</span> — a subgradient, the standard replacement for a derivative at a convex kink. (The MLT slide’s “<span class="math inline">\(-xy\)</span> on mistakes, <span class="math inline">\(0\)</span> elsewhere, kink at <span class="math inline">\(w^Txy = 0\)</span>” bullet was its <em>perceptron</em> statement — the modified hinge of §35.8, not this one.)</p>
+<p><strong>eg 2 (hinge on three margins).</strong> <span class="math inline">\(m = 1.5, -0.2, 0.3\)</span>: <span class="math display">\[\max(0, -0.5) = 0,\quad \max(0, 1.2) = 1.2,\quad \max(0, 0.7) = 0.7.\]</span> Compare eg 1: the barely-wrong point pays <span class="math inline">\(1.2\)</span> (more than 0/1’s <span class="math inline">\(1\)</span>), and the barely-<em>right</em> point pays <span class="math inline">\(0.7\)</span> where 0/1 paid <span class="math inline">\(0\)</span>. The SVM taxes uncertainty.</p>
+<p><strong>Basically, …</strong> “Being right isn’t enough — be right with room to spare. Margin above <span class="math inline">\(1\)</span>: free. Anything less: you pay <span class="math inline">\(1 - m\)</span>, even if you were technically correct. It’s the strict teacher who marks down shaky answers.”</p>
+</section>
+<section id="squared-loss-regression-doing-classification" class="level2">
+<h2 class="anchored" data-anchor-id="squared-loss-regression-doing-classification">35.5 Squared loss: regression doing classification</h2>
+<p>The MLT slide’s “Alg 1: using regression for classification” just fits <span class="math inline">\((g(x) - y)^2\)</span> with <span class="math inline">\(y \in \{+1, -1\}\)</span> and <span class="math inline">\(\hat h(x) = \operatorname{sign}(g(x))\)</span>. Expanding: <span class="math display">\[(g - y)^2 = g^2 + y^2 - 2gy = (gy)^2 + 1 - 2gy = \boxed{\ell_{\text{sq}}(m) = (m - 1)^2},\]</span> using <span class="math inline">\(y^2 = 1\)</span>. (The MLT Week-12 practice assignment’s Q2 computes exactly this loss on a dataset — answer <span class="math inline">\(7\)</span>.)</p>
+<p>The shape is a parabola with its zero at <span class="math inline">\(m = 1\)</span>. Two consequences the slide’s plot shows:</p>
+<ol type="i">
+<li><strong>It punishes over-confidence.</strong> At <span class="math inline">\(m = 2.5\)</span> (very confidently correct), <span class="math inline">\(\ell_{\text{sq}} = 2.25\)</span> — more than at <span class="math inline">\(m = 0\)</span>! It was built for regression, where the score should <em>equal</em> the label; “too right” is as bad as wrong.</li>
+<li><strong>It is monotone-wrong.</strong> ESL §14.6: squared error “is not a monotone decreasing function of increasing margin … for margin values <span class="math inline">\(y_i f(x_i) &gt; 1\)</span> it increases quadratically, thereby placing increasing influence (error) on observations that are correctly classified with increasing certainty, thereby reducing the relative influence of those incorrectly classified.” Conclusion: “if class assignment is the goal, a monotone decreasing criterion serves as a better surrogate loss function.”</li>
+</ol>
+<p><strong>eg 3 (the confidence tax).</strong> <span class="math inline">\(m = 2.5, -1, 0.2\)</span>: <span class="math display">\[\ell_{\text{sq}} = 2.25,\ 4,\ 0.64 \qquad\text{vs hinge:}\qquad 0,\ 2,\ 0.8.\]</span> At <span class="math inline">\(m = 2.5\)</span> the hinge is fully satisfied (<span class="math inline">\(0\)</span>) while squared charges <span class="math inline">\(2.25\)</span> — the parabola’s right arm is the giveaway that this loss doesn’t understand classification.</p>
+<p><strong>Basically, …</strong> “Squared loss wants the score to <em>equal</em> the label, not just agree with it. Nail the answer too confidently and it fines you for showing off. That’s why it’s a regression loss moonlighting in classification — and not a great one (ESL says so outright).”</p>
+</section>
+<section id="logistic-loss-cross-entropy-in-margin-form" class="level2">
+<h2 class="anchored" data-anchor-id="logistic-loss-cross-entropy-in-margin-form">35.6 Logistic loss: cross-entropy in margin form</h2>
+<p>§31.9’s loss was the negative log-likelihood with <span class="math inline">\(\{0,1\}\)</span> labels, <span class="math display">\[\boxed{L_{\mathrm{nll}}(g, y) = -\big(y\log g + (1-y)\log(1-g)\big)},\]</span> <span class="math inline">\(g = \sigma(\theta^T x + \theta_0)\)</span>. The MLT Week-12 slide converts it to the <span class="math inline">\(\{\pm 1\}\)</span> margin form. Writing <span class="math inline">\(z_i = 1\)</span> for <span class="math inline">\(y_i = +1\)</span> and <span class="math inline">\(z_i = 0\)</span> for <span class="math inline">\(y_i = -1\)</span>, with <span class="math inline">\(s_i = \hat w^T x_i\)</span>:</p>
+<ul>
+<li><span class="math inline">\(z_i = 1\)</span>: <span class="math inline">\(-\log\sigma(s_i) = -\log\frac{1}{1+e^{-s_i}} = \log(1 + e^{-s_i}) = \log(1 + e^{-y_i s_i})\)</span>.</li>
+<li><span class="math inline">\(z_i = 0\)</span>: <span class="math inline">\(-\log(1-\sigma(s_i)) = -\log\frac{e^{-s_i}}{1+e^{-s_i}} = \log(1 + e^{s_i}) = \log(1 + e^{-y_i s_i})\)</span>.</li>
+</ul>
+<p>Both cases collapse to one formula: <span class="math display">\[\boxed{\ell_{\text{log}}(m) = \log\!\left(1 + e^{-m}\right), \qquad m = y \cdot s}.\]</span> The slide boxes exactly this as the “logistic loss,” and the objective becomes <span class="math inline">\(\min_w \sum_i \log(1 + e^{-y_i s_i})\)</span>. This is §31.15(iii)’s “first specimen” <span class="math inline">\(L_{\mathrm{nll}}\)</span>, now in its margin uniform.</p>
+<p>Behavior: at <span class="math inline">\(m = 0\)</span> it pays <span class="math inline">\(\log 2 \approx 0.693\)</span>; for large positive <span class="math inline">\(m\)</span> it decays toward <span class="math inline">\(0\)</span> (never quite reaching it — §31.10: on separable data the weights inflate toward infinite certainty); for large negative <span class="math inline">\(m\)</span> it grows <em>linearly</em> (<span class="math inline">\(\log(1+e^{-m}) \approx -m\)</span>), much gentler than the exponential loss (§35.7). Unlike hinge it never hits exactly <span class="math inline">\(0\)</span>; unlike squared it never punishes being too right.</p>
+<p><strong>eg 4 (the two faces agree).</strong> <span class="math inline">\(\{0,1\}\)</span> form: <span class="math inline">\(g = 0.8\)</span>, <span class="math inline">\(y = 1\)</span>: <span class="math display">\[L_{\mathrm{nll}} = -\log 0.8 = 0.2231.\]</span> Margin form: <span class="math inline">\(s = \sigma^{-1}(0.8) = \log\frac{0.8}{0.2} = \log 4 = 1.3863\)</span>, <span class="math inline">\(m = (+1)(1.3863)\)</span>: <span class="math display">\[\log(1 + e^{-1.3863}) = \log(1 + 0.25) = \log 1.25 = 0.2231.\ \checkmark\]</span> Same bill, two notations — the margin form just hides the <span class="math inline">\(\{0,1\}\!\leftrightarrow\!\{\pm1\}\)</span> bookkeeping.</p>
+<p><strong>Basically, …</strong> “Cross-entropy asks: ‘how probable did I say the <em>true</em> label was?’ Take negative log of that probability. The margin formula <span class="math inline">\(\log(1+e^{-m})\)</span> is the same question rewritten so both label conventions give one line. Confident and right: nearly free. Confident and wrong: the bill grows without bound — but only linearly, not exponentially.”</p>
+</section>
+<section id="exponential-loss-adaboosts-engine" class="level2">
+<h2 class="anchored" data-anchor-id="exponential-loss-adaboosts-engine">35.7 Exponential loss: AdaBoost’s engine</h2>
+<p><strong>Def (exponential loss).</strong> <span class="math inline">\(\boxed{\ell_{\exp}(m) = e^{-m}}.\)</span></p>
+<p>The MLT slide’s “Boosting” bullet gives it in one line: <span class="math inline">\(\text{Loss} = e^{-y\,h(x)}\)</span>. §35.11 derives <em>why</em> AdaBoost is secretly minimizing exactly this — but the shape already tells the story: at <span class="math inline">\(m = 0\)</span> it pays <span class="math inline">\(1\)</span>; for <span class="math inline">\(m &gt; 0\)</span> it decays toward <span class="math inline">\(0\)</span>; for <span class="math inline">\(m &lt; 0\)</span> it <strong>explodes exponentially</strong>. A point with margin <span class="math inline">\(-3\)</span> pays <span class="math inline">\(e^{3} \approx 20.09\)</span> — twenty times the 0/1 loss’s flat <span class="math inline">\(1\)</span>.</p>
+<p>ESL §14.6 compares it with the logistic (binomial deviance) loss: “The penalty associated with binomial deviance increases linearly for large increasingly negative margin, whereas the exponential criterion increases the influence of such observations exponentially.” The price of that steepness: the exponential criterion “concentrates much more influence on observations with large negative margins,” while the deviance is “far more robust in noisy settings … especially in situations where there is misspecification of the class labels in the training data” — and “the performance of AdaBoost has been empirically observed to dramatically degrade in such situations.” Mislabeled points scream under the exponential bill.</p>
+<p><strong>eg 5 (the explosion).</strong> <span class="math inline">\(m = 1.5, -0.2, 0.3\)</span>: <span class="math display">\[e^{-1.5} = 0.2231,\quad e^{0.2} = 1.2214,\quad e^{-0.3} = 0.7408.\]</span> The barely-wrong point pays <span class="math inline">\(1.22\)</span> (above 0/1’s <span class="math inline">\(1\)</span> already at <span class="math inline">\(m = -0.2\)</span>); a confident error at <span class="math inline">\(m = -3\)</span> would pay <span class="math inline">\(20.09\)</span>. Compare logistic’s <span class="math inline">\(3.05\)</span> there — the exponential curve is the steepest punisher of confident mistakes in the zoo.</p>
+<p><strong>Basically, …</strong> “Exponential loss is the drama queen: correct answers get pocket change, but a confident mistake gets billed <em>exponentially</em>. That’s why AdaBoost obsesses over hard points — and why a mislabeled point can hijack it (ESL documents the degradation).”</p>
+</section>
+<section id="the-perceptrons-loss-hinge-without-the-margin" class="level2">
+<h2 class="anchored" data-anchor-id="the-perceptrons-loss-hinge-without-the-margin">35.8 The perceptron’s loss: hinge without the margin</h2>
+<p>§31.3’s per-example error, <span class="math inline">\(e^{(i)} = \max(0, -w^T\phi(x^{(i)})y^{(i)})\)</span>, is the <strong>modified hinge loss</strong> <span class="math inline">\(\boxed{\ell_{\text{mod-hinge}}(m) = \max(0, -m)}\)</span> — the hinge with the margin demand deleted (compare §35.4’s <span class="math inline">\(\max(0, 1-m)\)</span>). Correct: <span class="math inline">\(0\)</span>. Wrong: <span class="math inline">\(-m = |m|\)</span>, linear in how wrong.</p>
+<p>And the MLT slide draws the consequence: with subgradient <span class="math inline">\(-xy\)</span> on mistakes (<span class="math inline">\(w^Txy &lt; 0\)</span>), <span class="math inline">\(0\)</span> elsewhere, one SGD step with step size <span class="math inline">\(1\)</span> gives <span class="math display">\[w_{t+1} = w_t - 1\cdot(-x_i y_i) = w_t + x_i y_i \quad\text{(on mistakes)},\]</span> i.e.&nbsp;<strong>the perceptron update</strong> (§31.4) — “perceptron can be interpreted as SGD with modified hinge loss with step size <span class="math inline">\(= 1\)</span>” (the slide’s words; §31.4’s <span class="math inline">\((y^{(i)} - \hat y^{(i)}) = \pm 2\)</span> on mistakes folds the extra factor of <span class="math inline">\(2\)</span> into the step size).</p>
+<p>So the perceptron <em>does</em> have a loss after all — just the least demanding one in the zoo: it asks only for the right side of the boundary, no margin, no probabilities. That is §31.7’s blind spot in one formula.</p>
+<p><strong>Basically, …</strong> “The perceptron’s loss is the hinge loss with the ambition removed: right side = free, wrong side = pay <span class="math inline">\(|m|\)</span>. No margin demand, no probability. And its famous update rule is just one SGD step on this loss — ‘learn only when wrong’ falls out of the subgradient being zero on correct points.”</p>
+</section>
+<section id="surrogate-losses-the-trade" class="level2">
+<h2 class="anchored" data-anchor-id="surrogate-losses-the-trade">35.9 Surrogate losses: the trade</h2>
+<p>Collecting the MLT slide’s conclusions (its closing list, verbatim in spirit):</p>
+<ol type="i">
+<li><strong>0/1 loss is NP-hard to minimize</strong> — the ideal is intractable (§35.1).</li>
+<li><strong>Different algorithms use different “surrogate” losses</strong> — SVM → hinge, logistic regression → logistic/cross-entropy, AdaBoost → exponential, perceptron → modified hinge, least-squares-for-classification → squared.</li>
+<li><strong>Surrogates are convex and hence easy to minimize</strong> — every curve in the zoo (except 0/1) is convex in the margin, so gradient/subgradient methods apply.</li>
+</ol>
+<p>The deal, then: <strong>train on the surrogate, evaluate on 0/1.</strong> The surrogate is the practice ground you can optimize; the 0/1 loss is the exam you actually care about. ESL’s Figure-14.3 note makes the gap concrete: in boosting, “the training-set misclassification error decreases to zero” after ~250 iterations “while the exponential loss continues to decrease” — “Clearly AdaBoost is not optimizing training-set misclassification error; the exponential loss is more sensitive to changes in the estimated class probabilities.”</p>
+<p><strong>Note (which surrogates bound 0/1).</strong> The slide’s plot shows the surrogates sitting <em>above</em> the 0/1 step — almost. Hinge, squared, and exponential are genuine upper bounds of <span class="math inline">\(\mathbf{1}(m&lt;0)\)</span> everywhere (check: <span class="math inline">\(\max(0,1-m) \ge 1\)</span> for <span class="math inline">\(m \le 0\)</span>; <span class="math inline">\((m-1)^2 &gt; 1\)</span> for <span class="math inline">\(m &lt; 0\)</span>; <span class="math inline">\(e^{-m} \ge 1\)</span> for <span class="math inline">\(m \le 0\)</span>). The logistic loss is <strong>not</strong>: at <span class="math inline">\(m = -0.5\)</span>, <span class="math inline">\(\log(1+e^{0.5}) = 0.9741 &lt; 1\)</span>. It dips a hair below the step for small negative margins — a fine-print exception worth knowing.</p>
+<!-- Original matplotlib illustration drawn for this chapter (not reused from any URL): the five classification losses — 0/1, hinge, logistic, exponential, squared — plotted as functions of the margin m = y*s, with the worked-comparison margins marked on the hinge curve -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/35-loss-curves.png" class="img-fluid figure-img"></p>
+<figcaption>Classification losses as functions of the margin m = y·s: the 0/1 step, the hinge max(0,1−m), logistic log(1+e^(−m)), exponential e^(−m), and squared (m−1)^2 curves, with margin points from the §35.10 comparison marked.</figcaption>
+</figure>
+</div>
+<p><strong>Basically, …</strong> “You can’t minimize the exam, so you minimize a practice test that’s shaped like the exam but smooth enough to study with. Pick the practice test your algorithm was built for — they’re all convex, so the studying is easy. Just remember the practice score isn’t the exam score: AdaBoost can keep improving its exponential loss long after its mistake count hits zero.”</p>
+</section>
+<section id="the-big-comparison-one-dataset-five-losses" class="level2">
+<h2 class="anchored" data-anchor-id="the-big-comparison-one-dataset-five-losses">35.10 The big comparison: one dataset, five losses</h2>
+<p>Five points, fixed once, scored under every loss. Scores <span class="math inline">\(s\)</span> and labels <span class="math inline">\(y\)</span>:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>point</th>
+<th><span class="math inline">\(s\)</span></th>
+<th><span class="math inline">\(y\)</span></th>
+<th>margin <span class="math inline">\(m = ys\)</span></th>
+<th>verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>A</td>
+<td><span class="math inline">\(2.0\)</span></td>
+<td><span class="math inline">\(+1\)</span></td>
+<td><span class="math inline">\(2.0\)</span></td>
+<td>confident correct</td>
+</tr>
+<tr class="even">
+<td>B</td>
+<td><span class="math inline">\(0.5\)</span></td>
+<td><span class="math inline">\(+1\)</span></td>
+<td><span class="math inline">\(0.5\)</span></td>
+<td>correct, shaky</td>
+</tr>
+<tr class="odd">
+<td>C</td>
+<td><span class="math inline">\(-0.5\)</span></td>
+<td><span class="math inline">\(-1\)</span></td>
+<td><span class="math inline">\(0.5\)</span></td>
+<td>correct, shaky</td>
+</tr>
+<tr class="even">
+<td>D</td>
+<td><span class="math inline">\(-1.0\)</span></td>
+<td><span class="math inline">\(+1\)</span></td>
+<td><span class="math inline">\(-1.0\)</span></td>
+<td>wrong</td>
+</tr>
+<tr class="odd">
+<td>E</td>
+<td><span class="math inline">\(3.0\)</span></td>
+<td><span class="math inline">\(-1\)</span></td>
+<td><span class="math inline">\(-3.0\)</span></td>
+<td>confident wrong</td>
+</tr>
+</tbody>
+</table>
+<p>The bills (every number recomputed by hand and in numpy — review log):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>point</th>
+<th><span class="math inline">\(m\)</span></th>
+<th>0/1 <span class="math inline">\(\mathbf{1}(m&lt;0)\)</span></th>
+<th>hinge <span class="math inline">\(\max(0,1-m)\)</span></th>
+<th>logistic <span class="math inline">\(\log(1+e^{-m})\)</span></th>
+<th>squared <span class="math inline">\((m-1)^2\)</span></th>
+<th>exponential <span class="math inline">\(e^{-m}\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>A</td>
+<td><span class="math inline">\(2.0\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(0.1269\)</span></td>
+<td><span class="math inline">\(1\)</span></td>
+<td><span class="math inline">\(0.1353\)</span></td>
+</tr>
+<tr class="even">
+<td>B</td>
+<td><span class="math inline">\(0.5\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(0.5\)</span></td>
+<td><span class="math inline">\(0.4741\)</span></td>
+<td><span class="math inline">\(0.25\)</span></td>
+<td><span class="math inline">\(0.6065\)</span></td>
+</tr>
+<tr class="odd">
+<td>C</td>
+<td><span class="math inline">\(0.5\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(0.5\)</span></td>
+<td><span class="math inline">\(0.4741\)</span></td>
+<td><span class="math inline">\(0.25\)</span></td>
+<td><span class="math inline">\(0.6065\)</span></td>
+</tr>
+<tr class="even">
+<td>D</td>
+<td><span class="math inline">\(-1.0\)</span></td>
+<td><span class="math inline">\(1\)</span></td>
+<td><span class="math inline">\(2\)</span></td>
+<td><span class="math inline">\(1.3133\)</span></td>
+<td><span class="math inline">\(4\)</span></td>
+<td><span class="math inline">\(2.7183\)</span></td>
+</tr>
+<tr class="odd">
+<td>E</td>
+<td><span class="math inline">\(-3.0\)</span></td>
+<td><span class="math inline">\(1\)</span></td>
+<td><span class="math inline">\(4\)</span></td>
+<td><span class="math inline">\(3.0486\)</span></td>
+<td><span class="math inline">\(16\)</span></td>
+<td><span class="math inline">\(20.0855\)</span></td>
+</tr>
+<tr class="even">
+<td><strong>total</strong></td>
+<td></td>
+<td><span class="math inline">\(2\)</span> (<span class="math inline">\(0.4\)</span> avg)</td>
+<td><span class="math inline">\(7\)</span> (<span class="math inline">\(1.4\)</span> avg)</td>
+<td><span class="math inline">\(5.4369\)</span> (<span class="math inline">\(1.0874\)</span> avg)</td>
+<td><span class="math inline">\(21.5\)</span> (<span class="math inline">\(4.3\)</span> avg)</td>
+<td><span class="math inline">\(24.1522\)</span> (<span class="math inline">\(4.8304\)</span> avg)</td>
+</tr>
+</tbody>
+</table>
+<p>Reading the table:</p>
+<ol type="i">
+<li><strong>B and C (correct but shaky):</strong> 0/1 charges nothing; hinge charges <span class="math inline">\(0.5\)</span> — the margin demand made visible. Logistic (<span class="math inline">\(0.4741\)</span>) and exponential (<span class="math inline">\(0.6065\)</span>) also tax shakiness, gently.</li>
+<li><strong>A (confident correct):</strong> hinge is satisfied (<span class="math inline">\(0\)</span>); squared is the <em>only</em> loss that punishes it (<span class="math inline">\(1\)</span>) — the confidence tax of §35.5.</li>
+<li><strong>E (confident wrong):</strong> 0/1’s flat <span class="math inline">\(1\)</span> against exponential’s <span class="math inline">\(20.09\)</span>. Every surrogate punishes confident errors harder than 0/1 — that extra slope is exactly what makes them trainable.</li>
+<li><strong>Ordering of harshness on mistakes:</strong> exponential <span class="math inline">\(&gt;\)</span> squared <span class="math inline">\(&gt;\)</span> hinge <span class="math inline">\(&gt;\)</span> logistic <span class="math inline">\(&gt;\)</span> 0/1 on point E. The losses don’t just differ in shape; they differ in <em>temperament</em>.</li>
+</ol>
+<p><strong>Basically, …</strong> “Same five predictions, five different report cards. 0/1 only counts bodies. Hinge fines you for being right-but-nervous. Squared fines you for being right-and-smug. Exponential goes nuclear on confident mistakes. Logistic stays the calm middle — which is why it’s the default.”</p>
+</section>
+<section id="why-adaboosts-weights-update-the-way-they-do" class="level2">
+<h2 class="anchored" data-anchor-id="why-adaboosts-weights-update-the-way-they-do">35.11 Why AdaBoost’s weights update the way they do</h2>
+<p>§34.10(iii) promised this story: ESL’s deeper theory (ch.&nbsp;14) shows AdaBoost fits an <strong>additive model</strong> optimizing the <strong>exponential loss</strong> — and once you see it, the <span class="math inline">\(e^{\pm\alpha}\)</span> updates stop looking like magic.</p>
+<p><strong>Setup.</strong> The final classifier is a weighted vote, <span class="math inline">\(G(x) = \operatorname{sign}(f_M(x))\)</span> with <span class="math display">\[f_M(x) = \sum_{m=1}^{M} \beta_m G_m(x), \qquad G_m(x) \in \{+1,-1\},\]</span> an <em>additive expansion</em> in the base classifiers (ESL §14.2). The claim (ESL §14.4): AdaBoost.M1 is <strong>forward stagewise additive modeling</strong> — build <span class="math inline">\(f_M\)</span> one term at a time, never revisiting old terms — with the exponential loss <span class="math display">\[\boxed{L(y, f(x)) = e^{-y\,f(x)}} \qquad\text{(ESL (14.8))}.\]</span></p>
+<p><strong>Step 1 — the weights are the loss.</strong> At round <span class="math inline">\(m\)</span>, the model so far is <span class="math inline">\(f_{m-1}\)</span>. Choosing the next pair <span class="math inline">\((\beta, G)\)</span> to minimize the total exponential loss: <span class="math display">\[(\beta_m, G_m) = \arg\min_{\beta, G}\ \sum_{i=1}^{n} \exp\!\big[-y_i\big(f_{m-1}(x_i) + \beta G(x_i)\big)\big].\]</span> Factor out everything independent of <span class="math inline">\((\beta, G)\)</span>: <span class="math display">\[= \arg\min_{\beta, G}\ \sum_{i=1}^{n} \underbrace{e^{-y_i f_{m-1}(x_i)}}_{w_i^{(m)}}\ e^{-\beta y_i G(x_i)} \qquad\text{(ESL (14.9))}.\]</span> The weights <span class="math inline">\(w_i^{(m)} = e^{-y_i f_{m-1}(x_i)}\)</span> <strong>are the current per-point exponential loss</strong> — no separate invention needed. Reweighting <em>is</em> loss bookkeeping.</p>
+<p><strong>Step 2 — fitting <span class="math inline">\(G_m\)</span> means minimizing weighted error.</strong> Fix <span class="math inline">\(\beta &gt; 0\)</span>. Since <span class="math inline">\(y_i G(x_i) = +1\)</span> on correct points and <span class="math inline">\(-1\)</span> on wrong ones, <span class="math display">\[\sum_i w_i^{(m)} e^{-\beta y_i G(x_i)} = e^{-\beta}\!\!\sum_{\text{correct}}\! w_i^{(m)} + e^{\beta}\!\!\sum_{\text{wrong}}\! w_i^{(m)} = (e^{\beta} - e^{-\beta})\sum_i w_i^{(m)}\mathbf{1}(y_i \ne G(x_i)) + e^{-\beta}\sum_i w_i^{(m)},\]</span> so the minimizer is <span class="math display">\[\boxed{G_m = \arg\min_G\ \sum_{i=1}^{n} w_i^{(m)}\,\mathbf{1}(y_i \ne G(x_i))} \qquad\text{(ESL (14.10))}\]</span> — “fit the weak classifier to the data <em>weighted by</em> <span class="math inline">\(D_{m-1}\)</span>” (§34.6(ii)) falls out of the loss, not from a heuristic.</p>
+<p><strong>Step 3 — the optimal vote weight.</strong> Let <span class="math inline">\(\mathrm{err}_m\)</span> be <span class="math inline">\(G_m\)</span>’s weighted error rate (ESL (14.13)). Minimizing the criterion over <span class="math inline">\(\beta\)</span> is one-variable calculus: with total weight <span class="math inline">\(W\)</span>, <span class="math display">\[C(\beta) = e^{-\beta}W(1-\mathrm{err}_m) + e^{\beta}W\,\mathrm{err}_m, \quad \frac{dC}{d\beta} = 0 \iff e^{2\beta} = \frac{1-\mathrm{err}_m}{\mathrm{err}_m},\]</span> <span class="math display">\[\boxed{\beta_m^\star = \tfrac12\log\frac{1-\mathrm{err}_m}{\mathrm{err}_m}} \qquad\text{(ESL (14.12))}\]</span> — the course’s <span class="math inline">\(\alpha_m\)</span> (§34.6(iii); the Note there covers ESL’s factor-of-2 convention).</p>
+<p><strong>Step 4 — the <span class="math inline">\(e^{\pm\alpha}\)</span> update.</strong> The next round’s weights are the updated loss: <span class="math display">\[\boxed{w_i^{(m+1)} = w_i^{(m)}\,e^{-\beta_m^\star\, y_i G_m(x_i)}} \qquad\text{(ESL (14.14))}.\]</span> Since <span class="math inline">\(y_i G_m(x_i) = +1\)</span> (correct) or <span class="math inline">\(-1\)</span> (wrong): - correct: multiply by <span class="math inline">\(e^{-\beta_m^\star}\)</span>, - wrong: multiply by <span class="math inline">\(e^{+\beta_m^\star}\)</span>.</p>
+<p>With the course’s <span class="math inline">\(\alpha_m = \beta_m^\star\)</span>: <strong>misclassified <span class="math inline">\(\times e^{+\alpha_m}\)</span>, correctly classified <span class="math inline">\(\times e^{-\alpha_m}\)</span></strong> — exactly §34.6(iv). (ESL writes it as <span class="math inline">\(w_i^{(m)}e^{\alpha_m\mathbf{1}(\text{wrong})}e^{-\beta_m}\)</span> with <span class="math inline">\(\alpha_m = 2\beta_m\)</span>; the common <span class="math inline">\(e^{-\beta_m}\)</span> factor normalizes away — ESL (14.15).)</p>
+<p>So the “why”: the weights are the exponential loss of the model built so far, and because the loss is exponential, adding a term to the model <em>multiplies</em> each point’s loss by <span class="math inline">\(e^{-\beta y G}\)</span> — i.e.&nbsp;by <span class="math inline">\(e^{+\alpha}\)</span> for mistakes and <span class="math inline">\(e^{-\alpha}\)</span> for hits. Nothing arbitrary; it is the additive model updating its own books.</p>
+<p><strong>Two sourced footnotes.</strong></p>
+<ol type="i">
+<li><strong>What it estimates.</strong> The population minimizer of the exponential loss is <span class="math inline">\(f^\star(x) = \tfrac12\log\frac{P(Y=1\mid x)}{P(Y=-1\mid x)}\)</span> — one-half the log-odds (ESL (14.16), “easy to show (Friedman et al.&nbsp;2000)” — the proof is cited, not shown, in ESL). Hence <span class="math inline">\(\operatorname{sign}(f_M)\)</span> is a justified classification rule. The binomial deviance (logistic loss, ESL (14.18)) shares this population minimizer — but “<span class="math inline">\(e^{-Yf}\)</span> itself is not a proper log-likelihood, since it is not the logarithm of any probability mass function” (ESL §14.5).</li>
+<li><strong>Surrogate ≠ scoreboard, again.</strong> ESL’s Figure-14.3 note (§35.9): training misclassification hits zero while the exponential loss keeps decreasing — “AdaBoost is not optimizing training-set misclassification error; the exponential loss is more sensitive to changes in the estimated class probabilities.”</li>
+</ol>
+<p><strong>Basically, …</strong> “AdaBoost’s weights aren’t a trick — they’re the current exponential loss, one number per point. Add a stump to the model and each point’s loss gets <em>multiplied</em> by <span class="math inline">\(e^{+\alpha}\)</span> (if the stump missed it) or <span class="math inline">\(e^{-\alpha}\)</span> (if it got it). The <span class="math inline">\(e^{\pm\alpha}\)</span> update is just the loss doing its own accounting. And at the population level, all that multiplying is estimating half the log-odds — which is why taking the sign at the end is legitimate.”</p>
+</section>
+<section id="strengths-and-limits-as-the-sources-list-them" class="level2">
+<h2 class="anchored" data-anchor-id="strengths-and-limits-as-the-sources-list-them">35.12 Strengths and limits (as the sources list them)</h2>
+<p><strong>Strengths.</strong> i) <strong>The zoo is honest.</strong> Each loss wears its algorithm’s priorities on its sleeve: hinge demands a margin (SVM), logistic grades probabilities (logistic regression), exponential obsesses over hard points (AdaBoost), modified hinge asks only for the right side (perceptron). ii) <strong>Convexity buys optimizability.</strong> Every surrogate here is convex in the margin — the MLT slide’s whole point: “surrogates are convex and hence easy to minimize.” iii) <strong>The margin unifies them.</strong> One number, five pricing schemes — the comparison table of §35.10 is the chapter in miniature.</p>
+<p><strong>Limits.</strong> i) <strong>The surrogate is not the goal.</strong> Training loss and 0/1 loss can diverge (ESL’s Figure-14.3 note, §35.9/§35.11) — §22.10’s “training loss is not the goal” in a new costume. ii) <strong>Surrogates have their own pathologies.</strong> Squared punishes confident-correct points (ESL §14.6: “not a good surrogate”); exponential degrades on mislabeled data (ESL §14.6); logistic has no finite minimizer on separable data without regularization (§31.10); hinge has a kink at <span class="math inline">\(m = 1\)</span> (subgradients needed). iii) <strong>0/1 stays NP-hard.</strong> The slide states it without proof — this chapter reports the claim, not a proof.</p>
+<p><strong>Basically, …</strong> “Surrogates are practice tests: convex, gradeable, each with its own bias. None of them <em>is</em> the exam, and each has a failure mode. Know which practice test you’re taking and what it lies about.”</p>
+</section>
+<section id="where-this-goes-next" class="level2">
+<h2 class="anchored" data-anchor-id="where-this-goes-next">35.13 Where this goes next</h2>
+<p>Part IV closes here. Four promises, kept:</p>
+<ol type="i">
+<li>§30.11 (“Classification losses get their own chapter”) — kept: this chapter.</li>
+<li>§31.15(iii) (“<span class="math inline">\(L_{\mathrm{nll}}\)</span> was the first specimen”) — kept: §35.6 puts it in margin form alongside the rest.</li>
+<li>§33.10 (hinge loss “gets its full treatment”) — kept: §35.4, with the <span class="math inline">\(\xi_i\)</span> of §33.3 identified as the hinge loss.</li>
+<li>§34.10(iii) (“the ‘why do the weights update <em>this</em> way’ story”) — kept: §35.11.</li>
+</ol>
+<p>Part VI picks the thread straight back up: the MLT Week-12 slides close with neural networks trained by <strong>cross-entropy loss</strong> for classification (slide 2’s <span class="math inline">\(p(y\mid x)\)</span> diagram, “Cross-Entropy Loss”) — the logistic loss of §35.6, scaled up to deep networks. Chapter 41 is where that story continues.</p>
+<p><strong>Basically, …</strong> “Every classifier you met in Part IV was secretly a loss function wearing a trench coat. Part V takes the same losses — cross-entropy front and center — and trains neural networks with them.”</p>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li><strong>Margin and 0/1.</strong> Points <span class="math inline">\((s, y)\)</span>: <span class="math inline">\(A = (1.5, +1)\)</span>, <span class="math inline">\(B = (-0.4, +1)\)</span>, <span class="math inline">\(C = (-2.2, -1)\)</span>, <span class="math inline">\(D = (0.8, -1)\)</span>, <span class="math inline">\(E = (0.2, +1)\)</span>. (i) Compute each margin <span class="math inline">\(m = ys\)</span>. (ii) Using <span class="math inline">\(\ell_{0/1} = \mathbf{1}(m &lt; 0)\)</span>, give each point’s loss and the average.</li>
+<li><strong>Hinge’s margin demand.</strong> Same five points. (i) Compute each hinge loss <span class="math inline">\(\max(0, 1-m)\)</span> and the total. (ii) Which points are <em>correct</em> (<span class="math inline">\(m &gt; 0\)</span>) yet still charged? (iii) In one line: why does the SVM charge them?</li>
+<li><strong>Squared loss’s confidence tax.</strong> Margins <span class="math inline">\(2.5\)</span>, <span class="math inline">\(-1\)</span>, <span class="math inline">\(0.2\)</span>. (i) Compute <span class="math inline">\((m-1)^2\)</span> and <span class="math inline">\(\max(0, 1-m)\)</span> for each. (ii) At which margin(s) does squared charge <em>more</em> than hinge? (iii) In one line: why would a loss ever dislike <span class="math inline">\(m = 2.5\)</span>?</li>
+<li><strong>Logistic, two faces.</strong> (i) In <span class="math inline">\(\{0,1\}\)</span> notation compute <span class="math inline">\(L_{\mathrm{nll}}\)</span> for <span class="math inline">\((g, y) = (0.8, 1)\)</span> and <span class="math inline">\((0.2, 0)\)</span>. (ii) Convert both to <span class="math inline">\(\pm 1\)</span> notation: find each score <span class="math inline">\(s = \sigma^{-1}(g)\)</span>, each margin <span class="math inline">\(m\)</span>, and verify <span class="math inline">\(\log(1+e^{-m})\)</span> equals the (i) answers.</li>
+<li><strong>Perceptron = modified-hinge SGD.</strong> For a misclassified point, <span class="math inline">\(\ell(w) = \max(0, -y\,w^T x)\)</span>. (i) Write the loss without the <span class="math inline">\(\max\)</span> and compute <span class="math inline">\(\nabla_w \ell\)</span>. (ii) Take one SGD step with step size <span class="math inline">\(1\)</span> and show it is the perceptron update <span class="math inline">\(w \gets w + yx\)</span> (cf.&nbsp;§31.4). (iii) What happens on a correctly classified point, and which §31.4 phrase does that match?</li>
+<li><strong>AdaBoost weights from exponential loss.</strong> Normalized weights <span class="math inline">\(w_i\)</span> (<span class="math inline">\(\sum_i w_i = 1\)</span>); fixed <span class="math inline">\(G\)</span>; <span class="math inline">\(\mathrm{err} = \sum_{i:\,y_i \ne G(x_i)} w_i\)</span>. (i) Write <span class="math inline">\(C(\beta) = \sum_i w_i e^{-\beta y_i G(x_i)}\)</span> in terms of <span class="math inline">\(\mathrm{err}\)</span> and show <span class="math inline">\(\beta^\star = \tfrac12\ln\frac{1-\mathrm{err}}{\mathrm{err}}\)</span>. (ii) Show the updated weights <span class="math inline">\(w_i e^{-\beta^\star y_i G(x_i)}\)</span> equal §34.6(iv)’s update (misclassified <span class="math inline">\(\times e^{+\alpha_m}\)</span>, correct <span class="math inline">\(\times e^{-\alpha_m}\)</span>) with the course’s <span class="math inline">\(\alpha_m\)</span>. (iii) In one line: which step of the derivation forces <span class="math inline">\(G_m\)</span> to minimize the <em>weighted</em> error?</li>
+<li><strong>True or false, one-line justification:</strong> (i) The hinge loss is differentiable everywhere. (ii) The logistic loss upper-bounds the 0/1 loss. (iii) A point with margin exactly <span class="math inline">\(1\)</span> pays hinge loss <span class="math inline">\(1\)</span>. (iv) AdaBoost’s <span class="math inline">\(\operatorname{sign}(f_M(x))\)</span> is justified because <span class="math inline">\(f^\star\)</span> estimates half the log-odds. (v) Minimizing 0/1 loss over linear separators is NP-hard (per the MLT slides). (vi) <span class="math inline">\(e^{-Yf}\)</span> is a proper log-likelihood.</li>
+</ol>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — Margin and 0/1
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math inline">\(m = ys\)</span>:</p>
+<p><strong>(i)</strong> <span class="math inline">\(A\)</span>: <span class="math inline">\((+1)(1.5) = \boxed{1.5}\)</span>; <span class="math inline">\(B\)</span>: <span class="math inline">\((+1)(-0.4) = \boxed{-0.4}\)</span>; <span class="math inline">\(C\)</span>: <span class="math inline">\((-1)(-2.2) = \boxed{2.2}\)</span>; <span class="math inline">\(D\)</span>: <span class="math inline">\((-1)(0.8) = \boxed{-0.8}\)</span>; <span class="math inline">\(E\)</span>: <span class="math inline">\((+1)(0.2) = \boxed{0.2}\)</span>.</p>
+<p><strong>(ii)</strong> <span class="math inline">\(\ell_{0/1} = \mathbf{1}(m &lt; 0)\)</span>: <span class="math inline">\(A: 0\)</span>, <span class="math inline">\(B: 1\)</span>, <span class="math inline">\(C: 0\)</span>, <span class="math inline">\(D: 1\)</span>, <span class="math inline">\(E: 0\)</span>. Average <span class="math inline">\(= \boxed{2/5 = 0.4}\)</span>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — Hinge’s margin demand
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> <span class="math inline">\(\max(0, 1-m)\)</span>: <span class="math inline">\(A\)</span>: <span class="math inline">\(\max(0, -0.5) = \boxed{0}\)</span>; <span class="math inline">\(B\)</span>: <span class="math inline">\(\max(0, 1.4) = \boxed{1.4}\)</span>; <span class="math inline">\(C\)</span>: <span class="math inline">\(\max(0, -1.2) = \boxed{0}\)</span>; <span class="math inline">\(D\)</span>: <span class="math inline">\(\max(0, 1.8) = \boxed{1.8}\)</span>; <span class="math inline">\(E\)</span>: <span class="math inline">\(\max(0, 0.8) = \boxed{0.8}\)</span>. Total <span class="math inline">\(= 0 + 1.4 + 0 + 1.8 + 0.8 = \boxed{4.0}\)</span> (mean <span class="math inline">\(0.8\)</span>).</p>
+<p><strong>(ii)</strong> <span class="math inline">\(\boxed{E}\)</span>: <span class="math inline">\(m = 0.2 &gt; 0\)</span> (correct) but charged <span class="math inline">\(0.8\)</span>.</p>
+<p><strong>(iii)</strong> The SVM doesn’t ask “right side?” — it asks “margin <span class="math inline">\(\ge 1\)</span>?”; anything short pays the <span class="math inline">\(\xi_i\)</span> bribe of §33.3.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — Squared loss’s confidence tax
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> - <span class="math inline">\(m = 2.5\)</span>: <span class="math inline">\((2.5-1)^2 = \boxed{2.25}\)</span>; hinge <span class="math inline">\(\max(0, -1.5) = \boxed{0}\)</span>. - <span class="math inline">\(m = -1\)</span>: <span class="math inline">\((-1-1)^2 = \boxed{4}\)</span>; hinge <span class="math inline">\(\max(0, 2) = \boxed{2}\)</span>. - <span class="math inline">\(m = 0.2\)</span>: <span class="math inline">\((0.2-1)^2 = \boxed{0.64}\)</span>; hinge <span class="math inline">\(\max(0, 0.8) = \boxed{0.8}\)</span>.</p>
+<p><strong>(ii)</strong> Squared charges more at <span class="math inline">\(\boxed{m = 2.5}\)</span> (<span class="math inline">\(2.25 &gt; 0\)</span>) and <span class="math inline">\(\boxed{m = -1}\)</span> (<span class="math inline">\(4 &gt; 2\)</span>); at <span class="math inline">\(m = 0.2\)</span> it charges less (<span class="math inline">\(0.64 &lt; 0.8\)</span>).</p>
+<p><strong>(iii)</strong> Squared loss is a regression loss: it wants the score to <em>equal</em> the label, so <span class="math inline">\(m = 2.5\)</span> (“too right”) counts as an error.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — Logistic, two faces
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> <span class="math inline">\(L_{\mathrm{nll}}(g, y) = -\big(y\log g + (1-y)\log(1-g)\big)\)</span>: - <span class="math inline">\((0.8, 1)\)</span>: <span class="math inline">\(-\log 0.8 = \boxed{0.2231}\)</span> (to 4 s.f.). - <span class="math inline">\((0.2, 0)\)</span>: <span class="math inline">\(-\log(1 - 0.2) = -\log 0.8 = \boxed{0.2231}\)</span>.</p>
+<p><strong>(ii)</strong> <span class="math inline">\(s = \sigma^{-1}(g) = \log\frac{g}{1-g}\)</span>: - Case 1: <span class="math inline">\(s = \log\frac{0.8}{0.2} = \log 4 = 1.3863\)</span>; <span class="math inline">\(y = +1\)</span> so <span class="math inline">\(m = 1.3863\)</span>; <span class="math inline">\(\log(1+e^{-1.3863}) = \log(1+0.25) = \log 1.25 = \boxed{0.2231}\ \checkmark\)</span>. - Case 2: <span class="math inline">\(s = \log\frac{0.2}{0.8} = -\log 4 = -1.3863\)</span>; <span class="math inline">\(y = -1\)</span> so <span class="math inline">\(m = (-1)(-1.3863) = 1.3863\)</span>; same <span class="math inline">\(\boxed{0.2231}\ \checkmark\)</span>.</p>
+<p>Both notations bill identically — the margin form absorbs the <span class="math inline">\(\{0,1\}\!\leftrightarrow\!\{\pm 1\}\)</span> conversion.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — Perceptron = modified-hinge SGD
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> Misclassified <span class="math inline">\(\Rightarrow -y\,w^T x &gt; 0\)</span>, so the <span class="math inline">\(\max\)</span> drops: <span class="math inline">\(\ell(w) = -y\,w^T x\)</span>. Then <span class="math inline">\(\boxed{\nabla_w \ell = -yx}\)</span>.</p>
+<p><strong>(ii)</strong> One SGD step with step size <span class="math inline">\(1\)</span>: <span class="math display">\[w \gets w - 1\cdot\nabla_w\ell = w - (-yx) = \boxed{w + yx},\]</span> the perceptron update (the MLT slide’s form; §31.4’s <span class="math inline">\((y^{(i)} - \hat y^{(i)}) = \pm 2\)</span> on mistakes folds the factor of <span class="math inline">\(2\)</span> into the step size).</p>
+<p><strong>(iii)</strong> Correctly classified <span class="math inline">\(\Rightarrow -y\,w^T x \le 0 \Rightarrow \ell = 0 \Rightarrow\)</span> gradient <span class="math inline">\(0 \Rightarrow\)</span> <strong>no update</strong> — §31.4’s “learn only when wrong.”</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — AdaBoost weights from exponential loss
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> Split on <span class="math inline">\(y_i G(x_i) = \pm 1\)</span>; with normalized weights the correct mass is <span class="math inline">\(1-\mathrm{err}\)</span>, the wrong mass <span class="math inline">\(\mathrm{err}\)</span>: <span class="math display">\[C(\beta) = e^{-\beta}(1-\mathrm{err}) + e^{\beta}\,\mathrm{err}.\]</span> <span class="math display">\[\frac{dC}{d\beta} = -e^{-\beta}(1-\mathrm{err}) + e^{\beta}\,\mathrm{err} = 0 \iff e^{2\beta} = \frac{1-\mathrm{err}}{\mathrm{err}} \iff \boxed{\beta^\star = \tfrac12\ln\frac{1-\mathrm{err}}{\mathrm{err}}}.\]</span></p>
+<p><strong>(ii)</strong> <span class="math inline">\(w_i \gets w_i\,e^{-\beta^\star y_i G(x_i)}\)</span>: correct (<span class="math inline">\(y_iG = +1\)</span>) gets <span class="math inline">\(\times e^{-\beta^\star}\)</span>; wrong (<span class="math inline">\(y_iG = -1\)</span>) gets <span class="math inline">\(\times e^{+\beta^\star}\)</span>. The course’s <span class="math inline">\(\alpha_m\)</span> (§34.6(iii)) equals <span class="math inline">\(\beta^\star\)</span>, so this is exactly <strong>misclassified <span class="math inline">\(\times e^{+\alpha_m}\)</span>, correct <span class="math inline">\(\times e^{-\alpha_m}\)</span></strong> — §34.6(iv). <span class="math inline">\(\checkmark\)</span></p>
+<p><strong>(iii)</strong> Step 2 of §35.11: for any fixed <span class="math inline">\(\beta &gt; 0\)</span>, the exponential-loss criterion over <span class="math inline">\(G\)</span> equals <span class="math inline">\((e^{\beta}-e^{-\beta})\sum_i w_i\mathbf{1}(y_i \ne G(x_i))\)</span> plus a constant — so minimizing it over <span class="math inline">\(G\)</span> <em>is</em> minimizing the weighted error.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — True or false
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> <strong>False.</strong> Kink at <span class="math inline">\(m = 1\)</span>: the subgradient there is the whole interval <span class="math inline">\([-1, 0]xy\)</span> (MLT slide), not a single derivative.</p>
+<p><strong>(ii)</strong> <strong>False.</strong> Counterexample <span class="math inline">\(m = -0.5\)</span>: <span class="math inline">\(\log(1+e^{0.5}) = \log(2.6487) \approx \boxed{0.9741} &lt; 1 = \ell_{0/1}\)</span>. (Hinge, squared, and exponential <em>do</em> upper-bound 0/1 everywhere — verified on a grid in the review log.)</p>
+<p><strong>(iii)</strong> <strong>False.</strong> <span class="math inline">\(\max(0, 1-1) = \boxed{0}\)</span> — margin exactly <span class="math inline">\(1\)</span> is precisely where the hinge turns off.</p>
+<p><strong>(iv)</strong> <strong>True.</strong> ESL (14.16): <span class="math inline">\(f^\star(x) = \tfrac12\log\frac{P(Y=1\mid x)}{P(Y=-1\mid x)}\)</span> — half the log-odds — so <span class="math inline">\(\operatorname{sign}(f_M)\)</span> is a legitimate classification rule.</p>
+<p><strong>(v)</strong> <strong>True</strong> — as stated (not proved) in the MLT Week-12 slides.</p>
+<p><strong>(vi)</strong> <strong>False.</strong> ESL §14.5: <span class="math inline">\(e^{-Yf}\)</span> “is not a proper log-likelihood, since it is not the logarithm of any probability mass function.”</p>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./34-ensembles.html" class="pagination-link" aria-label="Chapter 34: Ensembles — bagging, boosting, AdaBoost">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./36-numpy-pandas.html" class="pagination-link" aria-label="Chapter 36: NumPy and Pandas for ML">
+        <span class="nav-page-text"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

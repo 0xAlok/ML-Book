@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>27. Kernel methods and kernel regression – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./28-regularization.html" rel="next">
+<link href="./26-k-means.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./26-k-means.html">Part IV — Machine Learning Techniques</a></li><li class="breadcrumb-item"><a href="./27-kernel-methods.html"><span class="chapter-title">27. Kernel methods and kernel regression</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#notation" id="toc-notation" class="nav-link active" data-scroll-target="#notation">27.1 Notation</a></li>
+  <li><a href="#the-kernel-machinery-briefly-recapped" id="toc-the-kernel-machinery-briefly-recapped" class="nav-link" data-scroll-target="#the-kernel-machinery-briefly-recapped">27.2 The kernel machinery, briefly recapped</a></li>
+  <li><a href="#motivation-linear-models-are-limited" id="toc-motivation-linear-models-are-limited" class="nav-link" data-scroll-target="#motivation-linear-models-are-limited">27.3 Motivation: linear models are limited</a></li>
+  <li><a href="#ridge-regression-in-feature-space-the-objective" id="toc-ridge-regression-in-feature-space-the-objective" class="nav-link" data-scroll-target="#ridge-regression-in-feature-space-the-objective">27.4 Ridge regression in feature space: the objective</a></li>
+  <li><a href="#the-dual-form-the-solution-lives-in-the-span-of-the-data" id="toc-the-dual-form-the-solution-lives-in-the-span-of-the-data" class="nav-link" data-scroll-target="#the-dual-form-the-solution-lives-in-the-span-of-the-data">27.5 The dual form: the solution lives in the span of the data</a></li>
+  <li><a href="#the-closed-form-solution" id="toc-the-closed-form-solution" class="nav-link" data-scroll-target="#the-closed-form-solution">27.6 The closed-form solution</a></li>
+  <li><a href="#what-it-means-prediction-as-a-weighted-sum-of-similarities" id="toc-what-it-means-prediction-as-a-weighted-sum-of-similarities" class="nav-link" data-scroll-target="#what-it-means-prediction-as-a-weighted-sum-of-similarities">27.7 What it means: prediction as a weighted sum of similarities</a></li>
+  <li><a href="#worked-example-kernel-ridge-by-hand" id="toc-worked-example-kernel-ridge-by-hand" class="nav-link" data-scroll-target="#worked-example-kernel-ridge-by-hand">27.8 Worked example: kernel ridge by hand</a></li>
+  <li><a href="#practical-notes-the-kernel-lambda-and-the-on3-bill" id="toc-practical-notes-the-kernel-lambda-and-the-on3-bill" class="nav-link" data-scroll-target="#practical-notes-the-kernel-lambda-and-the-on3-bill">27.9 Practical notes: the kernel, <span class="math inline">\(\lambda\)</span>, and the <span class="math inline">\(O(n^3)\)</span> bill</a></li>
+  <li><a href="#where-this-goes-next" id="toc-where-this-goes-next" class="nav-link" data-scroll-target="#where-this-goes-next">27.10 Where this goes next</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./26-k-means.html">Part IV — Machine Learning Techniques</a></li><li class="breadcrumb-item"><a href="./27-kernel-methods.html"><span class="chapter-title">27. Kernel methods and kernel regression</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">27. Kernel methods and kernel regression</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Chapter 23’s closing message was that polynomial regression needs no new machinery — transform the features, run the same least-squares machine. §24.10 built the other half of the story: when the feature map <span class="math inline">\(\phi\)</span> is expensive or even infinite-dimensional, the kernel trick lets you work with inner products <span class="math inline">\(\kappa(x, x')\)</span> alone. This chapter joins the two: <em>ridge regression in feature space, solved without ever visiting feature space</em>. Everything here comes from the MLT Week 2 slides (the kernel machinery, recapped in §27.2) and the MLT Week 5 lectures and programming assignment on kernel regression (the model, the coefficient vector <span class="math inline">\(\alpha\)</span>, the weighted-sum predictions).</p>
+<section id="notation" class="level2">
+<h2 class="anchored" data-anchor-id="notation">27.1 Notation</h2>
+<p><strong>Notation.</strong> Data <span class="math inline">\(D = \{(x_1, y_1), \ldots, (x_n, y_n)\}\)</span> with <span class="math inline">\(x_i \in \mathbb{R}^d\)</span>, <span class="math inline">\(y_i \in \mathbb{R}\)</span> (subscript convention, Chapters 24–26). The kernel, Gram matrix, and feature map follow §24.10’s definitions exactly: <span class="math display">\[\boxed{\kappa(x, x') = \phi(x)^T\phi(x')}, \qquad \boxed{K_{ij} = \kappa(x_i, x_j)} \in \mathbb{R}^{n \times n}, \qquad y = (y_1, \ldots, y_n)^T.\]</span> <span class="math inline">\(\Phi\)</span> is the <span class="math inline">\(n \times D\)</span> <strong>feature matrix</strong> whose <span class="math inline">\(i\)</span>-th row is <span class="math inline">\(\phi(x_i)^T\)</span> (the §23.2 convention: rows are points), so <span class="math inline">\(\Phi\Phi^T = K\)</span> and <span class="math inline">\((\Phi w)_i = w^T\phi(x_i)\)</span>. The Week 5 assignment’s <span class="math inline">\(w = \phi(X)\alpha\)</span> is the same relation transposed.</p>
+</section>
+<section id="the-kernel-machinery-briefly-recapped" class="level2">
+<h2 class="anchored" data-anchor-id="the-kernel-machinery-briefly-recapped">27.2 The kernel machinery, briefly recapped</h2>
+<p>§24.10 derived the full machinery; here is only what kernel regression needs:</p>
+<ol type="i">
+<li><strong>Lifting.</strong> Map <span class="math inline">\(x \in \mathbb{R}^d\)</span> through <span class="math inline">\(\phi: \mathbb{R}^d \to \mathbb{R}^D\)</span> into a space where the structure is linear, then run linear methods there.</li>
+<li><strong>The dual form.</strong> In kernel PCA, every eigenvector lay in the span of the data: <span class="math inline">\(w_k = X\alpha_k\)</span>. Regression will have the same shape: the solution <span class="math inline">\(w\)</span> lies in the span of the <em>transformed</em> training points (§27.5).</li>
+<li><strong>The kernel trick.</strong> Only inner products ever appear, so replace <span class="math inline">\(\phi(x_i)^T\phi(x_j)\)</span> by <span class="math inline">\(\kappa(x_i, x_j)\)</span>, computed directly: <span class="math inline">\(\boxed{\text{polynomial } \kappa(x,x') = (x^Tx' + 1)^p}\)</span>, <span class="math inline">\(\boxed{\text{RBF } \kappa(x,x') = \exp(-\|x - x'\|^2/(2\sigma^2))}\)</span>. A kernel is valid iff it is symmetric and every Gram matrix is positive semi-definite (Mercer, §24.10).</li>
+<li><strong>The point of the trick.</strong> For the quadratic kernel on <span class="math inline">\(\mathbb{R}^2\)</span>, <span class="math inline">\(\kappa(x,x') = (x^Tx' + 1)^2\)</span> buys the 6-dimensional <span class="math inline">\(\phi\)</span> at <span class="math inline">\(O(d)\)</span> cost; the RBF kernel’s <span class="math inline">\(\phi\)</span> is infinite-dimensional — no explicit <span class="math inline">\(\phi\)</span> exists at all, yet <span class="math inline">\(\kappa\)</span> computes the inner product in <span class="math inline">\(O(d)\)</span>.</li>
+</ol>
+<p><strong>Basically, …</strong> “Anything that only needs dot products of lifted features can run on kernel values instead.” Kernel regression is exactly such an algorithm.</p>
+</section>
+<section id="motivation-linear-models-are-limited" class="level2">
+<h2 class="anchored" data-anchor-id="motivation-linear-models-are-limited">27.3 Motivation: linear models are limited</h2>
+<p>§23’s machine fits <span class="math inline">\(f_\theta(x) = \theta^Tx\)</span> — a line, or a hyperplane. Polynomial regression (§23.8) escapes lines by hand-building <span class="math inline">\(\phi(x) = (1, x, x^2, \ldots, x^m)^T\)</span> and reusing the same machine. But:</p>
+<ol type="i">
+<li><strong>Explicit <span class="math inline">\(\phi\)</span> scales badly.</strong> Cubic features of <span class="math inline">\(d\)</span> variables number <span class="math inline">\(\approx O(d^3)\)</span>; each one costs a column in the feature matrix and a parameter in <span class="math inline">\(\theta\)</span>.</li>
+<li><strong>Explicit <span class="math inline">\(\phi\)</span> can be impossible.</strong> The RBF kernel’s <span class="math inline">\(\phi\)</span> is infinite-dimensional (§24.10) — there is no finite feature vector to build. Yet it is a perfectly computable function: <span class="math inline">\(\exp(-\|x - x'\|^2/(2\sigma^2))\)</span> is just arithmetic on two <span class="math inline">\(d\)</span>-vectors.</li>
+<li><strong>The dilemma is §24.10’s, again.</strong> There the answer was: find the dual form, then kernelize it. The Week 5 lectures motivate regression the same way — “impose <em>structure</em> to reduce search space” — and the structure here is <em>ridge-regularized linear regression in feature space, with the kernel trick doing the heavy lifting</em>.</li>
+</ol>
+<p><strong>Basically, …</strong> “You want curves, but you refuse to build the curve-features. Do linear regression in the imaginary lifted space anyway — arrange the algebra so the imaginary space only ever appears as <span class="math inline">\(\kappa(x, x')\)</span>, and it was never imaginary to begin with.”</p>
+</section>
+<section id="ridge-regression-in-feature-space-the-objective" class="level2">
+<h2 class="anchored" data-anchor-id="ridge-regression-in-feature-space-the-objective">27.4 Ridge regression in feature space: the objective</h2>
+<p>Start with §23.10’s ridge objective, but on the lifted features. <strong>Def (kernel ridge objective).</strong> For <span class="math inline">\(w \in \mathbb{R}^D\)</span>: <span class="math display">\[\boxed{J(w) = \frac{1}{2}\sum_{i=1}^{n}\big(w^T\phi(x_i) - y_i\big)^2 + \frac{\lambda}{2}\|w\|^2}, \qquad \lambda &gt; 0,\]</span> i.e.&nbsp;<span class="math inline">\(J(w) = \frac{1}{2}\|\Phi w - y\|^2 + \frac{\lambda}{2}\|w\|^2\)</span>. It is §23.10’s objective with <span class="math inline">\(\phi(x_i)\)</span> in place of <span class="math inline">\(x^i\)</span> (the <span class="math inline">\(\frac{\lambda}{2}\)</span> vs §23.10’s <span class="math inline">\(\lambda\)</span> is the same bookkeeping choice as §23.1’s note — the constant in front never changes the minimizer).</p>
+<p><strong>Why ridge, not plain least squares?</strong> Two reasons, both sourced: §23.10 shows the <span class="math inline">\(\lambda I\)</span> term guarantees a unique solution even when the feature matrix is rank-deficient (with an infinite-dimensional <span class="math inline">\(\phi\)</span>, rank considerations are hopeless), and the lecture promises <span class="math inline">\(\lambda\)</span> “controls overfitting — too small <span class="math inline">\(\lambda\)</span> could lead to a lot of overfitting, too large <span class="math inline">\(\lambda\)</span> leads to underfitting.” The Week 5 lecture’s warning — “by <em>memorizing</em>, we can get zero error on training data; what we care about is test performance” — is exactly what the penalty term guards against.</p>
+<p><strong>Basically, …</strong> “Fit the lifted points with least squares, but charge <span class="math inline">\(\lambda\)</span> for big weights. The charge does two jobs: it keeps the equations solvable and it stops the model from memorizing.”</p>
+</section>
+<section id="the-dual-form-the-solution-lives-in-the-span-of-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="the-dual-form-the-solution-lives-in-the-span-of-the-data">27.5 The dual form: the solution lives in the span of the data</h2>
+<p>The gradient of <span class="math inline">\(J\)</span> (§10.1’s recipe, as in §23.3): <span class="math display">\[\nabla_w J = \sum_{i=1}^{n}\big(w^T\phi(x_i) - y_i\big)\phi(x_i) + \lambda w = \Phi^T(\Phi w - y) + \lambda w.\]</span> Setting <span class="math inline">\(\nabla_w J = 0\)</span> and solving for <span class="math inline">\(w\)</span>: <span class="math display">\[\lambda w = \Phi^T(y - \Phi w) \quad\Rightarrow\quad \boxed{w = \Phi^T\alpha}, \qquad \alpha := \frac{y - \Phi w}{\lambda} \in \mathbb{R}^n.\]</span> <strong>The optimal weight vector is a linear combination of the transformed training points:</strong> <span class="math display">\[\boxed{w = \sum_{i=1}^{n}\alpha_i\,\phi(x_i)}.\]</span> This is the regression twin of §24.10’s “every eigenvector is a linear combination of the data points” (<span class="math inline">\(w_k = X\alpha_k\)</span>): the <span class="math inline">\(D\)</span>-dimensional unknown <span class="math inline">\(w\)</span> is parametrized by the <span class="math inline">\(n\)</span> numbers <span class="math inline">\(\alpha_1, \ldots, \alpha_n\)</span>. And since <span class="math inline">\(J\)</span> is a convex quadratic (Hessian <span class="math inline">\(\Phi^T\Phi + \lambda I\)</span> is positive definite for <span class="math inline">\(\lambda &gt; 0\)</span>), the stationary point is the global minimum — §23.3’s argument, unchanged.</p>
+<p><strong>Basically, …</strong> “Don’t search all of <span class="math inline">\(\mathbb{R}^D\)</span> for <span class="math inline">\(w\)</span>. The gradient equations force the answer to be a mix of the training points’ lifted features — so search the <span class="math inline">\(n\)</span> mixing weights <span class="math inline">\(\alpha\)</span> instead.”</p>
+</section>
+<section id="the-closed-form-solution" class="level2">
+<h2 class="anchored" data-anchor-id="the-closed-form-solution">27.6 The closed-form solution</h2>
+<p>Substitute <span class="math inline">\(w = \Phi^T\alpha\)</span> into the definition <span class="math inline">\(\alpha = (y - \Phi w)/\lambda\)</span>: <span class="math display">\[\lambda\alpha = y - \Phi\Phi^T\alpha = y - K\alpha,\]</span> since <span class="math inline">\(\Phi\Phi^T\)</span> is exactly the Gram matrix <span class="math inline">\(K_{ij} = \phi(x_i)^T\phi(x_j) = \kappa(x_i, x_j)\)</span>. Rearranging: <span class="math display">\[\boxed{(K + \lambda I)\,\alpha = y}, \qquad \boxed{\hat\alpha = (K + \lambda I)^{-1}y}.\]</span> <strong>Note (always solvable).</strong> <span class="math inline">\(K\)</span> is positive semi-definite (Mercer, §24.10), so for <span class="math inline">\(\lambda &gt; 0\)</span> and <span class="math inline">\(z \ne 0\)</span>: <span class="math display">\[z^T(K + \lambda I)z = \underbrace{z^TKz}_{\ge 0} + \underbrace{\lambda\|z\|^2}_{&gt; 0} &gt; 0,\]</span> hence <span class="math inline">\(K + \lambda I\)</span> is positive definite and invertible — the same one-line proof as §23.10’s homework for <span class="math inline">\(A^TA + \lambda I\)</span>.</p>
+<p>The model at a new point <span class="math inline">\(x\)</span> needs only <span class="math inline">\(\kappa\)</span>: <span class="math display">\[f(x) = w^T\phi(x) = \alpha^T\Phi\phi(x) = \sum_{i=1}^{n}\alpha_i\,\phi(x_i)^T\phi(x) = \boxed{f(x) = \sum_{i=1}^{n}\alpha_i\,\kappa(x, x_i)}.\]</span> The Week 5 assignment’s prediction loop is exactly this formula (<span class="math inline">\(\hat y_i = \sum_j \alpha_j\,\text{ker}(x_i, x_j)\)</span>), and its <span class="math inline">\(\alpha = K^{-1}y\)</span> is the <span class="math inline">\(\lambda \to 0\)</span> limit of <span class="math inline">\(\hat\alpha = (K + \lambda I)^{-1}y\)</span>.</p>
+<p><strong>The kernel regression algorithm.</strong> Input <span class="math inline">\(D = \{(x_i, y_i)\}\)</span>, kernel <span class="math inline">\(\kappa\)</span>, <span class="math inline">\(\lambda &gt; 0\)</span>: - Step 1: build <span class="math inline">\(K_{ij} = \kappa(x_i, x_j)\)</span> (<span class="math inline">\(n^2\)</span> kernel evaluations). - Step 2: solve <span class="math inline">\((K + \lambda I)\alpha = y\)</span> for <span class="math inline">\(\alpha \in \mathbb{R}^n\)</span>. - Step 3: predict <span class="math inline">\(f(x) = \sum_i \alpha_i\,\kappa(x, x_i)\)</span>.</p>
+<p><strong>Basically, …</strong> “Two steps, no <span class="math inline">\(\phi\)</span> anywhere: solve one <span class="math inline">\(n \times n\)</span> linear system for <span class="math inline">\(\alpha\)</span>, then predict by adding up kernel values weighted by <span class="math inline">\(\alpha\)</span>. The lifted space was scaffolding — the building stands on <span class="math inline">\(\kappa\)</span> alone.”</p>
+</section>
+<section id="what-it-means-prediction-as-a-weighted-sum-of-similarities" class="level2">
+<h2 class="anchored" data-anchor-id="what-it-means-prediction-as-a-weighted-sum-of-similarities">27.7 What it means: prediction as a weighted sum of similarities</h2>
+<p>Read <span class="math inline">\(f(x) = \sum_i \alpha_i\,\kappa(x, x_i)\)</span> as a <strong>similarity-weighted vote</strong>:</p>
+<ol type="i">
+<li><strong>The kernel is a similarity score.</strong> <span class="math inline">\(\kappa(x, x_i)\)</span> is large when <span class="math inline">\(x\)</span> resembles the training point <span class="math inline">\(x_i\)</span>: for the RBF kernel it decays with distance <span class="math inline">\(\|x - x_i\|\)</span>; for the polynomial kernel it grows with alignment <span class="math inline">\(x^Tx_i\)</span>. A prediction is a weighted sum of “how similar is <span class="math inline">\(x\)</span> to each training point,” with weights <span class="math inline">\(\alpha_i\)</span>.</li>
+<li><strong>The weights can be negative.</strong> <span class="math inline">\(\alpha_i\)</span> is not an importance score — it is a coefficient. In §27.8’s example, <span class="math inline">\(\alpha_2 = -1/4\)</span> <em>pulls the fit down</em> near <span class="math inline">\(x_2 = 0\)</span>. Positive <span class="math inline">\(\alpha_i\)</span> copies <span class="math inline">\(y_i\)</span>’s influence up; negative <span class="math inline">\(\alpha_i\)</span> pushes the opposite way.</li>
+<li><strong>The kernel shapes the function.</strong> Polynomial kernel of degree <span class="math inline">\(p\)</span>: <span class="math inline">\(\kappa(x, x_i) = (x^Tx_i + 1)^p\)</span> is a degree-<span class="math inline">\(p\)</span> polynomial in <span class="math inline">\(x\)</span>, so <span class="math inline">\(f(x)\)</span> is a degree-<span class="math inline">\(p\)</span> polynomial — it searches the same curves as §23.8’s polynomial regression, minus the explicit features (Problem 5). RBF kernel: each term <span class="math inline">\(\alpha_i\exp(-\|x - x_i\|^2/(2\sigma^2))\)</span> is a bump centered at <span class="math inline">\(x_i\)</span> with width <span class="math inline">\(\sigma\)</span> — the prediction is a sum of bumps, smooth and local: points far from all training data get near-zero contributions, and <span class="math inline">\(\sigma\)</span> sets how far each bump reaches.</li>
+<li><strong>The <span class="math inline">\(\lambda\)</span> knob, in similarity language.</strong> <span class="math inline">\(\lambda \to 0\)</span> forces <span class="math inline">\(f(x_i) \approx y_i\)</span> at every training point — the bumps interpolate, memorizing (the Week 5 lecture’s zero-training-error memorizer). Larger <span class="math inline">\(\lambda\)</span> shrinks every <span class="math inline">\(\alpha_i\)</span> toward <span class="math inline">\(0\)</span>, flattening the fit — §23.10’s “too large <span class="math inline">\(\lambda\)</span> leads to underfitting.”</li>
+</ol>
+<p><strong>Basically, …</strong> “To predict at <span class="math inline">\(x\)</span>: ask every training point ‘how similar am I to you?’ (<span class="math inline">\(\kappa(x, x_i)\)</span>), multiply by its coefficient <span class="math inline">\(\alpha_i\)</span>, add up. Near neighbours dominate; strangers don’t vote.”</p>
+<p><strong>eg (RBF bumps).</strong> Training points <span class="math inline">\(x_1 = -1\)</span>, <span class="math inline">\(x_2 = 0\)</span>, <span class="math inline">\(x_3 = 1\)</span>, RBF kernel with <span class="math inline">\(\sigma = 0.5\)</span>: the three similarity functions <span class="math inline">\(\kappa(x, x_i)\)</span> are bumps of height <span class="math inline">\(1\)</span> at each training point, decaying to <span class="math inline">\(\exp(-(1)^2/(2\cdot 0.25)) = e^{-2} \approx 0.135\)</span> one unit away. The prediction <span class="math inline">\(f(x) = \sum_i \alpha_i\kappa(x, x_i)\)</span> stacks these bumps — wherever the training points are dense, the bumps add up; far away, all bumps die and the prediction fades to <span class="math inline">\(0\)</span>.</p>
+<!-- Original matplotlib illustration drawn for this chapter (not reused from any URL): left panel shows the §27.8 data with the lambda=0 interpolating parabola and the lambda=1 shrunk fit; right panel shows the three RBF similarity bumps kappa(x, xi) for xi in {-1,0,1}, sigma=0.5 -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/27-kernel-regression-fits.png" class="img-fluid figure-img"></p>
+<figcaption>Left panel: the three training points (-1,1), (0,0), (1,1) with two fits — the lambda=0 curve f(x)=x^2 threading all three points exactly, and the lambda=1 curve f(x)=1/4+x^2/2 sitting slightly below at the outer points and slightly above at the centre. Right panel: three RBF bumps kappa(x, xi) for xi = -1, 0, 1 with sigma = 0.5, each peaking at 1 at its centre and decaying to near zero one unit away.</figcaption>
+</figure>
+</div>
+</section>
+<section id="worked-example-kernel-ridge-by-hand" class="level2">
+<h2 class="anchored" data-anchor-id="worked-example-kernel-ridge-by-hand">27.8 Worked example: kernel ridge by hand</h2>
+<p>Data: <span class="math inline">\(x_1 = -1\)</span>, <span class="math inline">\(x_2 = 0\)</span>, <span class="math inline">\(x_3 = 1\)</span>; <span class="math inline">\(y = (1, 0, 1)^T\)</span>. Quadratic kernel <span class="math inline">\(\kappa(x, z) = (xz + 1)^2\)</span> (the same kernel as §24.10’s parabola example).</p>
+<p>Step 1 — Gram matrix. <span class="math inline">\(K_{ij} = (x_ix_j + 1)^2\)</span>: <span class="math display">\[K = \begin{pmatrix} 4 &amp; 1 &amp; 0 \\ 1 &amp; 1 &amp; 1 \\ 0 &amp; 1 &amp; 4 \end{pmatrix} \qquad \text{(eg } K_{11} = (1+1)^2 = 4,\ K_{13} = (-1+1)^2 = 0\text{).}\]</span></p>
+<p>Step 2a — no regularization (<span class="math inline">\(\lambda = 0\)</span>, the assignment’s setting). Solve <span class="math inline">\(K\alpha = y\)</span>: <span class="math display">\[\begin{cases} 4\alpha_1 + \alpha_2 = 1 \\ \alpha_1 + \alpha_2 + \alpha_3 = 0 \\ \alpha_2 + 4\alpha_3 = 1 \end{cases}.\]</span> The data is symmetric in <span class="math inline">\(x_1 \leftrightarrow x_3\)</span>, so try <span class="math inline">\(\alpha_1 = \alpha_3 = a\)</span>, <span class="math inline">\(\alpha_2 = b\)</span>: <span class="math inline">\(4a + b = 1\)</span> and <span class="math inline">\(2a + b = 0\)</span>. Subtracting: <span class="math inline">\(2a = 1\)</span>, so <span class="math inline">\(\boxed{\alpha = (1/2,\ -1,\ 1/2)^T}\)</span>. <span class="math display">\[f(x) = \tfrac12(1 - x)^2 - 1 + \tfrac12(1 + x)^2 = x^2.\]</span> Check: <span class="math inline">\(f(-1) = 1\)</span> ✓, <span class="math inline">\(f(0) = 0\)</span> ✓, <span class="math inline">\(f(1) = 1\)</span> ✓ — with <span class="math inline">\(\lambda = 0\)</span> the model <em>interpolates</em>: it threads all three points, training error <span class="math inline">\(0\)</span>. (It found <span class="math inline">\(y = x^2\)</span>, the exact parabola the points sit on — kernel regression with the quadratic kernel recovering what §23.8’s polynomial regression would fit.)</p>
+<p>Step 2b — regularized (<span class="math inline">\(\lambda = 1\)</span>). Solve <span class="math inline">\((K + I)\alpha = y\)</span>: <span class="math display">\[\begin{pmatrix} 5 &amp; 1 &amp; 0 \\ 1 &amp; 2 &amp; 1 \\ 0 &amp; 1 &amp; 5 \end{pmatrix}\alpha = \begin{pmatrix} 1 \\ 0 \\ 1 \end{pmatrix}.\]</span> Again <span class="math inline">\(\alpha_1 = \alpha_3 = a\)</span>: <span class="math inline">\(5a + b = 1\)</span>, <span class="math inline">\(2a + 2b = 0 \Rightarrow b = -a\)</span>, so <span class="math inline">\(4a = 1\)</span>: <span class="math inline">\(\boxed{\alpha = (1/4,\ -1/4,\ 1/4)^T}\)</span>. <span class="math display">\[f(x) = \tfrac14(1 - x)^2 - \tfrac14 + \tfrac14(1 + x)^2 = \tfrac14 + \tfrac12x^2.\]</span> Check on training points: <span class="math inline">\(f(-1) = 3/4\)</span>, <span class="math inline">\(f(0) = 1/4\)</span>, <span class="math inline">\(f(1) = 3/4\)</span>. Residuals <span class="math inline">\((-1/4,\ 1/4,\ -1/4)\)</span> — the fit no longer interpolates; every coefficient shrank (<span class="math inline">\(|1/4| &lt; |1/2|\)</span>, <span class="math inline">\(|{-}1/4| &lt; |{-}1|\)</span>), pulling the curve toward <span class="math inline">\(0\)</span>. The price of <span class="math inline">\(\lambda = 1\)</span> is training error <span class="math inline">\(\frac{1}{4^2}\cdot 3/3 = 1/16\)</span> per point; the purchase is a flatter, less committal model — §23.10’s trade in miniature.</p>
+<p><strong>Basically, …</strong> “Same data, same kernel, two <span class="math inline">\(\lambda\)</span>’s: <span class="math inline">\(\lambda = 0\)</span> memorizes the parabola through every point; <span class="math inline">\(\lambda = 1\)</span> shrinks the weights and accepts small misses. That dial is the whole regularization story.”</p>
+</section>
+<section id="practical-notes-the-kernel-lambda-and-the-on3-bill" class="level2">
+<h2 class="anchored" data-anchor-id="practical-notes-the-kernel-lambda-and-the-on3-bill">27.9 Practical notes: the kernel, <span class="math inline">\(\lambda\)</span>, and the <span class="math inline">\(O(n^3)\)</span> bill</h2>
+<p>Only what the sources support:</p>
+<ol type="i">
+<li><strong>Choosing the kernel = choosing the function’s shape.</strong> The polynomial kernel of degree <span class="math inline">\(p\)</span> commits to degree-<span class="math inline">\(p\)</span> polynomials — §23.8’s world, without the explicit features. The RBF kernel commits to smooth, local fits (sums of bumps, §27.7(iii)) and is the only option whose <span class="math inline">\(\phi\)</span> <em>cannot</em> be built explicitly (§24.10). The course gives no kernel-selection procedure beyond this qualitative guidance — the disciplined way to compare choices is §23.9’s: fit candidates on training data, compare on held-out validation data.</li>
+<li><strong>Choosing <span class="math inline">\(\lambda\)</span>.</strong> §23.10’s remark is the complete guidance: too small <span class="math inline">\(\lambda\)</span> ⇒ near-interpolation, overfitting risk (the Week 5 lecture’s memorizer); too large <span class="math inline">\(\lambda\)</span> ⇒ weights squeezed toward <span class="math inline">\(0\)</span>, underfitting. The assignment’s <span class="math inline">\(\alpha = K^{-1}y\)</span> is the <span class="math inline">\(\lambda \to 0\)</span> endpoint — used with <code>pinv</code> there precisely because <span class="math inline">\(K\)</span> can be singular without the <span class="math inline">\(\lambda I\)</span> term.</li>
+<li><strong>Computational cost.</strong> Step 1 costs <span class="math inline">\(n^2\)</span> kernel evaluations; Step 2 solves an <span class="math inline">\(n \times n\)</span> dense system — <span class="math inline">\(O(n^3)\)</span>, the same bill as §24.9’s <span class="math inline">\(n \times n\)</span> eigendecomposition. The kernel trick removed the <span class="math inline">\(D\)</span>-dependence (even infinite <span class="math inline">\(D\)</span> is fine) but left an <span class="math inline">\(n\)</span>-dependence: for very large <span class="math inline">\(n\)</span>, the <span class="math inline">\(O(n^3)\)</span> solve is the bottleneck. The lectures give no alternative here — no low-rank or iterative shortcut appears in these sources.</li>
+<li><strong>What centering?</strong> None. §24.10 centered the Gram matrix because PCA needs zero-mean data; kernel regression has no such requirement — the algorithm of §27.6 uses <span class="math inline">\(K\)</span> as-is.</li>
+</ol>
+</section>
+<section id="where-this-goes-next" class="level2">
+<h2 class="anchored" data-anchor-id="where-this-goes-next">27.10 Where this goes next</h2>
+<ol type="i">
+<li><strong>Regularization, properly.</strong> §27.4 borrowed §23.10’s remark; Chapter 28 makes ridge and lasso a full subject — the bias–variance trade-off, and how <span class="math inline">\(\lambda\)</span> is actually chosen.</li>
+<li><strong>The kernel trick, again.</strong> The pattern “$w = $ (span of data) + Gram matrix <span class="math inline">\(K\)</span>” appeared twice now (§24.10’s <span class="math inline">\(w_k = X\alpha_k\)</span>, §27.5’s <span class="math inline">\(w = \Phi^T\alpha\)</span>). Chapters 32–33 (hard/soft-margin SVM) run it a third time, for classification.</li>
+<li><strong>From bumps to neurons.</strong> The RBF picture — predictions as weighted sums of local bumps — is worth keeping in mind for Part VI: a neural network’s hidden layer will build its predictions out of learned, adaptive “bumps” instead of fixed kernel ones.</li>
+</ol>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li>Cubic-kernel <span class="math inline">\(\phi\)</span>, by hand (the assignment’s kernel). For scalar <span class="math inline">\(x, z\)</span>, expand <span class="math inline">\(\kappa(x, z) = (xz + 1)^3\)</span> fully and exhibit an explicit <span class="math inline">\(\phi: \mathbb{R} \to \mathbb{R}^4\)</span> with <span class="math inline">\((xz + 1)^3 = \phi(x)^T\phi(z)\)</span>.</li>
+<li>Guided derivation. Starting from <span class="math inline">\(J(w) = \frac12\|\Phi w - y\|^2 + \frac{\lambda}{2}\|w\|^2\)</span> with <span class="math inline">\(\Phi\)</span> the <span class="math inline">\(n \times D\)</span> feature matrix: (i) compute <span class="math inline">\(\nabla_w J\)</span>; (ii) show the stationary point satisfies <span class="math inline">\(w = \Phi^T\alpha\)</span> for some <span class="math inline">\(\alpha \in \mathbb{R}^n\)</span>; (iii) substitute to get <span class="math inline">\((K + \lambda I)\alpha = y\)</span>; (iv) argue <span class="math inline">\((K + \lambda I)\)</span> is invertible for <span class="math inline">\(\lambda &gt; 0\)</span>.</li>
+<li>Kernel ridge numeric. Data <span class="math inline">\(x_1 = 0\)</span>, <span class="math inline">\(x_2 = 2\)</span>; <span class="math inline">\(y = (2, 4)^T\)</span>; kernel <span class="math inline">\(\kappa(x, z) = xz + 1\)</span> (linear kernel with intercept); <span class="math inline">\(\lambda = 1\)</span>. (i) Write <span class="math inline">\(K\)</span>. (ii) Solve <span class="math inline">\((K + \lambda I)\alpha = y\)</span>. (iii) Write <span class="math inline">\(f(x)\)</span> and simplify to a line; check <span class="math inline">\(f(0)\)</span>, <span class="math inline">\(f(2)\)</span>.</li>
+<li>Interpolation at <span class="math inline">\(\lambda = 0\)</span>. Assume <span class="math inline">\(K\)</span> is invertible. (i) Show the <span class="math inline">\(\lambda \to 0\)</span> solution <span class="math inline">\(\hat\alpha = K^{-1}y\)</span> gives training predictions <span class="math inline">\(\hat y_i = y_i\)</span> exactly (training error <span class="math inline">\(0\)</span>). (ii) Connect this to the Week 5 lecture’s “by <em>memorizing</em>, we can get zero error on training data.”</li>
+<li>Polynomial kernel = polynomial regression. For scalar <span class="math inline">\(x\)</span> and kernel <span class="math inline">\(\kappa(x, z) = (xz + 1)^p\)</span>: (i) show each <span class="math inline">\(\kappa(x, x_i)\)</span> is a polynomial in <span class="math inline">\(x\)</span> of degree <span class="math inline">\(\le p\)</span>; (ii) conclude <span class="math inline">\(f(x) = \sum_i \alpha_i\kappa(x, x_i)\)</span> is a polynomial of degree <span class="math inline">\(\le p\)</span>; (iii) what does this say about kernel regression with this kernel vs §23.8’s polynomial regression?</li>
+<li>RBF <span class="math inline">\(\sigma\)</span>, qualitatively. With the RBF kernel, fix the data and <span class="math inline">\(\alpha\)</span>. (i) What happens to each term <span class="math inline">\(\alpha_i\kappa(x, x_i)\)</span> as <span class="math inline">\(\sigma \to 0\)</span>? (ii) As <span class="math inline">\(\sigma \to \infty\)</span>? (iii) Which regime risks the memorizer of §27.4, and why?</li>
+<li>True or false, one-line justification: (i) Kernel regression ever needs the explicit <span class="math inline">\(\phi(x)\)</span>. (ii) <span class="math inline">\((K + \lambda I)\)</span> is invertible for every <span class="math inline">\(\lambda &gt; 0\)</span>. (iii) A negative <span class="math inline">\(\alpha_i\)</span> means training point <span class="math inline">\(i\)</span> was an outlier. (iv) The RBF kernel’s <span class="math inline">\(\phi\)</span> can be written down as a finite vector. (v) Kernel regression with the linear kernel <span class="math inline">\(\kappa(x, z) = x^Tz\)</span> (no <span class="math inline">\(+1\)</span>) can learn a nonzero intercept.</li>
+<li>Cost accounting. For the §27.6 algorithm with <span class="math inline">\(n\)</span> training points in <span class="math inline">\(\mathbb{R}^d\)</span>: (i) how many kernel evaluations does Step 1 need, and what is each evaluation’s cost for the RBF kernel? (ii) What is Step 2’s asymptotic cost? (iii) At prediction time, what does one <span class="math inline">\(f(x)\)</span> cost?</li>
+</ol>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — Cubic-kernel <span class="math inline">\(\phi\)</span>, by hand
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Expand <span class="math inline">\((xz + 1)^3\)</span> for scalars <span class="math inline">\(x, z\)</span>: <span class="math display">\[(xz + 1)^3 = (xz)^3 + 3(xz)^2 + 3(xz) + 1 = x^3z^3 + 3x^2z^2 + 3xz + 1.\]</span> Take <span class="math display">\[\boxed{\phi(x) = \begin{pmatrix} x^3 \\ \sqrt{3}\,x^2 \\ \sqrt{3}\,x \\ 1 \end{pmatrix}}.\]</span> Then <span class="math display">\[\phi(x)^T\phi(z) = x^3z^3 + (\sqrt{3}x^2)(\sqrt{3}z^2) + (\sqrt{3}x)(\sqrt{3}z) + 1 = x^3z^3 + 3x^2z^2 + 3xz + 1 = (xz+1)^3 \;\checkmark\]</span> This is the explicit 4-dimensional feature map behind the Week 5 assignment’s <code>ker = ((xi.T@xj)+1)**3</code>. Note the <span class="math inline">\(\sqrt{3}\)</span> weights — the middle features must be <em>scaled</em> for the dot product to reproduce the kernel exactly (same point as §24.10’s <span class="math inline">\(\sqrt{2}\)</span> factors).</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — Guided derivation
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> <span class="math inline">\(J(w) = \frac12(\Phi w - y)^T(\Phi w - y) + \frac{\lambda}{2}w^Tw\)</span>. Differentiating (the §23.3 calculation with <span class="math inline">\(\Phi\)</span> in place of <span class="math inline">\(A\)</span>): <span class="math display">\[\nabla_w J = \Phi^T(\Phi w - y) + \lambda w.\]</span> (Entrywise: <span class="math inline">\(\frac{\partial}{\partial w_k}\frac12\sum_i(\sum_j\Phi_{ij}w_j - y_i)^2 = \sum_i\Phi_{ik}(\Phi w - y)_i = [\Phi^T(\Phi w - y)]_k\)</span>; the penalty contributes <span class="math inline">\(\lambda w_k\)</span>.)</p>
+<p><strong>(ii)</strong> Setting <span class="math inline">\(\nabla_w J = 0\)</span>: <span class="math inline">\(\Phi^T(\Phi w - y) + \lambda w = 0\)</span>, i.e. <span class="math display">\[\lambda w = \Phi^T(y - \Phi w) \quad\Rightarrow\quad \boxed{w = \Phi^T\alpha}, \qquad \alpha := \frac{y - \Phi w}{\lambda} \in \mathbb{R}^n.\]</span> So the stationary point is a linear combination of the rows of <span class="math inline">\(\Phi\)</span> — the transformed training points.</p>
+<p><strong>(iii)</strong> Substitute <span class="math inline">\(w = \Phi^T\alpha\)</span> into the definition of <span class="math inline">\(\alpha\)</span>: <span class="math display">\[\lambda\alpha = y - \Phi(\Phi^T\alpha) = y - (\Phi\Phi^T)\alpha = y - K\alpha,\]</span> with <span class="math inline">\(K_{ij} = \phi(x_i)^T\phi(x_j) = \kappa(x_i, x_j)\)</span>. Hence <span class="math inline">\(\boxed{(K + \lambda I)\alpha = y}\)</span>.</p>
+<p><strong>(iv)</strong> <span class="math inline">\(K\)</span> is positive semi-definite (Mercer, §24.10): <span class="math inline">\(z^TKz \ge 0\)</span> for all <span class="math inline">\(z\)</span>. For <span class="math inline">\(\lambda &gt; 0\)</span> and <span class="math inline">\(z \ne 0\)</span>: <span class="math display">\[z^T(K + \lambda I)z = z^TKz + \lambda z^Tz \ge 0 + \lambda\|z\|^2 &gt; 0,\]</span> so <span class="math inline">\(K + \lambda I\)</span> is positive definite, hence invertible. <span class="math inline">\(\boxed{\hat\alpha = (K + \lambda I)^{-1}y}\)</span> — the same one-line proof as §23.10’s homework for <span class="math inline">\(A^TA + \lambda I\)</span>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — Kernel ridge numeric
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> <span class="math inline">\(\kappa(x, z) = xz + 1\)</span>: <span class="math display">\[K = \begin{pmatrix} 0\cdot 0 + 1 &amp; 0\cdot 2 + 1 \\ 2\cdot 0 + 1 &amp; 2\cdot 2 + 1 \end{pmatrix} = \boxed{\begin{pmatrix} 1 &amp; 1 \\ 1 &amp; 5 \end{pmatrix}}.\]</span></p>
+<p><strong>(ii)</strong> With <span class="math inline">\(\lambda = 1\)</span>: <span class="math display">\[K + I = \begin{pmatrix} 2 &amp; 1 \\ 1 &amp; 6 \end{pmatrix}, \qquad \det = 12 - 1 = 11, \qquad (K+I)^{-1} = \frac{1}{11}\begin{pmatrix} 6 &amp; -1 \\ -1 &amp; 2 \end{pmatrix}.\]</span> <span class="math display">\[\hat\alpha = \frac{1}{11}\begin{pmatrix} 6 &amp; -1 \\ -1 &amp; 2 \end{pmatrix}\begin{pmatrix} 2 \\ 4 \end{pmatrix} = \frac{1}{11}\begin{pmatrix} 12 - 4 \\ -2 + 8 \end{pmatrix} = \boxed{\begin{pmatrix} 8/11 \\ 6/11 \end{pmatrix}}.\]</span></p>
+<p><strong>(iii)</strong> <span class="math inline">\(f(x) = \alpha_1\kappa(x, 0) + \alpha_2\kappa(x, 2) = \frac{8}{11}(x\cdot 0 + 1) + \frac{6}{11}(2x + 1)\)</span>: <span class="math display">\[\boxed{f(x) = \frac{12}{11}x + \frac{14}{11}}.\]</span> Check: <span class="math inline">\(f(0) = 14/11 \approx 1.27\)</span> (vs <span class="math inline">\(y_1 = 2\)</span>), <span class="math inline">\(f(2) = (24 + 14)/11 = 38/11 \approx 3.45\)</span> (vs <span class="math inline">\(y_2 = 4\)</span>). Both miss — regularization shrinks the fit, exactly as in §27.8. <strong>Note.</strong> The <span class="math inline">\(+1\)</span> in the kernel is what permits a nonzero intercept: without it, <span class="math inline">\(\kappa(x, z) = xz\)</span> gives <span class="math inline">\(f(x) = x(\sum_i\alpha_i x_i)\)</span>, always <span class="math inline">\(0\)</span> at <span class="math inline">\(x = 0\)</span>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — Interpolation at <span class="math inline">\(\lambda = 0\)</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> Training predictions are <span class="math inline">\(\hat y = K\hat\alpha\)</span> (row <span class="math inline">\(i\)</span>: <span class="math inline">\(\hat y_i = \sum_j K_{ij}\hat\alpha_j = \sum_j\hat\alpha_j\kappa(x_i, x_j) = f(x_i)\)</span>). With <span class="math inline">\(\hat\alpha = K^{-1}y\)</span>: <span class="math display">\[\hat y = K(K^{-1}y) = y,\]</span> so <span class="math inline">\(\boxed{\hat y_i = y_i}\)</span> for all <span class="math inline">\(i\)</span> — training error exactly <span class="math inline">\(0\)</span>.</p>
+<p><strong>(ii)</strong> The Week 5 lecture warned: “by <em>memorizing</em>, we can get zero error on training data.” <span class="math inline">\(\lambda = 0\)</span> is that memorizer in kernel form — the model spends all its freedom hitting the training labels and says nothing about test points. The assignment’s <code>pinv(K)@y</code> is precisely this endpoint (with <code>pinv</code> standing in for <span class="math inline">\(K^{-1}\)</span> when <span class="math inline">\(K\)</span> is singular).</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — Polynomial kernel = polynomial regression
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> <span class="math inline">\(\kappa(x, x_i) = (xx_i + 1)^p\)</span> expands by the binomial theorem to <span class="math inline">\(\sum_{k=0}^{p}\binom{p}{k}(xx_i)^k\)</span> — a polynomial in <span class="math inline">\(x\)</span> of degree <span class="math inline">\(\le p\)</span> (coefficients depend on <span class="math inline">\(x_i\)</span>).</p>
+<p><strong>(ii)</strong> <span class="math inline">\(f(x) = \sum_i\alpha_i\kappa(x, x_i)\)</span> is a sum of degree-<span class="math inline">\(\le p\)</span> polynomials, hence a polynomial in <span class="math inline">\(x\)</span> of degree <span class="math inline">\(\le p\)</span>.</p>
+<p><strong>(iii)</strong> Kernel regression with the degree-<span class="math inline">\(p\)</span> polynomial kernel searches (a subset of) the same degree-<span class="math inline">\(p\)</span> polynomials as §23.8’s polynomial regression — but without ever forming the <span class="math inline">\((1, x, \ldots, x^p)\)</span> features. For large <span class="math inline">\(p\)</span> or multivariate <span class="math inline">\(x\)</span> (where explicit features number <span class="math inline">\(\approx O(d^p)\)</span>), the kernel route is the only feasible one. The price: §23.8’s explicit <span class="math inline">\(\theta\)</span> is interpretable coefficient-by-coefficient, while kernel regression’s <span class="math inline">\(\alpha\)</span> is not.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — RBF <span class="math inline">\(\sigma\)</span>, qualitatively
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> <span class="math inline">\(\sigma \to 0\)</span>: <span class="math inline">\(\kappa(x, x_i) = \exp(-\|x - x_i\|^2/(2\sigma^2)) \to 1\)</span> if <span class="math inline">\(x = x_i\)</span> and <span class="math inline">\(\to 0\)</span> otherwise — each bump collapses to a spike at its training point. The prediction becomes a sum of isolated spikes.</p>
+<p><strong>(ii)</strong> <span class="math inline">\(\sigma \to \infty\)</span>: <span class="math inline">\(\kappa(x, x_i) \to 1\)</span> for every <span class="math inline">\(x\)</span> — each bump flattens to a constant, and <span class="math inline">\(f(x) \to \sum_i\alpha_i\)</span>, a constant function.</p>
+<p><strong>(iii)</strong> The <span class="math inline">\(\sigma \to 0\)</span> regime risks the §27.4 memorizer: each training point gets its own private spike, so the model can hit every training label exactly (<span class="math inline">\(f(x_i) \approx \alpha_i\)</span>) while predicting near-zero everywhere else — zero training error, useless generalization. Narrow bumps = high capacity, same disease as §23.9’s degree-4 polynomial.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — True or false
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><strong>False.</strong> The algorithm (§27.6) evaluates <span class="math inline">\(\kappa\)</span> only — Step 1 builds <span class="math inline">\(K_{ij} = \kappa(x_i, x_j)\)</span>, Step 3 sums <span class="math inline">\(\alpha_i\kappa(x, x_i)\)</span>. No <span class="math inline">\(\phi(x)\)</span> is ever formed; that is the kernel trick’s whole point.</li>
+<li><strong>True.</strong> <span class="math inline">\(K\)</span> is PSD and <span class="math inline">\(\lambda &gt; 0\)</span>; <span class="math inline">\(z^T(K + \lambda I)z = z^TKz + \lambda\|z\|^2 &gt; 0\)</span> for <span class="math inline">\(z \ne 0\)</span>, so <span class="math inline">\(K + \lambda I\)</span> is positive definite ⇒ invertible (the §27.6 Note).</li>
+<li><strong>False.</strong> Negative weights are ordinary coefficients, not outlier flags: §27.8’s <span class="math inline">\(\alpha_2 = -1/4\)</span> simply pulls the fit <em>down</em> near <span class="math inline">\(x_2 = 0\)</span>.</li>
+<li><strong>False.</strong> §24.10: the RBF kernel’s <span class="math inline">\(\phi\)</span> is infinite-dimensional — no finite vector exists. The kernel computes the inner product anyway.</li>
+<li><strong>False.</strong> <span class="math inline">\(f(x) = \sum_i\alpha_i x^Tx_i = x^T(\sum_i\alpha_i x_i)\)</span> satisfies <span class="math inline">\(f(0) = 0\)</span> for every <span class="math inline">\(\alpha\)</span> — homogeneous linear, no intercept. The <span class="math inline">\(+1\)</span> in <span class="math inline">\((x^Tx' + 1)^p\)</span> is what smuggles the intercept in (see Problem 3’s Note).</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 8 — Cost accounting
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> Step 1 fills an <span class="math inline">\(n \times n\)</span> matrix: <span class="math inline">\(n^2\)</span> kernel evaluations (<span class="math inline">\(n(n+1)/2\)</span> distinct, by symmetry). Each RBF evaluation computes <span class="math inline">\(\|x - x'\|^2\)</span> — <span class="math inline">\(O(d)\)</span> arithmetic.</p>
+<p><strong>(ii)</strong> Solving the dense <span class="math inline">\(n \times n\)</span> system <span class="math inline">\((K + \lambda I)\alpha = y\)</span>: <span class="math inline">\(\boxed{O(n^3)}\)</span> — the same bill as §24.9’s <span class="math inline">\(n \times n\)</span> eigendecomposition. The kernel trick killed the <span class="math inline">\(D\)</span>-dependence (even infinite <span class="math inline">\(D\)</span> is fine) but left the <span class="math inline">\(n\)</span>-dependence.</p>
+<p><strong>(iii)</strong> One prediction <span class="math inline">\(f(x) = \sum_{i=1}^{n}\alpha_i\kappa(x, x_i)\)</span> needs <span class="math inline">\(n\)</span> kernel evaluations: <span class="math inline">\(\boxed{O(nd)}\)</span> for the RBF kernel — linear in the training-set size, the price of the “sum of similarities” form.</p>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./26-k-means.html" class="pagination-link" aria-label="26. K-means clustering">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">26. K-means clustering</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./28-regularization.html" class="pagination-link" aria-label="28. Regularization: ridge and lasso">
+        <span class="nav-page-text"><span class="chapter-title">28. Regularization: ridge and lasso</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

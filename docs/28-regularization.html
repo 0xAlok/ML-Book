@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>28. Regularization: ridge and lasso – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./29-knn-trees.html" rel="next">
+<link href="./27-kernel-methods.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./26-k-means.html">Part IV — Machine Learning Techniques</a></li><li class="breadcrumb-item"><a href="./28-regularization.html"><span class="chapter-title">28. Regularization: ridge and lasso</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#the-problem-restated-overfitting-wears-big-weights" id="toc-the-problem-restated-overfitting-wears-big-weights" class="nav-link active" data-scroll-target="#the-problem-restated-overfitting-wears-big-weights">28.1 The problem, restated: overfitting wears big weights</a></li>
+  <li><a href="#the-fix-charge-rent-on-big-weights" id="toc-the-fix-charge-rent-on-big-weights" class="nav-link" data-scroll-target="#the-fix-charge-rent-on-big-weights">28.2 The fix: charge rent on big weights</a></li>
+  <li><a href="#ridge-regression-the-ell_2-penalty" id="toc-ridge-regression-the-ell_2-penalty" class="nav-link" data-scroll-target="#ridge-regression-the-ell_2-penalty">28.3 Ridge regression: the <span class="math inline">\(\ell_2\)</span> penalty</a></li>
+  <li><a href="#the-ridge-solution-by-hand" id="toc-the-ridge-solution-by-hand" class="nav-link" data-scroll-target="#the-ridge-solution-by-hand">28.4 The ridge solution, by hand</a></li>
+  <li><a href="#gradient-descent-for-ridge" id="toc-gradient-descent-for-ridge" class="nav-link" data-scroll-target="#gradient-descent-for-ridge">28.5 Gradient descent for ridge</a></li>
+  <li><a href="#what-lambda-does-shrinkage-then-underfitting" id="toc-what-lambda-does-shrinkage-then-underfitting" class="nav-link" data-scroll-target="#what-lambda-does-shrinkage-then-underfitting">28.6 What <span class="math inline">\(\lambda\)</span> does: shrinkage, then underfitting</a></li>
+  <li><a href="#lasso-the-ell_1-penalty-and-exact-zeros" id="toc-lasso-the-ell_1-penalty-and-exact-zeros" class="nav-link" data-scroll-target="#lasso-the-ell_1-penalty-and-exact-zeros">28.7 Lasso: the <span class="math inline">\(\ell_1\)</span> penalty, and exact zeros</a></li>
+  <li><a href="#ridge-vs-lasso-side-by-side" id="toc-ridge-vs-lasso-side-by-side" class="nav-link" data-scroll-target="#ridge-vs-lasso-side-by-side">28.8 Ridge vs lasso, side by side</a></li>
+  <li><a href="#the-biasvariance-trade-off-tied-to-lambda" id="toc-the-biasvariance-trade-off-tied-to-lambda" class="nav-link" data-scroll-target="#the-biasvariance-trade-off-tied-to-lambda">28.9 The bias–variance trade-off, tied to <span class="math inline">\(\lambda\)</span></a></li>
+  <li><a href="#choosing-lambda-the-validation-discipline" id="toc-choosing-lambda-the-validation-discipline" class="nav-link" data-scroll-target="#choosing-lambda-the-validation-discipline">28.10 Choosing <span class="math inline">\(\lambda\)</span>: the validation discipline</a></li>
+  <li><a href="#worked-example-one-tiny-dataset-three-fits" id="toc-worked-example-one-tiny-dataset-three-fits" class="nav-link" data-scroll-target="#worked-example-one-tiny-dataset-three-fits">28.11 Worked example: one tiny dataset, three fits</a></li>
+  <li><a href="#where-this-goes-next" id="toc-where-this-goes-next" class="nav-link" data-scroll-target="#where-this-goes-next">28.12 Where this goes next</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./26-k-means.html">Part IV — Machine Learning Techniques</a></li><li class="breadcrumb-item"><a href="./28-regularization.html"><span class="chapter-title">28. Regularization: ridge and lasso</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">28. Regularization: ridge and lasso</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>§23.10 ended with a promise and a deferral: add a penalty on large parameters to least squares, get ridge regression, and leave the full story — ridge <em>and</em> lasso, the bias–variance trade-off, how <span class="math inline">\(\lambda\)</span> is actually chosen — to this chapter. §27.4 already borrowed ridge for kernel regression. This chapter pays both debts. Everything here comes from the MLT Week 3 slides (Ashish Tendulkar) — the regularization block that closes the regression unit — with the practical <span class="math inline">\(\lambda\)</span>-selection half from the MLP Week 4 slides.</p>
+<section id="the-problem-restated-overfitting-wears-big-weights" class="level2">
+<h2 class="anchored" data-anchor-id="the-problem-restated-overfitting-wears-big-weights">28.1 The problem, restated: overfitting wears big weights</h2>
+<p>§23.9’s verdict: capacity too low ⇒ underfitting; capacity too high ⇒ overfitting. The lecture makes the mechanism concrete with a degree-9 polynomial fit on a small dataset. The fitted weights come out grotesque — <span class="math inline">\(w_4 = -3332.88\)</span>, <span class="math inline">\(w_5 = 2993.67\)</span>, <span class="math inline">\(w_6 = -1304.04\)</span> — and the lecture’s observation is the whole diagnosis:</p>
+<ol type="i">
+<li>The curve threads every training point (training error <span class="math inline">\(\approx 0\)</span>).</li>
+<li>Between the points it whipsaws wildly — it memorized the noise, §22.10’s memorizer in polynomial costume.</li>
+<li><strong>The signature of the disease is the weights themselves</strong>: higher-degree features carry enormous, cancelling weights. Overfitting <em>looks like</em> huge parameters.</li>
+</ol>
+<p><strong>Basically, …</strong> “The degree-9 curve aced the practice exam and flunked the real one — and you can see the cheating in the weights: thousands, cancelling each other out.”</p>
+<p>There are two cures (§23.9 named the first): pick a smaller degree <span class="math inline">\(m\)</span> by validation, or <strong>penalize large parameters directly</strong> — keep the degree-9 features, but forbid the weights from exploding. That second cure is regularization.</p>
+</section>
+<section id="the-fix-charge-rent-on-big-weights" class="level2">
+<h2 class="anchored" data-anchor-id="the-fix-charge-rent-on-big-weights">28.2 The fix: charge rent on big weights</h2>
+<p><strong>Def (regularized objective).</strong> The lecture modifies the least-squares loss by adding a penalty term: <span class="math display">\[\boxed{J(w) = \tfrac{1}{2}(Xw - y)^T(Xw - y) + \lambda \cdot \text{penalty}}, \qquad \lambda &gt; 0.\]</span> Two components, and the lecture names both:</p>
+<ol type="i">
+<li><strong>The penalty</strong> = a function of the weight vector <span class="math inline">\(w\)</span> — it measures “how big” the weights are.</li>
+<li><strong>The regularization rate <span class="math inline">\(\lambda\)</span></strong> = how much penalty to add — the dial that controls the strength of the cure.</li>
+</ol>
+<p>Regularizing changes the loss, so it changes the loss’s derivative, so it changes the weight-update rule in gradient descent. That is the entire machinery: one extra term, and both the closed-form solution and the iterative one shift.</p>
+<p><strong>Basically, …</strong> “Fit the data, but pay a tax on big weights. The tax bill has two parts: <em>what counts as big</em> (the penalty) and <em>the tax rate</em> (<span class="math inline">\(\lambda\)</span>).”</p>
+</section>
+<section id="ridge-regression-the-ell_2-penalty" class="level2">
+<h2 class="anchored" data-anchor-id="ridge-regression-the-ell_2-penalty">28.3 Ridge regression: the <span class="math inline">\(\ell_2\)</span> penalty</h2>
+<p><strong>Def (ridge objective).</strong> Ridge uses the squared <span class="math inline">\(\ell_2\)</span> norm of the weight vector as the penalty: <span class="math display">\[\boxed{J(w) = \frac{1}{2}\sum_{i=1}^{n}\big(w^T x^{(i)} - y^{(i)}\big)^2 + \frac{\lambda}{2}\sum_{j=1}^{m} w_j^2}, \qquad \lambda &gt; 0,\]</span> in vectorized form <span class="math display">\[\boxed{J(w) = \tfrac{1}{2}(Xw - y)^T(Xw - y) + \tfrac{\lambda}{2}\lVert w\rVert_2^2 = \tfrac{1}{2}(Xw - y)^T(Xw - y) + \tfrac{\lambda}{2}w^Tw}.\]</span></p>
+<p><strong>Note (the <span class="math inline">\(\lambda\)</span> convention, flagged as §27.4 did).</strong> This chapter follows the lecture: the penalty carries <span class="math inline">\(\frac{\lambda}{2}\)</span>, so the gradient below comes out clean as <span class="math inline">\(\lambda w\)</span> with no stray factor of 2. §23.10 wrote the penalty as <span class="math inline">\(\lambda\lVert\theta\rVert^2\)</span> and then absorbed the 2 into <span class="math inline">\(\lambda\)</span>; §27.4 uses <span class="math inline">\(\frac{\lambda}{2}\)</span> exactly as here. All three are the same objective up to renaming <span class="math inline">\(\lambda\)</span> — the minimizer never cares about the bookkeeping.</p>
+<p><strong>Basically, …</strong> “Ridge = least squares, plus a tax of <span class="math inline">\(\lambda/2\)</span> on every squared weight. Big weight ⇒ big tax bill ⇒ the optimizer keeps weights small.”</p>
+</section>
+<section id="the-ridge-solution-by-hand" class="level2">
+<h2 class="anchored" data-anchor-id="the-ridge-solution-by-hand">28.4 The ridge solution, by hand</h2>
+<p>The lecture differentiates term by term (same steps as §23.3’s least-squares gradient, plus the penalty). Expanding, <span class="math display">\[J(w) = \tfrac{1}{2}\big(w^TX^TXw - 2w^TX^Ty + y^Ty + \lambda w^Tw\big),\]</span> and differentiating each piece (§10.1’s recipe): <span class="math display">\[\begin{aligned}
+\nabla_w J &amp;= \tfrac{1}{2}\big(2X^TXw - 2X^Ty + 0 + 2\lambda w\big) \\
+&amp;= \boxed{\nabla_w J = X^TXw - X^Ty + \lambda w}.
+\end{aligned}\]</span> <strong>Eg (one GD step, fully worked).</strong> Data: one feature, no intercept, points <span class="math inline">\((x, y) = (1, 2), (2, 3)\)</span>; <span class="math inline">\(\lambda = 2\)</span>, step size <span class="math inline">\(\alpha = 0.1\)</span>, start <span class="math inline">\(w_0 = 0\)</span>. The lecture’s update is <span class="math inline">\(w_{k+1} := w_k - \alpha\big(X^T(Xw_k - y) + \lambda w_k\big)\)</span>. Here <span class="math inline">\(X^TX = 1^2 + 2^2 = 5\)</span> and <span class="math inline">\(X^Ty = 1\cdot 2 + 2\cdot 3 = 8\)</span>. Then <span class="math inline">\(w_1 = 0 - 0.1\big(X^T(0 - y) + 0\big) = 0.1 \cdot 8 = 0.8\)</span>. One step already walks from <span class="math inline">\(0\)</span> toward the exact answer (Problem 4 checks it against the closed form).</p>
+<p>Set the gradient to zero for the closed form: <span class="math display">\[X^TXw - X^Ty + \lambda w = 0 \quad\Longrightarrow\quad \boxed{(X^TX + \lambda I)w = X^Ty},\]</span> <span class="math display">\[\boxed{\hat w_{\text{ridge}} = (X^TX + \lambda I)^{-1}X^Ty}.\]</span> This is §23.10’s compact form, now earned from the lecture’s <span class="math inline">\(\frac{\lambda}{2}\)</span> convention. Two endpoints, straight from the lecture:</p>
+<ol type="i">
+<li><strong>No regularization.</strong> <span class="math inline">\(\lambda \to 0\)</span>: <span class="math inline">\(\hat w \to (X^TX)^{-1}X^Ty\)</span> — the ordinary least-squares solution. The tax is switched off.</li>
+<li><strong>Infinite regularization.</strong> <span class="math inline">\(\lambda \to \infty\)</span>: the <span class="math inline">\(\lambda I\)</span> term dominates, <span class="math inline">\(\hat w \to 0\)</span> — every weight taxed into oblivion.</li>
+</ol>
+<p>And §23.10’s homework result is why the inverse always exists: for <span class="math inline">\(\lambda &gt; 0\)</span> and <span class="math inline">\(z \ne 0\)</span>, <span class="math inline">\(z^T(X^TX + \lambda I)z = \lVert Xz\rVert^2 + \lambda\lVert z\rVert^2 &gt; 0\)</span>, so <span class="math inline">\(X^TX + \lambda I\)</span> is positive definite — invertible even when <span class="math inline">\(X\)</span>’s columns are dependent and plain least squares has infinitely many answers.</p>
+<p><strong>Basically, …</strong> “Ridge has a formula, not just an algorithm: <span class="math inline">\((X^TX + \lambda I)^{-1}X^Ty\)</span>. Turn <span class="math inline">\(\lambda\)</span> to zero and you get plain least squares back; crank it to infinity and every weight dies to zero.”</p>
+<p><strong>Note (the Bayesian reading: ridge = MAP with a Gaussian prior).</strong> §20.12(ii) promised this connection; the MLT lectures never state it — the four lines below are the book’s own derivation, from definitions already in Chapters 19–20. Assume Gaussian noise, <span class="math inline">\(y \mid X, w \sim N(Xw, \sigma^2 I)\)</span> (§19.6): <span class="math display">\[\log P(y \mid X, w) = -\frac{1}{2\sigma^2}\|Xw - y\|^2 + c_1.\]</span> Put a Gaussian prior on the weights, <span class="math inline">\(w \sim N(0, \tau^2 I)\)</span> — “before seeing data, I believe the weights are small”: <span class="math display">\[\log f(w) = -\frac{1}{2\tau^2}\|w\|^2 + c_2.\]</span> MAP (§20.10) maximizes the sum: <span class="math display">\[\hat w_{MAP} = \arg\max_w \left[-\frac{1}{2\sigma^2}\|Xw-y\|^2 - \frac{1}{2\tau^2}\|w\|^2\right] = \arg\min_w \left[\frac{1}{2}\|Xw-y\|^2 + \frac{\sigma^2}{2\tau^2}\|w\|^2\right],\]</span> exactly the ridge objective (§28.3) with <span class="math inline">\(\boxed{\lambda = \sigma^2/\tau^2}\)</span> — the noise variance over the prior variance. The “tax rate” <span class="math inline">\(\lambda\)</span> suddenly has a meaning: how noisy you think the data is, divided by how strongly you believed the weights should be small. (Lasso’s counterpart runs the same four lines with a Laplace prior <span class="math inline">\(f(w_j) \propto e^{-c|w_j|}\)</span>, whose log is the <span class="math inline">\(\ell_1\)</span> penalty — stated as the standard counterpart, not derived.)</p>
+</section>
+<section id="gradient-descent-for-ridge" class="level2">
+<h2 class="anchored" data-anchor-id="gradient-descent-for-ridge">28.5 Gradient descent for ridge</h2>
+<p>From the gradient, the lecture’s update rule: <span class="math display">\[\boxed{w_{k+1} := w_k - \alpha\big(X^T(Xw_k - y) + \lambda w_k\big)}.\]</span> Read it against §23.3’s unregularized update <span class="math inline">\(w_{k+1} := w_k - \alpha X^T(Xw_k - y)\)</span>: the only change is the extra <span class="math inline">\(-\alpha\lambda w_k\)</span> — every step, each weight is dragged a little toward zero <em>in addition</em> to following the data’s gradient. That drag is the tax, collected per-iteration.</p>
+<p><strong>Basically, …</strong> “Gradient descent with ridge = ordinary gradient descent, plus a small tug toward zero on every step. The tug is <span class="math inline">\(\lambda\)</span>-sized.”</p>
+</section>
+<section id="what-lambda-does-shrinkage-then-underfitting" class="level2">
+<h2 class="anchored" data-anchor-id="what-lambda-does-shrinkage-then-underfitting">28.6 What <span class="math inline">\(\lambda\)</span> does: shrinkage, then underfitting</h2>
+<p>The lecture’s slide on the effect of <span class="math inline">\(\lambda\)</span> is blunt: <strong>as <span class="math inline">\(\lambda\)</span> increases, the model loses capacity, and for very large <span class="math inline">\(\lambda\)</span> it underfits.</strong> The degree-9 polynomial experiment makes it visible:</p>
+<!-- Original matplotlib illustration drawn for this chapter (not reused from any URL): degree-9 polynomial ridge fits on synthetic sin(2*pi*x) data at three lambda values -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/28-ridge-effect.png" class="img-fluid figure-img"></p>
+<figcaption>Three panels: degree-9 polynomial fits. Left (lambda=0): dashed fitted curve whipsaws between points. Middle (lambda=1e-4): fitted curve tracks the true sine smoothly. Right (lambda=1e-1): fitted curve is nearly flat, missing the sine’s shape.</figcaption>
+</figure>
+</div>
+<ol type="i">
+<li><span class="math inline">\(\lambda = 0\)</span>: the penalty is off — the wild interpolating curve, §28.1’s disease.</li>
+<li>Small <span class="math inline">\(\lambda &gt; 0\)</span>: weights shrink just enough to kill the whipsaw; the curve tracks the true shape. The sweet spot.</li>
+<li>Large <span class="math inline">\(\lambda\)</span>: weights crushed toward zero; the fit goes nearly flat and misses the signal — underfitting, exactly as the lecture warns.</li>
+</ol>
+<p><strong>Note.</strong> Shrinking <span class="math inline">\(\ne\)</span> zeroing: ridge makes weights <em>small</em>, essentially never <em>exactly</em> zero. If you want coefficients killed outright, that is lasso’s job (§28.7).</p>
+<p><strong>Basically, …</strong> “<span class="math inline">\(\lambda\)</span> is a dimmer switch on model flexibility: 0 = blinding overfit, a little = just right, a lot = the model goes blind and underfits.”</p>
+</section>
+<section id="lasso-the-ell_1-penalty-and-exact-zeros" class="level2">
+<h2 class="anchored" data-anchor-id="lasso-the-ell_1-penalty-and-exact-zeros">28.7 Lasso: the <span class="math inline">\(\ell_1\)</span> penalty, and exact zeros</h2>
+<p><strong>Def (lasso objective).</strong> Lasso swaps the squared penalty for the <span class="math inline">\(\ell_1\)</span> norm: <span class="math display">\[\boxed{J(w) = \tfrac{1}{2}(Xw - y)^T(Xw - y) + \tfrac{\lambda}{2}\lVert w\rVert_1 = \tfrac{1}{2}(Xw - y)^T(Xw - y) + \tfrac{\lambda}{2}\sum_{j=1}^{m}\lvert w_j\rvert}.\]</span> The lecture is honest about the cost: <em>estimating the lasso weights needs specialized optimization algorithms, beyond this course’s scope</em> — the <span class="math inline">\(\lvert w_j\rvert\)</span> kink at zero means no clean gradient-and-inverse route like §28.4. (The MLP course just calls sklearn’s <code>Lasso</code>.)</p>
+<p>But the headline property needs no optimizer to state: <strong>lasso sets some coefficients <em>exactly</em> to zero.</strong> It does feature selection by itself — out of a pile of candidate features, it keeps a few and discards the rest. Two ways to see why:</p>
+<ol type="i">
+<li><strong>The 1-D case (Problem 3 proves it).</strong> With one feature, the lasso solution is the <em>soft-thresholded</em> least-squares answer: <span class="math inline">\(\hat w = \mathrm{sign}(\rho)\,(|\rho| - \lambda/2)_+/\lVert x\rVert^2\)</span> with <span class="math inline">\(\rho = x^Ty\)</span>. If <span class="math inline">\(|\rho| \le \lambda/2\)</span> — the feature’s pull on the data is weaker than the tax — the weight is not shrunk, it is <em>deleted</em>: exactly <span class="math inline">\(0\)</span>. Ridge’s 1-D answer <span class="math inline">\(\rho/(\lVert x\rVert^2 + \lambda)\)</span> only ever shrinks.</li>
+<li><strong>The geometry.</strong> Minimizing <span class="math inline">\(J\)</span> equals minimizing the squared error subject to a penalty budget <span class="math inline">\(\lVert w\rVert \le t\)</span>. The <span class="math inline">\(\ell_1\)</span> budget region is a <em>diamond</em> — it has corners on the axes. The error contours (ellipses around the OLS point) generically first touch a diamond at a corner, and a corner means some <span class="math inline">\(w_j = 0\)</span>. The <span class="math inline">\(\ell_2\)</span> budget is a <em>ball</em> — smooth, no corners — so the touch point keeps every coordinate nonzero:</li>
+</ol>
+<!-- Original matplotlib illustration drawn for this chapter (not reused from any URL): l1 diamond vs l2 circle with RSS ellipses, corner touch vs smooth touch -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/28-l1-l2-balls.png" class="img-fluid figure-img"></p>
+<figcaption>Two panels. Left: diamond |w1|+|w2|=1 with elliptical RSS contours; the smallest ellipse touching the diamond touches at the corner (1,0), so w2=0. Right: circle w1<sup>2+w2</sup>2=1; the touching ellipse meets it at a smooth point with both coordinates nonzero.</figcaption>
+</figure>
+</div>
+<p><strong>Basically, …</strong> “Ridge puts weights on a diet; lasso fires some of them. The diamond has corners and the circle doesn’t — corners are where coordinates are exactly zero.”</p>
+</section>
+<section id="ridge-vs-lasso-side-by-side" class="level2">
+<h2 class="anchored" data-anchor-id="ridge-vs-lasso-side-by-side">28.8 Ridge vs lasso, side by side</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>Ridge (<span class="math inline">\(\ell_2\)</span>)</th>
+<th>Lasso (<span class="math inline">\(\ell_1\)</span>)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Penalty</td>
+<td><span class="math inline">\(\frac{\lambda}{2}\lVert w\rVert_2^2\)</span></td>
+<td><span class="math inline">\(\frac{\lambda}{2}\lVert w\rVert_1\)</span></td>
+</tr>
+<tr class="even">
+<td>Closed form</td>
+<td>Yes: <span class="math inline">\((X^TX+\lambda I)^{-1}X^Ty\)</span></td>
+<td>No — specialized optimizers (beyond scope; sklearn in MLP)</td>
+</tr>
+<tr class="odd">
+<td>Effect on weights</td>
+<td>Shrinks toward 0, never exactly 0</td>
+<td>Shrinks <em>and</em> zeroes: automatic feature selection</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\lambda\to 0\)</span></td>
+<td>Least squares</td>
+<td>Least squares</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\lambda\to\infty\)</span></td>
+<td>All weights <span class="math inline">\(\to 0\)</span></td>
+<td>All weights <span class="math inline">\(\to 0\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note (elastic net).</strong> The lecture lists a third type — the <em>combination</em> of <span class="math inline">\(\ell_1\)</span> and <span class="math inline">\(\ell_2\)</span>, elastic net — with no further detail; the MLP slides add its cross-validated estimator <code>ElasticNetCV</code>. It inherits lasso’s sparsity and ridge’s stability, and belongs to the same choose-by-validation discipline as everything in this chapter.</p>
+<p><strong>Basically, …</strong> “Many correlated features and you want them all, small? Ridge. A pile of features and you suspect only a few matter? Lasso.”</p>
+</section>
+<section id="the-biasvariance-trade-off-tied-to-lambda" class="level2">
+<h2 class="anchored" data-anchor-id="the-biasvariance-trade-off-tied-to-lambda">28.9 The bias–variance trade-off, tied to <span class="math inline">\(\lambda\)</span></h2>
+<p>§27.10(i) promised this section; here it is, in exactly the terms the sources support. The lecture never writes a bias–variance decomposition formula — what it gives, twice, is the trade-off itself:</p>
+<ol type="i">
+<li><strong>Too small <span class="math inline">\(\lambda\)</span></strong> ⇒ the fit bends to every wiggle of <em>this particular</em> training sample — the degree-9 whipsaw, the memorizer. The model is over-sensitive to the sample’s noise. Call that the <strong>high-variance</strong> end: refit on a fresh sample and the curve swings wildly.</li>
+<li><strong>Too large <span class="math inline">\(\lambda\)</span></strong> ⇒ the fit is too stiff to follow the true shape — the nearly-flat panel, the lecture’s “the model loses its capacity… underfits.” The model systematically misses the signal no matter the sample. Call that the <strong>high-bias</strong> end.</li>
+<li><strong>The sweet spot</strong> sits between them, and the <span class="math inline">\(\lambda\)</span>-vs-validation-error curve (§28.10) draws the trade-off: error falls as the noise-chasing stops, then rises as stiffness sets in. <strong><span class="math inline">\(\lambda\)</span> is the dial of the trade-off.</strong></li>
+</ol>
+<p><strong>Note (scope).</strong> The formal <span class="math inline">\(\mathbb{E} = \mathrm{bias}^2 + \mathrm{variance} + \mathrm{noise}\)</span> decomposition is not in these lectures; this section stays with their qualitative reading — flexibility against the sample’s noise on one side, stiffness against the signal on the other, <span class="math inline">\(\lambda\)</span> choosing the balance. Nothing here contradicts the formal version; the course simply never states it.</p>
+<p><strong>Basically, …</strong> “Small <span class="math inline">\(\lambda\)</span> = a nervous student who memorizes the textbook’s typos; large <span class="math inline">\(\lambda\)</span> = a student who only learned the chapter headings. You want the one in between — and <span class="math inline">\(\lambda\)</span> picks which student you get.”</p>
+</section>
+<section id="choosing-lambda-the-validation-discipline" class="level2">
+<h2 class="anchored" data-anchor-id="choosing-lambda-the-validation-discipline">28.10 Choosing <span class="math inline">\(\lambda\)</span>: the validation discipline</h2>
+<p><span class="math inline">\(\lambda\)</span> is a hyperparameter — §22.10’s job (ii), picking the collection, not the parameters. The lecture gives the complete procedure, four steps:</p>
+<ol type="1">
+<li><strong>Construct a set of candidate <span class="math inline">\(\lambda\)</span> values</strong> to experiment with (a grid, usually logarithmic: <span class="math inline">\(10^{-4}, 10^{-3}, \ldots, 10^2\)</span>).</li>
+<li><strong>For each candidate:</strong> train the model, and compute the error on the <strong>validation set</strong> (cross-validation error). Pick the <span class="math inline">\(\lambda\)</span> with the <strong>least validation error</strong>.</li>
+<li><strong>Retrain</strong> with the chosen <span class="math inline">\(\lambda\)</span> on the <strong>entire training set</strong>.</li>
+<li><strong>Report</strong> the final model’s performance on the <strong>test set</strong> — untouched until now (§23.9’s discipline, unchanged).</li>
+</ol>
+<p>The validation-error curve is typically <strong>bowl-shaped (U-shaped)</strong>: high at tiny <span class="math inline">\(\lambda\)</span> (overfitting end), high at huge <span class="math inline">\(\lambda\)</span> (underfitting end), minimum at the sweet spot. The lecture’s own figure finds the most appropriate <span class="math inline">\(\lambda = 0.1\)</span> at the bowl’s bottom:</p>
+<!-- Original matplotlib illustration drawn for this chapter (not reused from any URL): training error rising with lambda, validation error U-shaped, minimum marked -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/28-lambda-cv-curve.png" class="img-fluid figure-img"></p>
+<figcaption>Training error rises monotonically with lambda; validation error is U-shaped with its minimum marked as the chosen lambda*.</figcaption>
+</figure>
+</div>
+<p><strong>Note (the MLP practice).</strong> In sklearn the regularization rate is the <code>alpha</code> argument — <code>Ridge(alpha=1e-3)</code> sets <span class="math inline">\(\lambda = 10^{-3}\)</span> (and <code>SGDRegressor(alpha=1e-3, penalty='l2')</code> is the same idea by gradient descent). Doing the four steps by hand for every <span class="math inline">\(\lambda\)</span> is tedious, so the MLP slides point at the estimators that automate step 2: <strong><code>RidgeCV</code> / <code>LassoCV</code> / <code>ElasticNetCV</code> perform the cross-validated <span class="math inline">\(\lambda\)</span> search internally</strong>, and <code>GridSearchCV</code> / <code>RandomizedSearchCV</code> generalize the same grid-search pattern to any hyperparameter.</p>
+<p><strong>Basically, …</strong> “Don’t guess <span class="math inline">\(\lambda\)</span> — audition a lineup of them on held-out data, hire the winner, then give it the full training set and report its score on data it has never seen. The U-curve tells you the auditions worked.”</p>
+</section>
+<section id="worked-example-one-tiny-dataset-three-fits" class="level2">
+<h2 class="anchored" data-anchor-id="worked-example-one-tiny-dataset-three-fits">28.11 Worked example: one tiny dataset, three fits</h2>
+<p>Setup (deliberately nasty): two <em>nearly collinear</em> features, three points, no intercept. <span class="math display">\[x_1 = \begin{pmatrix}1\\2\\3\end{pmatrix},\quad x_2 = \begin{pmatrix}1\\1.9\\3.1\end{pmatrix},\quad y = \begin{pmatrix}2\\4.3\\5.7\end{pmatrix}.\]</span> Correlation of the columns <span class="math inline">\(\approx 0.997\)</span> — <span class="math inline">\(x_2\)</span> is almost a copy of <span class="math inline">\(x_1\)</span>. The sufficient statistics: <span class="math display">\[X^TX = \begin{pmatrix}14 &amp; 14.1\\14.1 &amp; 14.22\end{pmatrix},\qquad X^Ty = \begin{pmatrix}27.7\\27.84\end{pmatrix},\qquad \det(X^TX) = 14\cdot 14.22 - 14.1^2 = 0.27.\]</span> That tiny determinant is the warning light: <span class="math inline">\(X^TX\)</span> is nearly singular, so plain least squares will be unstable.</p>
+<p><strong>Fit 1 — unregularized (<span class="math inline">\(\lambda = 0\)</span>).</strong> <span class="math inline">\((X^TX)^{-1} = \frac{1}{0.27}\begin{pmatrix}14.22 &amp; -14.1\\-14.1 &amp; 14\end{pmatrix}\)</span>, so <span class="math display">\[\hat w_1 = \frac{14.22\cdot 27.7 - 14.1\cdot 27.84}{0.27} = \frac{1.35}{0.27} = 5,\qquad \hat w_2 = \frac{-14.1\cdot 27.7 + 14\cdot 27.84}{0.27} = \frac{-0.81}{0.27} = -3.\]</span> Predictions: <span class="math inline">\(X\hat w = (5-3,\ 10-5.7,\ 15-9.3)^T = (2, 4.3, 5.7)^T = y\)</span> — training MSE <span class="math inline">\(= 0\)</span>. <strong>The trap, exactly as §23.9 warns</strong>: zero training error from weights <span class="math inline">\((5, -3)\)</span> that violently cancel — one feature’s coefficient is large positive, its near-twin’s large negative. Any fresh noise would swing this fit wildly.</p>
+<p><strong>Fit 2 — ridge, <span class="math inline">\(\lambda = 1\)</span>.</strong> <span class="math inline">\(X^TX + I = \begin{pmatrix}15 &amp; 14.1\\14.1 &amp; 15.22\end{pmatrix}\)</span>, <span class="math inline">\(\det = 15\cdot 15.22 - 14.1^2 = 29.49\)</span>: <span class="math display">\[\hat w_1 = \frac{15.22\cdot 27.7 - 14.1\cdot 27.84}{29.49} = \frac{29.05}{29.49} \approx 0.985,\qquad \hat w_2 = \frac{-14.1\cdot 27.7 + 15\cdot 27.84}{29.49} = \frac{27.03}{29.49} \approx 0.917.\]</span> Predictions <span class="math inline">\(\hat y \approx (1.902,\ 3.712,\ 5.797)^T\)</span>; residuals <span class="math inline">\(\approx (-0.098,\ -0.588,\ 0.097)\)</span>; training MSE <span class="math inline">\(\approx 0.122\)</span>. The wild <span class="math inline">\((5,-3)\)</span> collapsed to a calm <span class="math inline">\((0.985, 0.917)\)</span> — both features share the load, same sign, no cancellation. Push further to <span class="math inline">\(\lambda = 5\)</span>: <span class="math inline">\(\hat w \approx (0.841, 0.832)\)</span>, MSE <span class="math inline">\(\approx 0.515\)</span> — shrinkage deepening, error rising: the underfitting end of §28.6.</p>
+<p><strong>Fit 3 — lasso, <span class="math inline">\(\lambda = 1\)</span>.</strong> No closed form, so coordinate descent with soft-thresholding (threshold <span class="math inline">\(\lambda/2 = 0.5\)</span>; column norms <span class="math inline">\(\lVert x_1\rVert^2 = 14\)</span>, <span class="math inline">\(\lVert x_2\rVert^2 = 14.22\)</span>). Start <span class="math inline">\(w = (0,0)\)</span>: - Sweep 1: <span class="math inline">\(w_1 \gets S(27.7,\, 0.5)/14 = 27.2/14 = 68/35 \approx 1.943\)</span>; then <span class="math inline">\(w_2 \gets S(27.84 - 14.1\cdot 1.942857,\, 0.5)/14.22 = S(0.4457,\, 0.5)/14.22 = 0\)</span> — below threshold, <em>deleted</em>. - Sweep 2: <span class="math inline">\(w_1\)</span> recomputes to the same <span class="math inline">\(1.943\)</span>; <span class="math inline">\(w_2\)</span> stays <span class="math inline">\(0\)</span>. Converged: <span class="math inline">\(\boxed{\hat w = (1.943,\ 0)^T}\)</span>.</p>
+<p>Check (KKT): gradient of the squared-error half at <span class="math inline">\(\hat w\)</span> is <span class="math inline">\(X^T(X\hat w - y) \approx (-0.5,\ -0.4457)^T\)</span>; for <span class="math inline">\(w_1 \ne 0\)</span> this equals <span class="math inline">\(-\frac{\lambda}{2}\mathrm{sign}(w_1) = -0.5\)</span> ✓, and <span class="math inline">\(|{-0.4457}| \le 0.5 = \lambda/2\)</span> permits <span class="math inline">\(w_2 = 0\)</span> ✓. Training MSE <span class="math inline">\(\approx 0.064\)</span>. The redundant twin feature is gone — sparsity, on a hand-checkable example.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Fit</th>
+<th><span class="math inline">\(\hat w_1\)</span></th>
+<th><span class="math inline">\(\hat w_2\)</span></th>
+<th>Train MSE</th>
+<th>Reading</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>OLS (<span class="math inline">\(\lambda=0\)</span>)</td>
+<td><span class="math inline">\(5\)</span></td>
+<td><span class="math inline">\(-3\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td>Memorizer: exact on training, unstable weights</td>
+</tr>
+<tr class="even">
+<td>Ridge <span class="math inline">\(\lambda=1\)</span></td>
+<td><span class="math inline">\(0.985\)</span></td>
+<td><span class="math inline">\(0.917\)</span></td>
+<td><span class="math inline">\(0.122\)</span></td>
+<td>Shrunk: stable, shares load across twins</td>
+</tr>
+<tr class="odd">
+<td>Ridge <span class="math inline">\(\lambda=5\)</span></td>
+<td><span class="math inline">\(0.841\)</span></td>
+<td><span class="math inline">\(0.832\)</span></td>
+<td><span class="math inline">\(0.515\)</span></td>
+<td>Over-shrunk: sliding toward underfit</td>
+</tr>
+<tr class="even">
+<td>Lasso <span class="math inline">\(\lambda=1\)</span></td>
+<td><span class="math inline">\(1.943\)</span></td>
+<td><span class="math inline">\(0\)</span></td>
+<td><span class="math inline">\(0.064\)</span></td>
+<td>Sparse: redundant feature deleted</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Basically, …</strong> “Same three points, three personalities: OLS memorized them with crazy cancelling weights, ridge calmed both weights down, lasso fired the redundant feature outright.”</p>
+</section>
+<section id="where-this-goes-next" class="level2">
+<h2 class="anchored" data-anchor-id="where-this-goes-next">28.12 Where this goes next</h2>
+<ol type="i">
+<li><strong>Ridge, kernelized.</strong> §27.4–§27.6 already ran this chapter’s ridge objective through the kernel trick: <span class="math inline">\((K + \lambda I)\alpha = y\)</span>. Regularization is what keeps that infinite-dimensional fit solvable and honest.</li>
+<li><strong>The <span class="math inline">\(\lambda\)</span> discipline generalizes.</strong> Everything in §28.10 — candidates, validation error, retrain, test — is §22.10’s model-selection job (ii) in full; later chapters reuse it for every hyperparameter, not just <span class="math inline">\(\lambda\)</span>.</li>
+<li><strong>Priors, derived.</strong> §20.12(ii) promised that ridge’s penalty has a probabilistic reading — MAP with a Gaussian prior. The MLT lectures never state that connection, so §28.4 derives it as the book’s own four-line argument (not a lecture claim): with Gaussian noise and a <span class="math inline">\(N(0, \tau^2 I)\)</span> prior on <span class="math inline">\(w\)</span>, the MAP estimate is exactly the ridge objective, with <span class="math inline">\(\lambda = \sigma^2/\tau^2\)</span>.</li>
+</ol>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li><p><strong>Ridge gradient, by hand.</strong> For <span class="math inline">\(J(w) = \tfrac{1}{2}(Xw - y)^T(Xw - y) + \tfrac{\lambda}{2}w^Tw\)</span>: (i) expand <span class="math inline">\(J\)</span> fully; (ii) differentiate term by term to get <span class="math inline">\(\nabla_w J = X^TXw - X^Ty + \lambda w\)</span>; (iii) write the stationary condition as <span class="math inline">\((X^TX + \lambda I)w = X^Ty\)</span>.</p></li>
+<li><p><strong>The two endpoints.</strong> From <span class="math inline">\(\hat w_{\text{ridge}} = (X^TX + \lambda I)^{-1}X^Ty\)</span>: (i) argue that as <span class="math inline">\(\lambda \to 0\)</span>, <span class="math inline">\(\hat w \to (X^TX)^{-1}X^Ty\)</span> (assume <span class="math inline">\(X^TX\)</span> invertible); (ii) argue that as <span class="math inline">\(\lambda \to \infty\)</span>, <span class="math inline">\(\hat w \to 0\)</span>. One line each, citing which term dominates.</p></li>
+<li><p><strong>Soft-thresholding in 1-D.</strong> Single feature <span class="math inline">\(x \in \mathbb{R}^n\)</span>, no intercept: <span class="math inline">\(J(w) = \tfrac{1}{2}\lVert xw - y\rVert^2 + \tfrac{\lambda}{2}\lvert w\rvert\)</span>, <span class="math inline">\(w \in \mathbb{R}\)</span>. With <span class="math inline">\(\rho = x^Ty\)</span>: (i) show the minimizer is <span class="math inline">\(\hat w = \mathrm{sign}(\rho)\,(|\rho| - \lambda/2)_+/\lVert x\rVert^2\)</span>, where <span class="math inline">\((z)_+ = \max(z, 0)\)</span>; (ii) contrast with ridge’s 1-D answer <span class="math inline">\(\hat w_{\text{ridge}} = \rho/(\lVert x\rVert^2 + \lambda)\)</span> — when does lasso give <em>exactly</em> zero while ridge never does?</p></li>
+<li><p><strong>One GD step vs the closed form.</strong> Data <span class="math inline">\((x, y) = (1,2), (2,3)\)</span>, one feature, no intercept; <span class="math inline">\(\lambda = 2\)</span>, <span class="math inline">\(\alpha = 0.1\)</span>, <span class="math inline">\(w_0 = 0\)</span>. (i) Compute <span class="math inline">\(w_1\)</span> from the lecture’s update <span class="math inline">\(w_{k+1} := w_k - \alpha\big(X^T(Xw_k - y) + \lambda w_k\big)\)</span>. (ii) Compute the exact ridge <span class="math inline">\(\hat w\)</span> from §28.4 and say whether <span class="math inline">\(w_1\)</span> moved toward it.</p></li>
+<li><p><strong>Read a <span class="math inline">\(\lambda\)</span> table.</strong> A grid search reports:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><span class="math inline">\(\lambda\)</span></th>
+<th><span class="math inline">\(10^{-4}\)</span></th>
+<th><span class="math inline">\(10^{-3}\)</span></th>
+<th><span class="math inline">\(10^{-2}\)</span></th>
+<th><span class="math inline">\(10^{-1}\)</span></th>
+<th><span class="math inline">\(1\)</span></th>
+<th><span class="math inline">\(10\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Train MSE</td>
+<td><span class="math inline">\(0.20\)</span></td>
+<td><span class="math inline">\(0.24\)</span></td>
+<td><span class="math inline">\(0.30\)</span></td>
+<td><span class="math inline">\(0.38\)</span></td>
+<td><span class="math inline">\(0.50\)</span></td>
+<td><span class="math inline">\(0.66\)</span></td>
+</tr>
+<tr class="even">
+<td>Validation MSE</td>
+<td><span class="math inline">\(0.92\)</span></td>
+<td><span class="math inline">\(0.71\)</span></td>
+<td><span class="math inline">\(0.55\)</span></td>
+<td><span class="math inline">\(0.47\)</span></td>
+<td><span class="math inline">\(0.52\)</span></td>
+<td><span class="math inline">\(0.68\)</span></td>
+</tr>
+</tbody>
+</table>
+<ol type="i">
+<li>Which <span class="math inline">\(\lambda\)</span> does the lecture’s procedure pick, and why? (ii) Why is “pick the <span class="math inline">\(\lambda\)</span> with smallest <em>training</em> MSE” wrong — name the section that explains the trap. (iii) After picking, what are the next two steps before reporting?</li>
+</ol></li>
+<li><p><strong>Why the diamond zeroes and the ball doesn’t.</strong> In one paragraph, using the soft-thresholding result of Problem 3 and the §28.7 figure: explain why the <span class="math inline">\(\ell_1\)</span> penalty produces <em>exactly</em> zero coefficients while the <span class="math inline">\(\ell_2\)</span> penalty only shrinks them.</p></li>
+<li><p><strong>sklearn practice (MLP slides).</strong> (i) In <code>Ridge(alpha=1e-3)</code>, what does <code>alpha</code> correspond to in this chapter’s notation? (ii) What do <code>RidgeCV</code> / <code>LassoCV</code> automate from §28.10’s four steps? (iii) Name the lecture’s third regularization type and its CV estimator from the MLP slides.</p></li>
+</ol>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — Ridge gradient, by hand
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>Expand. <span class="math inline">\((Xw - y)^T(Xw - y) = (w^TX^T - y^T)(Xw - y) = w^TX^TXw - w^TX^Ty - y^TXw + y^Ty\)</span>. The middle two terms are scalars and transposes of each other: <span class="math inline">\(y^TXw = (w^TX^Ty)^T = w^TX^Ty\)</span>. So <span class="math display">\[J(w) = \tfrac{1}{2}\big(w^TX^TXw - 2w^TX^Ty + y^Ty + \lambda w^Tw\big).\]</span></p></li>
+<li><p>Differentiate term by term (§10.1’s recipe; <span class="math inline">\(X^TX\)</span> is symmetric):</p></li>
+</ol>
+<ul>
+<li><span class="math inline">\(\nabla_w\, \tfrac{1}{2}w^TX^TXw = X^TXw\)</span>,</li>
+<li><span class="math inline">\(\nabla_w\, \tfrac{1}{2}(-2w^TX^Ty) = -X^Ty\)</span>,</li>
+<li><span class="math inline">\(\nabla_w\, \tfrac{1}{2}y^Ty = 0\)</span>,</li>
+<li><span class="math inline">\(\nabla_w\, \tfrac{1}{2}\lambda w^Tw = \lambda w\)</span>.</li>
+</ul>
+<p>Adding: <span class="math inline">\(\boxed{\nabla_w J = X^TXw - X^Ty + \lambda w}\)</span>.</p>
+<ol start="3" type="i">
+<li>Stationarity <span class="math inline">\(\nabla_w J = 0\)</span> gives <span class="math inline">\(X^TXw - X^Ty + \lambda w = 0\)</span>, i.e.&nbsp;<span class="math inline">\(\boxed{(X^TX + \lambda I)w = X^Ty}\)</span>.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — The two endpoints
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><span class="math inline">\(\lambda \to 0\)</span>: the <span class="math inline">\(\lambda I\)</span> term vanishes, so <span class="math inline">\((X^TX + \lambda I)^{-1} \to (X^TX)^{-1}\)</span> (here we use the assumed invertibility), and <span class="math inline">\(\hat w \to \boxed{(X^TX)^{-1}X^Ty}\)</span> — ordinary least squares.</p></li>
+<li><p><span class="math inline">\(\lambda \to \infty\)</span>: factor <span class="math inline">\(\lambda\)</span> out, <span class="math inline">\((X^TX + \lambda I)^{-1} = \frac{1}{\lambda}\big(\tfrac{1}{\lambda}X^TX + I\big)^{-1} \to \frac{1}{\lambda}I \to 0\)</span> as a matrix, so <span class="math inline">\(\hat w = (X^TX + \lambda I)^{-1}X^Ty \to \boxed{0}\)</span>. The penalty term dominates the data term.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — Soft-thresholding in 1-D
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><span class="math inline">\(J(w) = \tfrac{1}{2}(w^2\lVert x\rVert^2 - 2w\,x^Ty + \lVert y\rVert^2) + \tfrac{\lambda}{2}\lvert w\rvert\)</span>. Write <span class="math inline">\(\rho = x^Ty\)</span> and <span class="math inline">\(s = \lVert x\rVert^2 &gt; 0\)</span>. For <span class="math inline">\(w \ne 0\)</span> the (sub)derivative is <span class="math inline">\(sw - \rho + \tfrac{\lambda}{2}\mathrm{sign}(w)\)</span>; at <span class="math inline">\(w = 0\)</span> the subdifferential of <span class="math inline">\(\tfrac{\lambda}{2}\lvert w\rvert\)</span> is the interval <span class="math inline">\([-\lambda/2,\, \lambda/2]\)</span>.</li>
+</ol>
+<ul>
+<li>If <span class="math inline">\(\rho &gt; \lambda/2\)</span>: optimum at <span class="math inline">\(w &gt; 0\)</span> with <span class="math inline">\(sw - \rho + \lambda/2 = 0\)</span>, i.e.&nbsp;<span class="math inline">\(w = (\rho - \lambda/2)/s\)</span>.</li>
+<li>If <span class="math inline">\(\rho &lt; -\lambda/2\)</span>: optimum at <span class="math inline">\(w &lt; 0\)</span> with <span class="math inline">\(sw - \rho - \lambda/2 = 0\)</span>, i.e.&nbsp;<span class="math inline">\(w = (\rho + \lambda/2)/s\)</span>.</li>
+<li>If <span class="math inline">\(|\rho| \le \lambda/2\)</span>: <span class="math inline">\(w = 0\)</span> is optimal, because <span class="math inline">\(0\)</span> lies in the subdifferential: <span class="math inline">\(- \rho \in [-\lambda/2, \lambda/2]\)</span>.</li>
+</ul>
+<p>Together: <span class="math inline">\(\boxed{\hat w = \mathrm{sign}(\rho)\,(|\rho| - \lambda/2)_+/s}\)</span> with <span class="math inline">\(s = \lVert x\rVert^2\)</span>.</p>
+<ol start="2" type="i">
+<li>Ridge’s 1-D answer <span class="math inline">\(\rho/(s + \lambda)\)</span> is a <em>smooth rescaling</em>: it equals <span class="math inline">\(0\)</span> only if <span class="math inline">\(\rho = 0\)</span> exactly — otherwise merely smaller than the OLS value <span class="math inline">\(\rho/s\)</span>. Lasso’s answer has a <strong>dead zone</strong>: whenever <span class="math inline">\(|\rho| \le \lambda/2\)</span> (the feature’s correlation with <span class="math inline">\(y\)</span> is weaker than half the tax rate), the coefficient is <em>exactly</em> <span class="math inline">\(0\)</span>, not just small. That dead zone is the algebraic face of the diamond’s corners (§28.7).</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — One GD step vs the closed form
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math inline">\(X = (1, 2)^T\)</span>, <span class="math inline">\(y = (2, 3)^T\)</span>: <span class="math inline">\(X^TX = 5\)</span>, <span class="math inline">\(X^Ty = 1\cdot 2 + 2\cdot 3 = 8\)</span>.</p>
+<ol type="i">
+<li><p><span class="math inline">\(w_1 = w_0 - \alpha\big(X^T(Xw_0 - y) + \lambda w_0\big) = 0 - 0.1\big(X^T(-y) + 0\big) = 0.1 \cdot 8 = \boxed{0.8}\)</span>.</p></li>
+<li><p>Exact ridge: <span class="math inline">\(\hat w = X^Ty/(X^TX + \lambda) = 8/(5 + 2) = \boxed{8/7 \approx 1.143}\)</span>. Yes — <span class="math inline">\(w_1 = 0.8\)</span> moved from <span class="math inline">\(0\)</span> toward <span class="math inline">\(1.143\)</span> (about <span class="math inline">\(70\%\)</span> of the way in one step, since this 1-D problem’s optimal step would be <span class="math inline">\(1/(5+2) = 1/7 \approx 0.143\)</span>).</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — Read a <span class="math inline">\(\lambda\)</span> table
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>The lecture’s step 2 picks the <span class="math inline">\(\lambda\)</span> with the <strong>least validation error</strong>: <span class="math inline">\(\boxed{\lambda^* = 10^{-1}}\)</span>, validation MSE <span class="math inline">\(0.47\)</span> (the bowl’s bottom).</p></li>
+<li><p>Training MSE is smallest at <span class="math inline">\(\lambda = 10^{-4}\)</span> (<span class="math inline">\(0.20\)</span>), but training error is <em>optimistic</em> — §23.9’s trap: the <span class="math inline">\(\lambda \to 0\)</span> end memorizes the training sample (§28.1, §28.9’s high-variance end), as the validation column proves (<span class="math inline">\(0.92\)</span>, the worst). Never select on training error.</p></li>
+<li><p>Step 3: retrain with <span class="math inline">\(\lambda^* = 0.1\)</span> on the <strong>entire training set</strong> (train + validation pooled). Step 4: report performance on the <strong>test set</strong>, untouched until now.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — Why the diamond zeroes and the ball doesn’t
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Lasso’s 1-D solution (Problem 3) is <span class="math inline">\(\mathrm{sign}(\rho)\,(|\rho| - \lambda/2)_+/\lVert x\rVert^2\)</span>: the <span class="math inline">\((\cdot)_+\)</span> builds in a dead zone — any coordinate whose data-pull <span class="math inline">\(|\rho|\)</span> falls below the tax threshold <span class="math inline">\(\lambda/2\)</span> is set to <em>exactly</em> zero rather than merely shrunk. Geometrically (§28.7’s figure), minimizing the lasso objective is minimizing squared error inside the diamond <span class="math inline">\(\lVert w\rVert_1 \le t\)</span>, and the error ellipses generically first touch a diamond at a <em>corner</em> — a corner sits on an axis, i.e.&nbsp;some <span class="math inline">\(w_j = 0\)</span> exactly. Ridge’s 1-D answer <span class="math inline">\(\rho/(\lVert x\rVert^2 + \lambda)\)</span> has no dead zone (zero only if <span class="math inline">\(\rho = 0\)</span> exactly), and its budget region is a smooth ball with no corners, so the ellipse touch-point keeps every coordinate nonzero: shrinkage without selection.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — sklearn practice (MLP slides)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><code>alpha</code> <strong>is</strong> this chapter’s <span class="math inline">\(\lambda\)</span>: <code>Ridge(alpha=1e-3)</code> sets the regularization rate to <span class="math inline">\(10^{-3}\)</span> (same for <code>SGDRegressor(alpha=1e-3, penalty='l2')</code>).</p></li>
+<li><p>They automate step 2 of §28.10’s procedure: <code>RidgeCV</code> / <code>LassoCV</code> run the cross-validated search over candidate <span class="math inline">\(\lambda\)</span> values internally and return the <span class="math inline">\(\lambda\)</span> with the least CV error — no hand-written grid loop needed. (<code>GridSearchCV</code> / <code>RandomizedSearchCV</code> generalize the same pattern to any hyperparameter.)</p></li>
+<li><p>The lecture’s third type is <strong>elastic net</strong> — the <span class="math inline">\(\ell_1\)</span> + <span class="math inline">\(\ell_2\)</span> combination — and the MLP slides’ CV estimator is <code>ElasticNetCV</code>.</p></li>
+</ol>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./27-kernel-methods.html" class="pagination-link" aria-label="27. Kernel methods and kernel regression">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">27. Kernel methods and kernel regression</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./29-knn-trees.html" class="pagination-link" aria-label="29. KNN and decision trees">
+        <span class="nav-page-text"><span class="chapter-title">29. KNN and decision trees</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Chapter 45: RNNs — sequences and vanishing gradients – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./46-attention-and-transformers.html" rel="next">
+<link href="./44-cnns.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./41-neuron-mlp-scratch.html">Part VI — Bridge to Deep Learning</a></li><li class="breadcrumb-item"><a href="./45-rnns-sequences-vanishing-gradients.html"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#sequence-data-order-matters" id="toc-sequence-data-order-matters" class="nav-link active" data-scroll-target="#sequence-data-order-matters">45.1 Sequence data: order matters</a></li>
+  <li><a href="#before-the-rnn-markov-windows-and-why-they-break" id="toc-before-the-rnn-markov-windows-and-why-they-break" class="nav-link" data-scroll-target="#before-the-rnn-markov-windows-and-why-they-break">45.2 Before the RNN: Markov, windows, and why they break</a></li>
+  <li><a href="#the-rnn-one-cell-reused-across-time" id="toc-the-rnn-one-cell-reused-across-time" class="nav-link" data-scroll-target="#the-rnn-one-cell-reused-across-time">45.3 The RNN: one cell, reused across time</a></li>
+  <li><a href="#eg-one-forward-step-next-character-prediction-verified-numpy" id="toc-eg-one-forward-step-next-character-prediction-verified-numpy" class="nav-link" data-scroll-target="#eg-one-forward-step-next-character-prediction-verified-numpy">45.4 eg: one forward step — next-character prediction [verified-NumPy]</a></li>
+  <li><a href="#bptt-the-same-backprop-unrolled" id="toc-bptt-the-same-backprop-unrolled" class="nav-link" data-scroll-target="#bptt-the-same-backprop-unrolled">45.5 BPTT: the same backprop, unrolled</a></li>
+  <li><a href="#eg-bptt-by-hand-on-a-1-neuron-net-verified-numpy" id="toc-eg-bptt-by-hand-on-a-1-neuron-net-verified-numpy" class="nav-link" data-scroll-target="#eg-bptt-by-hand-on-a-1-neuron-net-verified-numpy">45.6 eg: BPTT by hand on a 1-neuron net [verified-NumPy]</a></li>
+  <li><a href="#the-price-of-sharing-vanishing-and-exploding-gradients" id="toc-the-price-of-sharing-vanishing-and-exploding-gradients" class="nav-link" data-scroll-target="#the-price-of-sharing-vanishing-and-exploding-gradients">45.7 The price of sharing: vanishing and exploding gradients</a></li>
+  <li><a href="#lstm-gates-and-the-additive-cell" id="toc-lstm-gates-and-the-additive-cell" class="nav-link" data-scroll-target="#lstm-gates-and-the-additive-cell">45.8 LSTM: gates and the additive cell</a></li>
+  <li><a href="#gru-two-gates-no-separate-cell" id="toc-gru-two-gates-no-separate-cell" class="nav-link" data-scroll-target="#gru-two-gates-no-separate-cell">45.9 GRU: two gates, no separate cell</a></li>
+  <li><a href="#reading-both-ways-speaking-at-length" id="toc-reading-both-ways-speaking-at-length" class="nav-link" data-scroll-target="#reading-both-ways-speaking-at-length">45.10 Reading both ways, speaking at length</a></li>
+  <li><a href="#judging-sequences-perplexity-bleu-beam-search" id="toc-judging-sequences-perplexity-bleu-beam-search" class="nav-link" data-scroll-target="#judging-sequences-perplexity-bleu-beam-search">45.11 Judging sequences: perplexity, BLEU, beam search</a></li>
+  <li><a href="#the-pytorch-face" id="toc-the-pytorch-face" class="nav-link" data-scroll-target="#the-pytorch-face">45.12 The PyTorch face</a></li>
+  <li><a href="#where-this-goes-next" id="toc-where-this-goes-next" class="nav-link" data-scroll-target="#where-this-goes-next">45.13 Where this goes next</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./41-neuron-mlp-scratch.html">Part VI — Bridge to Deep Learning</a></li><li class="breadcrumb-item"><a href="./45-rnns-sequences-vanishing-gradients.html"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Chapter 44 shared weights across <em>space</em> — one filter, every pixel. This chapter shares them across <em>time</em>: the same cell, every timestep (§44.10’s promise). The spine is the GenAI Weeks 7–8 deck (“Introduction to Recurrent Neural Networks,” Balaji Srinivasan and Ganapathy Krishnamurthi, 80 slides — sequence modelling, the RNN, BPTT, vanishing/exploding gradients, LSTM, GRU, bidirectional and encoder–decoder architectures, BLEU, beam search) plus its two companion notebooks: <em>Time_Series_Analysis_using_RNN</em> (AMZN stock prediction: data prep, a <code>torch.nn.RNN</code> model, Adam at <span class="math inline">\(\eta = 0.001\)</span> for 50 epochs) and <em>sentiment-analysis</em> (IMDB: <code>SentimentRNN</code> and <code>SentimentLSTM</code> with embedding, dropout, and a sigmoid head). Every numpy number below was re-run here and is marked <strong>[verified-NumPy]</strong>; deck, notebook, and torch numbers are transcriptions, marked <strong>[recorded]</strong>.</p>
+<p><strong>Notation.</strong> The deck writes the timestep as a function argument, <span class="math inline">\(h(t), x(t)\)</span>; this book writes it as a subscript, <span class="math inline">\(h_t, x_t\)</span> — the same objects. Weight names follow the deck: <span class="math inline">\(W_{xh}\)</span> (input→hidden), <span class="math inline">\(W_{hh}\)</span> (hidden→hidden, the recurrent weights), <span class="math inline">\(W_{hy}\)</span> (hidden→output), biases <span class="math inline">\(b_h, b_y\)</span>, activation <span class="math inline">\(\phi\)</span>. LSTM gates keep the deck’s letters: <span class="math inline">\(f_t, i_t, \tilde c_t, c_t, o_t\)</span>. The deck’s GRU slides switch to row-vector notation (<span class="math inline">\(X_t W_{xr} + H_{t-1} W_{hr}\)</span>) while its LSTM slides use column concatenation (<span class="math inline">\(W_f \cdot [h_{t-1}, x_t]\)</span>) — a layout change, not a math change; §45.9 flags it.</p>
+<section id="sequence-data-order-matters" class="level2">
+<h2 class="anchored" data-anchor-id="sequence-data-order-matters">45.1 Sequence data: order matters</h2>
+<p><strong>Def (the deck’s).</strong> “Sequential data is a type of data where the order of the data points is significant. The sequence itself contains important information. Each data point is dependent on the previous ones (e.g., a sentence).” Three characteristics: <strong>Ordered</strong> (“Data points have a specific position or index in a sequence”), <strong>Variable Length</strong> (“Sequences can have different lengths (e.g., different sentence lengths)”), and <strong>Dependencies</strong> (“Values can depend on other values at different positions in the sequence”).</p>
+<p><strong>The modelling target.</strong> “A sequence model aims to estimate the joint probability of an entire sequence of observations” — for <span class="math inline">\(x_1, x_2, \dots, x_T\)</span>, the model estimates <span class="math inline">\(P(x_1, x_2, \dots, x_T)\)</span>, “to assess how plausible a sequence is, or to generate new, similar sequences” [recorded]. Applied to text this is a <strong>language model</strong>: “When a sequence model is applied to text data, it is called a language model. Its goal is to estimate the probability of a sequence of words or characters.”</p>
+<p><strong>The autoregressive factorization.</strong> Predicting <span class="math inline">\(x_t\)</span> from the past, the joint probability factors by the chain rule of probability (the deck’s term): <span class="math display">\[\boxed{P(x_1, \dots, x_T) = P(x_1) \prod_{t=2}^{T} P(x_t \mid x_1, \dots, x_{t-1})} \quad \text{[recorded]}.\]</span> “In words: the probability of a sequence is the product of the conditional probabilities of each element, given the elements that came before it.” Models that “predict future values in a sequence based on past values” this way are <strong>autoregressive</strong>. The catch is stated immediately: “The conditioning term <span class="math inline">\(P(x_t \mid x_1, \dots, x_{t-1})\)</span> becomes computationally expensive and statistically difficult to model as the sequence length <span class="math inline">\(t\)</span> grows” — the full history is too much to carry raw.</p>
+<p><strong>Basically, …</strong> “Order is the data: shuffle a sentence and it dies. The model’s job is to score whole sequences — how plausible is this one? The chain rule turns that into ‘predict each token from everything before it’, which is the autoregressive game. The problem: ‘everything before it’ gets long, and long is expensive.”</p>
+</section>
+<section id="before-the-rnn-markov-windows-and-why-they-break" class="level2">
+<h2 class="anchored" data-anchor-id="before-the-rnn-markov-windows-and-why-they-break">45.2 Before the RNN: Markov, windows, and why they break</h2>
+<p>Three simplifications, each buying tractability and each paying for it.</p>
+<p><strong>i) The Markov assumption / n-grams.</strong> Cut the history: “Assumes that the current state <span class="math inline">\(x_t\)</span> only depends on the immediately preceding state <span class="math inline">\(x_{t-1}\)</span>,” so <span class="math inline">\(P(x_1, \dots, x_T) \approx P(x_1)\prod_{t=2}^{T} P(x_t \mid x_{t-1})\)</span> — the first-order Markov model, “also known as a bigram model in the context of language processing,” extendable to “a fixed-length window of previous states (e.g., trigrams, etc.)” [recorded]. The price: “Markov models and n-grams have a fixed memory; they only look at the last <span class="math inline">\(n - 1\)</span> tokens. To remember more, the number of model parameters grows exponentially, making them impractical for capturing long-range dependencies” [recorded]. Count it: a bigram table over a vocabulary of size <span class="math inline">\(|V|\)</span> needs <span class="math inline">\(|V|^2\)</span> entries; a trigram <span class="math inline">\(|V|^3\)</span> — each extra token of memory multiplies the table by <span class="math inline">\(|V|\)</span>.</p>
+<p><strong>ii) Linear regression on a fixed window.</strong> “It follows an n-gram Markovian assumption. It uses a fixed window of past data and applies a linear model to predict the next value”: <span class="math inline">\(\hat x_t = \sum_{i=1}^{\tau} w_i x_{t-i} + b\)</span> [recorded]. The deck lists three limitations:</p>
+<ol type="1">
+<li><strong>Linearity.</strong> “They fail to capture complex, non-linear relationships, such as: the interaction between different past events. Sudden shocks or spikes in the data (e.g., a stock market crash).”</li>
+<li><strong>Fixed window.</strong> “By conditioning only on a fixed-length window (<span class="math inline">\(\tau\)</span>), the model is completely blind to any information that occurred before that window” — fatal “when long-range dependencies are important.”</li>
+<li><strong>Error accumulation.</strong> For multi-step prediction the model feeds its own outputs back in: “<span class="math inline">\(\hat x_{t+1}\)</span> will have some error, <span class="math inline">\(\epsilon_1\)</span>. This incorrect value… is then fed back into the model to predict <span class="math inline">\(\hat x_{t+2}\)</span>. The error in the input leads to a new, often larger, error <span class="math inline">\(\epsilon_2\)</span>… causing the predictions to diverge rapidly from the true data.”</li>
+</ol>
+<p><strong>iii) MLPs and CNNs.</strong> Chapter 44’s machinery doesn’t transfer. The deck’s three counts: <strong>Fixed-size vectors</strong> — “They require inputs of a fixed length. This forces us to either truncate long sequences or pad short ones, both of which can lead to loss of information.” <strong>No parameter sharing across time</strong> — “An MLP learns separate weights for features at each position. It cannot generalize a pattern it learns at position ‘i’ to position ‘j’. A CNN shares parameters spatially, but isn’t designed for capturing temporal dependencies of arbitrary length.” <strong>No memory of context</strong> — “They process each part of the input independently. They have no mechanism to remember previous elements when processing a new one.” The verdict: “We need a model that processes sequences step-by-step, with memory” [recorded].</p>
+<p><strong>Basically, …</strong> “Three workarounds, three bills. Markov: only look back <span class="math inline">\(n{-}1\)</span> steps — but a longer look-back multiplies the parameter table by the vocabulary size each time. Linear window: same blind spot, plus straight-line-only predictions that drift when fed their own errors. MLPs/CNNs: fixed-length inputs, and an MLP learns position 5’s pattern separately from position 50’s — no sharing across time, no memory. The spec for the fix: step-by-step, with memory.”</p>
+</section>
+<section id="the-rnn-one-cell-reused-across-time" class="level2">
+<h2 class="anchored" data-anchor-id="the-rnn-one-cell-reused-across-time">45.3 The RNN: one cell, reused across time</h2>
+<p><strong>The latent hidden state.</strong> Instead of conditioning on the raw past, “an RNN maintains a compact summary of the entire history in a hidden state, <span class="math inline">\(h_t\)</span>”: <span class="math display">\[\boxed{P(x_t \mid x_1, \dots, x_{t-1}) \approx P(x_t \mid h_{t-1})}, \qquad h_t = f(x_t, h_{t-1}) \quad \text{[recorded]}.\]</span> “An RNN processes a sequence by iterating through its elements one by one. It maintains a hidden state (or ‘memory’) that captures information about what it has seen so far. The output at a given time step depends not only on the current input but also on the hidden state from the previous time step.” At each step the network “takes a new input <span class="math inline">\(x_t\)</span>; updates its hidden state <span class="math inline">\(h_t\)</span>; produces an output <span class="math inline">\(y_t\)</span>” [recorded].</p>
+<p><strong>The equations (the deck’s).</strong> A single recurrent neuron: <span class="math display">\[\boxed{h_t = \tanh(w_{xh}\, x_t + w_{hh}\, h_{t-1} + b_h)}, \qquad \boxed{y_t = w_{hy}\, h_t + b_y} \quad \text{[recorded]}.\]</span> <span class="math inline">\(w_{xh}\)</span> weights the current input, <span class="math inline">\(w_{hh}\)</span> “the recurrent or ‘memory’ weight” scales the previous hidden state, <span class="math inline">\(w_{hy}\)</span> reads the output out. A layer vectorizes it (§41.4’s move): <span class="math display">\[\boxed{h_t = \tanh(W_{xh}\, x_t + W_{hh}\, h_{t-1} + b_h)}, \qquad \boxed{y_t = W_{hy}\, h_t + b_y} \quad \text{[recorded]}.\]</span> This is §41.4’s two equations with one addition: the <span class="math inline">\(W_{hh} h_{t-1}\)</span> term, the memory of the previous step, added to the pre-activation before the nonlinearity. The deck uses <span class="math inline">\(\tanh\)</span> — §41.7’s zero-centered S-bend, “often speeding up convergence” for exactly this inner recurrence.</p>
+<p><strong>The key point (the deck’s, §44.10’s twin).</strong> “Key Point: The same weight matrix is used at every time step.” Drawn folded, the RNN is a neuron with a self-loop; drawn <strong>unfolded over time</strong>, it is a chain of identical cells, <span class="math inline">\(W_{xh}, W_{hh}, W_{hy}\)</span> repeated at <span class="math inline">\(t-1, t, t+1\)</span>. Chapter 44’s filter is reused at every <em>pixel</em>; the RNN’s cell is reused at every <em>timestep</em> — one set of parameters no matter how long the sequence, which is also what lets it accept variable-length inputs that an MLP cannot.</p>
+<!-- Diagram reference (CC-BY-SA): d2l.ai Fig. 9.1 shows the folded cyclic RNN beside its time-unfolded chain with shared parameters across steps — the canonical figure for this section. Source URL: https://d2l.ai/chapter_recurrent-neural-networks/index.html -->
+<p><strong>Note (the sentiment notebook’s variant).</strong> Its §1.4 writes the same update with a generic nonlinearity, <span class="math inline">\(h_t = \sigma(W_{xh} x_t + W_{hh} h_{t-1} + b_h)\)</span>, <span class="math inline">\(\sigma\)</span> = “a non-linear activation function” [recorded] — the deck’s neuron fixes <span class="math inline">\(\sigma = \tanh\)</span>. Same cell, activation swapped.</p>
+<p><strong>Basically, …</strong> “One small network, run in a loop. Each step: mix the new input with a summary of everything seen so far (the hidden state), squash with tanh, read out the prediction. The loop is the memory — and the weights are shared across every step, so a 10-word sentence and a 1000-word sentence use the same parameters. That is Chapter 44’s sharing idea, rotated from space to time.”</p>
+</section>
+<section id="eg-one-forward-step-next-character-prediction-verified-numpy" class="level2">
+<h2 class="anchored" data-anchor-id="eg-one-forward-step-next-character-prediction-verified-numpy">45.4 eg: one forward step — next-character prediction [verified-NumPy]</h2>
+<p>The deck’s worked example. Vocabulary <span class="math inline">\(\{\text{h}{:}0, \text{e}{:}1, \text{l}{:}2, \text{o}{:}3\}\)</span> (the §45.2 tokenization story in miniature: text → integer indices → one-hot). Task: input character “e” (<span class="math inline">\(x_t = (0,1,0,0)^T\)</span>), memory of having just seen “h” (<span class="math inline">\(h_{t-1} = (0.6, 0.2)^T\)</span>, “pre-computed for simplicity”), predict the next character. Ground truth: “l” (<span class="math inline">\((0,0,1,0)^T\)</span>).</p>
+<p>Weights: <span class="math display">\[W_{xh} = \begin{bmatrix} 0.1 &amp; 0.2 &amp; 0.3 &amp; 0.4 \\\\ 0.4 &amp; 0.5 &amp; 0.6 &amp; 0.7 \end{bmatrix},\quad W_{hh} = \begin{bmatrix} 0.1 &amp; 0.5 \\\\ 0.5 &amp; 0.1 \end{bmatrix},\quad W_{hy} = \begin{bmatrix} 2 &amp; -1 \\\\ 1 &amp; 0 \\\\ 1 &amp; 3 \\\\ 0 &amp; -2 \end{bmatrix},\quad b_h = \begin{bmatrix} 0.1 \\\\ 0.1 \end{bmatrix},\ b_y = \begin{bmatrix} 0.1 \\\\ 0.2 \\\\ 0.3 \\\\ 0.4 \end{bmatrix}.\]</span></p>
+<p>Step 1 — the new hidden state. Input contribution: <span class="math inline">\(W_{xh} x_t\)</span> picks out column 1 (the one-hot selects the “e” column): <span class="math inline">\((0.2, 0.5)^T\)</span>. Memory contribution: <span class="math inline">\(W_{hh} h_{t-1} = (0.1\cdot0.6 + 0.5\cdot0.2,\ 0.5\cdot0.6 + 0.1\cdot0.2)^T = (0.16, 0.32)^T\)</span>. Add the bias: <span class="math display">\[h_t = \tanh\!\left(\begin{bmatrix} 0.2 \\\\ 0.5 \end{bmatrix} + \begin{bmatrix} 0.16 \\\\ 0.32 \end{bmatrix} + \begin{bmatrix} 0.1 \\\\ 0.1 \end{bmatrix}\right) = \tanh\!\begin{bmatrix} 0.46 \\\\ 0.92 \end{bmatrix} = \begin{bmatrix} 0.4301 \\\\ 0.7259 \end{bmatrix}.\]</span></p>
+<p>Step 2 — output logits. <span class="math inline">\(W_{hy} h_t = (2(0.4301) - 0.7259,\ 0.4301,\ 0.4301 + 3(0.7259),\ -2(0.7259))^T = (0.1343,\ 0.4301,\ 2.6078,\ -1.4518)^T\)</span>; add <span class="math inline">\(b_y\)</span>: <span class="math display">\[y_t = \begin{bmatrix} 0.2343 \\\\ 0.6301 \\\\ 2.9078 \\\\ -1.0518 \end{bmatrix} \begin{array}{l} \leftarrow \text{'h'} \\\\ \leftarrow \text{'e'} \\\\ \leftarrow \text{'l'} \\\\ \leftarrow \text{'o'} \end{array}.\]</span> Highest logit <span class="math inline">\(2.9078\)</span> → ‘l’. “The model predicts ‘l’!” [recorded] — matching the ground truth.</p>
+<p><strong>Note (deck arithmetic slip, corrected here).</strong> The deck’s slide writes the fourth pre-bias entry as <span class="math inline">\(-1.01\)</span> and the final logit as <span class="math inline">\(-0.61\)</span>; the correct values are <span class="math inline">\(-1.4518\)</span> and <span class="math inline">\(-1.0518\)</span> (<span class="math inline">\(0\cdot0.4301 - 2\cdot0.7259 = -1.4518\)</span>, then <span class="math inline">\(+0.4\)</span>). The argmax and the conclusion are unaffected. The deck’s rounded <span class="math inline">\(h_t = (0.43, 0.72)\)</span> accounts for the small differences in the first three entries (<span class="math inline">\(0.24, 0.63, 2.89\)</span> vs <span class="math inline">\(0.234, 0.630, 2.908\)</span> here).</p>
+<p><strong>Basically, …</strong> “One-hot ‘e’ picks out one column of <span class="math inline">\(W_{xh}\)</span> (the ‘what does e mean’ column); the old hidden state gets mixed through <span class="math inline">\(W_{hh}\)</span> (the ‘what did I remember’ path); add, tanh, done — new memory <span class="math inline">\((0.43, 0.73)\)</span>. Then <span class="math inline">\(W_{hy}\)</span> scores each vocabulary character against that memory, and ‘l’ wins with <span class="math inline">\(2.91\)</span>. The one-hot trick makes the input matrix multiply into a column lookup — cheap and readable.”</p>
+</section>
+<section id="bptt-the-same-backprop-unrolled" class="level2">
+<h2 class="anchored" data-anchor-id="bptt-the-same-backprop-unrolled">45.5 BPTT: the same backprop, unrolled</h2>
+<p>Unfold the RNN over <span class="math inline">\(T\)</span> steps and it is a <span class="math inline">\(T\)</span>-layer feedforward network whose layers happen to share weights. So training is Chapter 42’s machinery with a new name: “BPTT is simply the application of the standard backpropagation algorithm to the ‘unrolled’ computational graph of an RNN. It is not a new algorithm, but a name for the process” [recorded]. The loss at the end “depends on computations from every single time step” — <span class="math inline">\(h_t\)</span> depends on <span class="math inline">\(h_{t-1}\)</span>, which depends on <span class="math inline">\(h_{t-2}\)</span>, “and so on” — so the error must flow back through the whole chain.</p>
+<p><strong>The heart of BPTT (the deck’s recursion).</strong> The gradient of the total loss <span class="math inline">\(L = \sum_{t=1}^{T} L_t\)</span> w.r.t. a hidden state has <em>two</em> components: <span class="math display">\[\boxed{\frac{\partial L}{\partial h_t} = \underbrace{\frac{\partial L}{\partial y_t}\frac{\partial y_t}{\partial h_t}}_{\text{current loss}} + \underbrace{\frac{\partial L}{\partial h_{t+1}}\frac{\partial h_{t+1}}{\partial h_t}}_{\text{future loss}}} \quad \text{[recorded]}.\]</span> “This recursive formula is the heart of BPTT”: the error at <span class="math inline">\(h_t\)</span> is the error from <em>this</em> step’s output plus the error arriving back from <em>the future</em> through the recurrent connection. Start at <span class="math inline">\(t = T\)</span> (no future term) and walk backwards.</p>
+<p><strong>The parameter gradients (the deck’s).</strong> With <span class="math inline">\(\partial L/\partial h_t\)</span> in hand, “we can find the gradients for the weights and biases at that time step. The final gradient for a parameter is the sum of its gradients from all time steps” [recorded]: <span class="math display">\[\frac{\partial L}{\partial W_{hy}} = \sum_{t=1}^{T} \frac{\partial L}{\partial y_t} h_t^T, \qquad \frac{\partial L}{\partial W_{xh}} = \sum_{t=1}^{T} \frac{\partial L}{\partial h_t} \odot \text{(local terms)}\, x_t^T, \qquad \frac{\partial L}{\partial W_{hh}} = \sum_{t=1}^{T} \frac{\partial L}{\partial h_t} \odot \text{(local terms)}\, h_{t-1}^T.\]</span> The local terms are the <span class="math inline">\(\tanh\)</span> derivative <span class="math inline">\(\phi'(z) = 1 - \tanh^2(z)\)</span> at each step — §42.4’s three-component product (upstream × activation × local), summed over time because the weights are shared across it. Sharing buys parameter efficiency (§45.3); the sum is its bookkeeping cost.</p>
+<p><strong>Note.</strong> The two-term recursion is §42.4’s <span class="math inline">\(\delta\)</span> recursion seen from the side: in a feedforward net the error flows <em>down through layers</em>; here it flows <em>back through time</em> — the same chain rule, and §42.6’s gradient-checking advice applies to it unchanged.</p>
+<p><strong>Basically, …</strong> “Unroll the loop and it’s just a deep net with tied weights — backprop as usual, hence ‘backprop through time’. Each hidden state’s blame has two sources: the output it produced <em>now</em>, and the future states it helped build <em>later</em>. Add the two, step back one timestep, repeat. Parameter gradients are the per-step gradients <em>summed</em> — one weight, many timesteps, so every step gets a vote.”</p>
+</section>
+<section id="eg-bptt-by-hand-on-a-1-neuron-net-verified-numpy" class="level2">
+<h2 class="anchored" data-anchor-id="eg-bptt-by-hand-on-a-1-neuron-net-verified-numpy">45.6 eg: BPTT by hand on a 1-neuron net [verified-NumPy]</h2>
+<p>The deck’s setup, with its arithmetic corrected (see the Note). One neuron, sequence length <span class="math inline">\(2\)</span>, squared-error loss <span class="math inline">\(L_t = (y_t - \text{target}_t)^2\)</span>, biases <span class="math inline">\(0\)</span>: <span class="math display">\[x_1 = 2,\ x_2 = 3,\ h_0 = 0,\quad w_{xh} = 0.5,\ w_{hh} = 0.2,\ w_{hy} = 0.4,\quad \text{targets } 0.5,\ 0.8,\ \phi = \tanh.\]</span></p>
+<p><strong>Forward.</strong> <span class="math inline">\(t{=}1\)</span>: <span class="math inline">\(h_1 = \tanh(0.5\cdot2 + 0.2\cdot0) = \tanh(1) = 0.7616\)</span>; <span class="math inline">\(y_1 = 0.4\cdot0.7616 = 0.3046\)</span>; <span class="math inline">\(L_1 = (0.3046-0.5)^2 = 0.0382\)</span>. <span class="math inline">\(t{=}2\)</span>: <span class="math inline">\(h_2 = \tanh(0.5\cdot3 + 0.2\cdot0.7616) = \tanh(1.6523) = 0.9292\)</span>; <span class="math inline">\(y_2 = 0.4\cdot0.9292 = 0.3717\)</span>; <span class="math inline">\(L_2 = (0.3717-0.8)^2 = 0.1835\)</span>. Total <span class="math inline">\(L = 0.2216\)</span>.</p>
+<p><strong>Backward, from the end.</strong> <span class="math inline">\(t{=}2\)</span>: <span class="math inline">\(\frac{\partial L}{\partial y_2} = 2(0.3717 - 0.8) = -0.8567\)</span>; <span class="math inline">\(\frac{\partial L}{\partial h_2} = -0.8567 \cdot 0.4 = -0.3427\)</span>. The <span class="math inline">\(w_{hh}\)</span> gradient at this step (local: <span class="math inline">\(\phi'(z_2)\,h_1 = (1-h_2^2)\,h_1\)</span>): <span class="math display">\[\left.\frac{\partial L}{\partial w_{hh}}\right|_{t=2} = (-0.3427)\,(1-0.9292^2)\,(0.7616) = -0.0357.\]</span> <span class="math inline">\(t{=}1\)</span> — the crucial step, both components: <span class="math display">\[\frac{\partial L}{\partial h_1} = \underbrace{2(0.3046-0.5)\cdot0.4}_{\text{current } = -0.1563} + \underbrace{(-0.3427)\,(1-0.9292^2)\,(0.2)}_{\text{future } = -0.0094} = -0.1657.\]</span> Then <span class="math inline">\(\left.\frac{\partial L}{\partial w_{hh}}\right|_{t=1} = (-0.1657)\,(1-0.7616^2)\,(0) = 0\)</span> — <span class="math inline">\(h_0 = 0\)</span> kills it, the same silent-input logic as §42.3’s Note (<span class="math inline">\(x_2 = 0\)</span> there). Final: <span class="math display">\[\boxed{\frac{\partial L}{\partial w_{hh}} = 0 + (-0.0357) = -0.0357}.\]</span> The other two, same recipe: <span class="math inline">\(\partial L/\partial w_{hy} = \sum_t \frac{\partial L}{\partial y_t} h_t = (-0.3907)(0.7616) + (-0.8567)(0.9292) = -1.0936\)</span>, and <span class="math inline">\(\partial L/\partial w_{xh} = \sum_t \frac{\partial L}{\partial h_t}(1-h_t^2)x_t = (-0.1657)(0.4200)(2) + (-0.3427)(0.1366)(3) = -0.2796\)</span> [verified-NumPy].</p>
+<p><strong>Note (deck arithmetic slip, corrected here).</strong> The deck writes <span class="math inline">\(y_2 = 0.4\cdot0.93 = 0.744\)</span> — but <span class="math inline">\(0.4\cdot0.93 = 0.372\)</span>; its <span class="math inline">\(0.744\)</span> equals <span class="math inline">\(0.8\cdot0.93\)</span>, as if the target <span class="math inline">\(0.8\)</span> crept in as the weight. Everything downstream in the deck (<span class="math inline">\(L_2 = 0.003\)</span>, <span class="math inline">\(\partial L/\partial y_2 = -0.112\)</span>, <span class="math inline">\(\partial L/\partial w_{hh} = -0.0046\)</span>) follows consistently from the slipped value, so only the one line needed fixing; the corrected pass above re-derives it all. The structural points survive: the two-component recursion, and the <span class="math inline">\(h_0 = 0\)</span> zero gradient.</p>
+<p><strong>Basically, …</strong> “Forward: two tanh squashes, two squared errors, <span class="math inline">\(L = 0.222\)</span>. Backward: at the last step the blame is just ‘prediction minus target, doubled’ times the output weight; at the first step it’s that <em>plus</em> the future’s blame passed back through <span class="math inline">\(w_{hh}\)</span> and the tanh slope — current loss plus future loss, exactly §45.5’s recursion. The <span class="math inline">\(t{=}1\)</span> memory gradient is zero because <span class="math inline">\(h_0 = 0\)</span>: nothing flowed through, nothing to blame.”</p>
+</section>
+<section id="the-price-of-sharing-vanishing-and-exploding-gradients" class="level2">
+<h2 class="anchored" data-anchor-id="the-price-of-sharing-vanishing-and-exploding-gradients">45.7 The price of sharing: vanishing and exploding gradients</h2>
+<p><strong>The product.</strong> To reach the early weights, the error crosses every timestep. The deck writes the chain for the hidden-state Jacobian over <span class="math inline">\(T\)</span> steps: <span class="math display">\[\boxed{\frac{\partial h_T}{\partial h_0} = \prod_{t=1}^{T} \frac{\partial h_t}{\partial h_{t-1}} = \prod_{t=1}^{T} W_{hh}^T\,\mathrm{diag}(\phi'(\dots))} \quad \text{[recorded]}.\]</span> Each step multiplies by the <em>same</em> <span class="math inline">\(W_{hh}\)</span> and by the <span class="math inline">\(\tanh\)</span> slope <span class="math inline">\(\phi'(z) = 1 - \tanh^2(z) \le 1\)</span> — “This long product is the source of major numerical instability” [recorded]. This is §42.8(ii)’s other half: there the error crossed <em>layers</em> and each sigmoid multiplied it by at most <span class="math inline">\(0.25\)</span>; here it crosses <em>time</em> and each step multiplies by <span class="math inline">\(W_{hh}^T\,\mathrm{diag}(\phi')\)</span>.</p>
+<p><strong>The twin problems (the deck’s table).</strong></p>
+<ol type="i">
+<li><p><strong>Gradient explosion.</strong> “If the recurrent weight matrix <span class="math inline">\(W_{hh}\)</span> has large values, the long product of matrices can grow exponentially.” Result: “Gradients become enormous (NaN or infinity)” → “Model weights are updated by huge amounts” [recorded]. Note: the deck’s Week-5 companion (§43.12’s troubleshooting table) lists “Loss exploding → Decrease LR, gradient clipping” — the same fix, now with its derivation.</p></li>
+<li><p><strong>Gradient vanishing.</strong> “If the recurrent weight matrix has small values, the long product of matrices can shrink exponentially towards zero.” Result: “Gradients for early time steps become nearly zero” → “The model cannot learn long-range dependencies” → “The model forgets what happened early in the sequence” [recorded].</p></li>
+</ol>
+<p>The <span class="math inline">\(\tanh\)</span> makes (ii) worse even at moderate weights: <span class="math inline">\(\phi'(z) \le 1\)</span> always, and a saturated neuron (<span class="math inline">\(\tanh(z) \approx \pm 1\)</span>) has <span class="math inline">\(\phi'(z) \approx 0\)</span> — §41.7’s tanh row (“same vanishing-gradient flattening — ‘difficult to use in very deep networks’”) is the same sentence, now about depth <em>in time</em>. A neuron that saturates stops its own past from being learnable.</p>
+<p><strong>eg (the shrink and the blow-up, counted — [verified-NumPy]).</strong> Suppose each step multiplies the error by roughly <span class="math inline">\(0.64\)</span> (e.g.&nbsp;<span class="math inline">\(\|W_{hh}\| \approx 0.8\)</span>, <span class="math inline">\(\phi' \approx 0.8\)</span>): after 20 steps the surviving fraction is <span class="math inline">\(0.64^{20} \approx 1.3\times10^{-4}\)</span> — four orders of magnitude gone. With <span class="math inline">\(1.5\)</span> per step instead: <span class="math inline">\(1.5^{20} \approx 3325\)</span> — the gradient more than triples per step and compounds to thousands. The boundary between the two regimes is a knife’s edge, and the same <span class="math inline">\(W_{hh}\)</span> must serve every timestep — that is why the deck calls the product itself, not any one bad weight, “the source.”</p>
+<p><strong>The three fixes (the deck’s).</strong></p>
+<ol type="i">
+<li><p><strong>Gradient clipping</strong> (for explosion). “If the norm of the gradient exceeds a certain threshold, it is scaled down” [recorded]. No formula in the deck; the torch call lives in §43.12 (<code>torch.nn.utils.clip_grad_norm_</code>), which lists clipping as “essential for RNNs/Transformers” — the derivation above is why.</p></li>
+<li><p><strong>Truncated BPTT</strong> (for cost and instability). “Instead of backpropagating through the entire sequence, we detach the gradient history after a fixed number of steps (<span class="math inline">\(\tau\)</span>). The model still propagates its hidden state forward through the whole sequence, maintaining its long-term memory. However, during the backward pass, the gradient calculation is cut off after <span class="math inline">\(\tau\)</span> steps” [recorded]. “Trade-off: It limits the model’s ability to learn dependencies that span longer than <span class="math inline">\(\tau\)</span> time steps.”</p></li>
+<li><p><strong>More complex RNN architectures</strong> (for vanishing). “Solution: More complex RNN architectures” — the gates of §45.8, which keep a gradient path that does not multiply by <span class="math inline">\(W_{hh}\)</span> every step.</p></li>
+</ol>
+<p><strong>Basically, …</strong> “Backprop through 20 timesteps multiplies the error by the same weights 20 times. Slightly-small weights: the signal dies (<span class="math inline">\(0.64^{20}\)</span> is basically zero) and the net forgets the past. Slightly-big: it explodes (<span class="math inline">\(1.5^{20}\)</span> is 3325) and you get NaNs. Clipping caps the explosions, truncation stops the backward chain early (but blinds the net beyond <span class="math inline">\(\tau\)</span> steps), and the real fix for vanishing is architectural — gates.”</p>
+</section>
+<section id="lstm-gates-and-the-additive-cell" class="level2">
+<h2 class="anchored" data-anchor-id="lstm-gates-and-the-additive-cell">45.8 LSTM: gates and the additive cell</h2>
+<p><strong>What it is.</strong> “LSTM networks are a type of recurrent neural network (RNN) designed to solve the vanishing gradient problem. They are particularly effective at learning long-term dependencies in sequential data” [recorded]. Three differences from the simple RNN: <strong>dual states</strong> — “a short-term state <span class="math inline">\(h_t\)</span> and a long-term state (or cell state) <span class="math inline">\(c_t\)</span>”; a <strong>gated mechanism</strong> — “special ‘gates’ to regulate the flow of information into and out of the cell state”; and <strong>gradient stability</strong> — “The gates and additive interactions within the cell state help combat both vanishing and exploding gradients, making training more stable” [recorded].</p>
+<p><strong>The gates (the deck’s equations, [recorded]).</strong> Each gate is a sigmoid over the concatenated <span class="math inline">\([h_{t-1}, x_t]\)</span> — a number in <span class="math inline">\((0,1)\)</span> per cell dimension, i.e.&nbsp;a soft valve:</p>
+<ul>
+<li><strong>Forget gate</strong> — “Decides what information from the old cell state to throw away”: <span class="math inline">\(f_t = \sigma(W_f \cdot [h_{t-1}, x_t] + b_f)\)</span>. “<span class="math inline">\(1\)</span> means ‘keep this information completely’ and <span class="math inline">\(0\)</span> means ‘forget it completely.’”</li>
+<li><strong>Input gate</strong> — “Decides what new information from the current input to store in the cell state”: <span class="math inline">\(i_t = \sigma(W_i \cdot [h_{t-1}, x_t] + b_i)\)</span>, paired with a <strong>candidate</strong> <span class="math inline">\(\tilde c_t = \tanh(W_c \cdot [h_{t-1}, x_t] + b_c)\)</span> — “<span class="math inline">\(\tanh\)</span>… to create a new vector of potential information, scaled between -1 and 1.” The two “are multiplied element-wise to form the new information that will be added to the cell state.”</li>
+<li><strong>Cell update</strong> — “This is the core of the LSTM’s memory mechanism”: <span class="math display">\[\boxed{c_t = f_t \odot c_{t-1} + i_t \odot \tilde c_t} \quad \text{[recorded]}.\]</span> “The first term, <span class="math inline">\(f_t \odot c_{t-1}\)</span>, represents the old memory with some parts forgotten. The second term, <span class="math inline">\(i_t \odot \tilde c_t\)</span>, represents the new information being added.”</li>
+<li><strong>Output gate</strong> — “Decides what part of the cell state to output as the new hidden state”: <span class="math inline">\(o_t = \sigma(W_o \cdot [h_{t-1}, x_t] + b_o)\)</span>, <span class="math inline">\(h_t = o_t \odot \tanh(c_t)\)</span>. “The hidden state <span class="math inline">\(h_t\)</span> is a filtered version of the cell state.”</li>
+</ul>
+<p><strong>Why the gates fix vanishing.</strong> “This additive interaction is crucial for preserving gradients. Instead of a series of multiplicative steps, the addition allows gradients to flow directly back, preventing them from vanishing” [recorded]. In symbols: <span class="math inline">\(\partial c_t / \partial c_{t-1} = f_t\)</span> — the error on the cell state passes back through a <em>single</em> gate value, not through <span class="math inline">\(W_{hh}^T\,\mathrm{diag}(\phi')\)</span>. If the forget gate stays near <span class="math inline">\(1\)</span> (keep everything), the gradient crosses timesteps almost intact — the §45.7 product becomes a sum of <span class="math inline">\(f_t\)</span>’s instead of a product of <span class="math inline">\(W_{hh}\)</span>’s.</p>
+<p><strong>eg (the gradient path, counted — [verified-NumPy]).</strong> Over 20 timesteps with a vanilla step-factor of <span class="math inline">\(0.64\)</span>, §45.7’s eg left <span class="math inline">\(1.3\times10^{-4}\)</span>. With an LSTM whose forget gates sit at <span class="math inline">\(f_t = 0.95\)</span> (mostly keeping), the cell-state gradient factor is <span class="math inline">\(0.95^{20} \approx 0.36\)</span> — more than a third survives. The gates <em>learn</em> where to sit: <span class="math inline">\(f_t \approx 1\)</span> on stretches worth remembering, <span class="math inline">\(f_t \approx 0\)</span> where the past should be dropped. The network learns its own truncation window.</p>
+<p><strong>Basically, …</strong> “An LSTM keeps two memories: a long-term cell state and a short-term hidden state. Three sigmoid valves guard the cell — forget (what to erase), input (what new stuff to write, via a tanh candidate), output (what to show the world). The cell update is <em>addition</em>, not a matrix multiply, so the gradient flows back through a chain of forget-gate values instead of a chain of weight matrices — and a forget gate near 1 means the past survives. Basically: a memory with an eraser, a pen, and a lid, all learned.”</p>
+</section>
+<section id="gru-two-gates-no-separate-cell" class="level2">
+<h2 class="anchored" data-anchor-id="gru-two-gates-no-separate-cell">45.9 GRU: two gates, no separate cell</h2>
+<p><strong>What it is.</strong> “The Gated Recurrent Unit (GRU), introduced in 2014, is a popular alternative to the LSTM. It aims to solve the same vanishing gradient problem but with a simpler architecture and fewer parameters” [recorded]. “Two Gates instead of Three” and “No Separate Cell State: GRU merges the cell state and hidden state into a single hidden state vector, <span class="math inline">\(h_t\)</span>.” The payoff: “Due to its simpler design, a GRU often trains faster than an LSTM and can perform just as well, or sometimes even better, on less complex datasets” [recorded].</p>
+<p><strong>The equations (the deck’s, [recorded]).</strong> Step 1, the two gates:</p>
+<ul>
+<li><strong>Reset gate</strong> — “determines how the previous hidden state <span class="math inline">\(H_{t-1}\)</span> is used to compute the new candidate hidden state”: <span class="math inline">\(R_t = \sigma(X_t W_{xr} + H_{t-1} W_{hr} + b_r)\)</span>. “When entries in <span class="math inline">\(R_t\)</span> are close to 1, the gate allows the previous hidden state to pass through… close to 0, the gate effectively ‘resets’ or ignores parts of the previous hidden state.”</li>
+<li><strong>Update gate</strong> — “controls how much of the previous hidden state <span class="math inline">\(H_{t-1}\)</span> is directly carried over to the final hidden state <span class="math inline">\(H_t\)</span>”: <span class="math inline">\(Z_t = \sigma(X_t W_{xz} + H_{t-1} W_{hz} + b_z)\)</span>. “It acts similarly to the forget gate in an LSTM. When entries in <span class="math inline">\(Z_t\)</span> are close to 1, the corresponding dimension in <span class="math inline">\(H_{t-1}\)</span> is almost entirely copied to <span class="math inline">\(H_t\)</span>, preserving long-term memory.”</li>
+</ul>
+<p>Step 2, the states. <strong>Candidate</strong> (a vanilla RNN step, but with the reset gate throttling the past): <span class="math inline">\(\tilde H_t = \tanh(X_t W_{xh} + (R_t \odot H_{t-1}) W_{hh} + b_h)\)</span>. <strong>Final state</strong> — “a linear interpolation between the previous hidden state <span class="math inline">\(H_{t-1}\)</span> and the new candidate hidden state <span class="math inline">\(\tilde H_t\)</span>”: <span class="math display">\[\boxed{H_t = Z_t \odot H_{t-1} + (1 - Z_t) \odot \tilde H_t} \quad \text{[recorded]}.\]</span> “<span class="math inline">\(Z_t \approx 1\)</span>: retain old information; <span class="math inline">\(Z_t \approx 0\)</span>: fully replace it with new information.” The same additive trick as the LSTM’s cell update (§45.8): <span class="math inline">\(\partial H_t / \partial H_{t-1}\)</span> carries a <span class="math inline">\(Z_t\)</span> term, so gradients survive when the update gate stays open.</p>
+<p><strong>Note (deck notation switch).</strong> The GRU slides write row-vector products (<span class="math inline">\(X_t W_{xr}\)</span>) while the LSTM slides write <span class="math inline">\(W_f \cdot [h_{t-1}, x_t]\)</span> — the GRU’s <span class="math inline">\(H_t\)</span> is the LSTM section’s <span class="math inline">\(h_t\)</span>, transposed layout, same role. The LSTM-vs-GRU comparison that matters is architectural: three gates + separate cell (LSTM) vs two gates + merged state (GRU).</p>
+<p><strong>LSTM vs GRU, one line each.</strong> LSTM: more expressive (separate long/short states, three valves) at the cost of more parameters. GRU: fewer parameters, faster training, “just as well, or sometimes even better, on less complex datasets” — and §43.12 files both under “RNNs / LSTMs → RMSProp / Adam.” When in doubt, the course’s notebooks reach for the LSTM (<em>sentiment-analysis</em> builds <code>SentimentLSTM</code>; the time-series notebook’s class is a plain <code>nn.RNN</code>) — the GRU appears in the deck’s theory, not in either notebook’s code.</p>
+<p><strong>Basically, …</strong> “GRU = LSTM on a diet. Two valves instead of three (reset: how much past goes into the <em>candidate</em>; update: how much past survives into the <em>final</em> state), one state instead of two. The final state is a learned mix — update gate near 1 keeps the old memory, near 0 takes the new candidate. Same vanishing-gradient fix (the mix is additive), fewer knobs, faster training.”</p>
+</section>
+<section id="reading-both-ways-speaking-at-length" class="level2">
+<h2 class="anchored" data-anchor-id="reading-both-ways-speaking-at-length">45.10 Reading both ways, speaking at length</h2>
+<p><strong>Bidirectional RNNs.</strong> “A standard RNN is unidirectional. The hidden state at time <span class="math inline">\(t\)</span> (<span class="math inline">\(H_t\)</span>) only captures information from past inputs” — “a major drawback for tasks where future context is crucial,” e.g.&nbsp;“The man who ___ movies is a critic,” where “we need the word ‘movies’ to predict ‘reviews’” [recorded]. The fix: “two independent RNNs: one that processes the sequence from left-to-right (a forward layer) and another that processes it from right-to-left (a backward layer). For any time step <span class="math inline">\(t\)</span>, the final hidden state is formed by concatenating the hidden states from both the forward and backward layers”: <span class="math display">\[\boxed{H_t = [\overrightarrow{h}_t,\ \overleftarrow{h}_t]}, \qquad O_t = H_t W_{hq} + b_q \quad \text{[recorded]}.\]</span> The deck’s walkthrough (“I am ___ happy”): the forward pass reaches the blank with only “I am”; the backward pass with only “happy”; the concatenated <span class="math inline">\(H_3\)</span> “contains a rich representation of the full sentence context” [recorded]. Cost: two passes, and the backward pass must wait for the whole sequence — fine for scoring a sentence, impossible for live generation.</p>
+<p><strong>Encoder–decoder (seq2seq).</strong> “Standard RNNs are only designed for tasks where the input and output lengths are the same. How do we handle tasks like machine translation or summarization, where the lengths can be completely different?” [recorded]. Two RNNs with different jobs: the <strong>encoder</strong> “reads the entire input sequence step-by-step” and “compress[es] the information of the whole sequence into a single fixed-size vector, often called the <strong>context vector</strong>”; the <strong>decoder</strong> is “initialized with the encoder’s context vector” and “generates the output sequence one token at a time, using the context and the previously generated token” [recorded]. Trained jointly with cross-entropy “at each timestep of the decoder’s output,” comparing “the predicted probability distribution over the vocabulary with the one-hot encoded ground-truth token”; with padding, “the loss function uses a mask to ignore these padding tokens during calculation, ensuring they do not contribute to the gradient updates” [recorded].</p>
+<p><strong>Teacher forcing.</strong> “During training, instead of feeding the decoder’s own prediction from the previous step as input for the current step, we use the actual ground-truth token from the target sequence.” Benefit: “stabilizes training and helps the model learn the sequence structure more efficiently, as it always receives correct input.” But “at inference time… the model must use its own previously generated tokens as input, since the ground truth is not available” [recorded] — a train/test mismatch the chapter states and leaves open (Chapter 46’s attention does not remove it either, but it does remove the context-vector bottleneck below).</p>
+<p><strong>The context-vector bottleneck.</strong> One fixed-size vector must hold a 500-word article for a 50-word summary (“Text Summarization… Machine Translation… Question Answering” are the deck’s applications [recorded]). Everything the decoder knows about the input passes through that single vector — compress a long sequence into it and something is lost. This bottleneck is exactly what §44.10(ii)’s attention shortcut is for: “attention lets any position talk to any other directly, instead of waiting for pooling to bring them together” — here, instead of squeezing through one vector.</p>
+<p><strong>Basically, …</strong> “Forward-only RNNs can’t see the future — so run a second one backwards and concatenate: now every position knows both sides. Different input/output lengths (translation, summaries) need two RNNs: an encoder squeezes the input into one context vector, a decoder unrolls the output from it. Training cheats by feeding the decoder the true previous word (teacher forcing); at test time it’s on its own. The weak link: one vector carrying a whole paragraph — remember this when attention arrives.”</p>
+</section>
+<section id="judging-sequences-perplexity-bleu-beam-search" class="level2">
+<h2 class="anchored" data-anchor-id="judging-sequences-perplexity-bleu-beam-search">45.11 Judging sequences: perplexity, BLEU, beam search</h2>
+<p><strong>Perplexity.</strong> “Perplexity (PPL) is the standard metric for evaluating language models. It measures how ‘surprised’ or ‘perplexed’ a model is by a sequence of text” — “Lower Perplexity is Better!”: <span class="math display">\[\boxed{\mathrm{PPL} = \exp\!\left(-\frac{1}{T}\sum_{t=1}^{T} \log P(x_t \mid x_1, \dots, x_{t-1})\right)} \quad \text{[recorded]}.\]</span> It is “the exponentiation of the average negative log-likelihood” — the negative log-likelihood of §35.6’s cross-entropy vocabulary, exponentiated. Intuition: “A perplexity of <span class="math inline">\(k\)</span> means that, on average, the model is as uncertain about the next word as if it had to choose uniformly from <span class="math inline">\(k\)</span> different words” [recorded]. Sanity check [verified-NumPy]: a model assigning probability <span class="math inline">\(0.5\)</span> to each of four true next-words has average NLL <span class="math inline">\(-\ln 0.5 = 0.693\)</span>, so <span class="math inline">\(\mathrm{PPL} = e^{0.693} = 2.0\)</span> — as confused as a fair coin.</p>
+<p><strong>BLEU.</strong> “BLEU (Bilingual Evaluation Understudy) is a standard metric for evaluating the quality of a predicted sequence by comparing it to a target (ground truth) sequence,” based on “the precision of matching n-grams… between the two sequences” [recorded]: <span class="math display">\[\boxed{\mathrm{BLEU} = \exp\!\left(\min\!\left(0, 1 - \frac{\mathrm{len}_{\text{label}}}{\mathrm{len}_{\text{pred}}}\right)\right) \cdot \left(\prod_{n=1}^{k} p_n\right)^{1/k}} \quad \text{[recorded]},\]</span> <span class="math inline">\(p_n\)</span> = matched n-grams / predicted n-grams. The <span class="math inline">\(\min(0, 1 - \cdot)\)</span> term is the <strong>brevity penalty</strong>: “If the predicted sequence is identical to the target, the BLEU score is 1.”</p>
+<p><strong>eg (the deck’s BLEU example — [verified-NumPy]).</strong> Target “A B C D E F”, predicted “A B”, <span class="math inline">\(k = 2\)</span>: unigrams <span class="math inline">\(\{A, B\}\)</span> both match → <span class="math inline">\(p_1 = 2/2 = 1.0\)</span>; bigram <span class="math inline">\(\{AB\}\)</span> matches → <span class="math inline">\(p_2 = 1/1 = 1.0\)</span>. “Without a penalty, the score would be <span class="math inline">\((1.0\times1.0)^{1/2} = 1.0\)</span>, which is misleadingly perfect.” Brevity penalty: <span class="math inline">\(\exp(1 - 6/2) = \exp(-2) \approx 0.1353\)</span>. Final: <span class="math inline">\(\mathrm{BLEU} = 0.1353 \times 1.0 = 0.1353\)</span> — “correctly lowers the score from a perfect 1.0 to 0.135, reflecting that while the precision is high, the prediction is far too short” [recorded].</p>
+<p><strong>Beam search.</strong> Generating means finding “the sequence with the highest conditional probability.” <strong>Greedy search</strong> — “at each step, we choose the single most likely token” — is “fast and computationally cheap” but “not optimal. The sequence of most-likely tokens is not necessarily the most-likely sequence overall.” <strong>Exhaustive search</strong> “guarantees finding the optimal sequence” but is “computationally infeasible.” <strong>Beam search</strong> is “a practical compromise… controlled by a hyperparameter called the beam size, <span class="math inline">\(k\)</span>”: at each step keep the top-<span class="math inline">\(k\)</span> tokens, expand each into <span class="math inline">\(|V|\)</span> continuations, keep the best <span class="math inline">\(k\)</span> of the <span class="math inline">\(k \times |V|\)</span> candidates, repeat “until an end-of-sequence token is generated or a maximum length is reached” [recorded]. Final scoring normalizes by length to avoid short-sequence bias: <span class="math inline">\(\mathrm{Score} = \frac{1}{L^\alpha}\sum_{t'=1}^{L} \log P(y_{t'} \mid y_{&lt;t'}, c)\)</span>, <span class="math inline">\(\alpha \approx 0.75\)</span> [recorded]. “Greedy search is a special case of beam search arising when the beam size is set to 1” [recorded]. (The deck’s beam-search illustration is credited to d2l.ai.)</p>
+<p><strong>Basically, …</strong> “Perplexity: how surprised is the model? Lower is better; 10 means ‘as confused as 10 choices’. BLEU: for generated sequences, count matching n-grams (precision) times a brevity penalty — a two-word prediction can’t score 1.0 against a six-word target. Beam search: greedy picks the best word each step (fast, wrong); exhaustive tries everything (right, impossible); beam keeps the <span class="math inline">\(k\)</span> best partial sentences and prunes — greedy is just beam with <span class="math inline">\(k = 1\)</span>.”</p>
+</section>
+<section id="the-pytorch-face" class="level2">
+<h2 class="anchored" data-anchor-id="the-pytorch-face">45.12 The PyTorch face</h2>
+<p>Both notebooks’ torch code is transcribed as [recorded] (torch is not installed here; nothing re-run).</p>
+<p><strong>The time-series notebook’s RNN</strong> (<code>Time_Series_Analysis_using_RNN.ipynb</code>, AMZN daily closes, 95/5 split, lookback window reshaped to <code>(samples, timesteps, features)</code>):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> RNN(nn.Module):</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, input_size, hidden_size, num_stacked_layers):</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.hidden_size <span class="op">=</span> hidden_size</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.num_stacked_layers <span class="op">=</span> num_stacked_layers</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.rnn <span class="op">=</span> nn.RNN(input_size, hidden_size, num_stacked_layers, batch_first<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.fc <span class="op">=</span> nn.Linear(hidden_size, <span class="dv">1</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x):</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        batch_size <span class="op">=</span> x.size(<span class="dv">0</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>        h0 <span class="op">=</span> torch.zeros(<span class="va">self</span>.num_stacked_layers, batch_size, <span class="va">self</span>.hidden_size)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>        out, _ <span class="op">=</span> <span class="va">self</span>.rnn(x, h0)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>        out <span class="op">=</span> <span class="va">self</span>.fc(out[:, <span class="op">-</span><span class="dv">1</span>, :])   <span class="co"># last timestep's hidden state -&gt; prediction</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> out</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>[recorded]. Training: <code>loss_function = nn.MSELoss()</code>, <code>optimizer = torch.optim.Adam(model.parameters(), lr=0.001)</code>, 50 epochs [recorded] — §43.12’s defaults in the wild. The scaling discipline of §43.9 rides along: <code>MinMaxScaler(feature_range=(-1, 1))</code> before training, predictions inverse-transformed after [recorded].</p>
+<p><strong>The sentiment notebook’s pair</strong> (IMDB, binary classification). <code>SentimentRNN</code>: <code>nn.Embedding(vocab_size, embedding_dim)</code> → <code>nn.RNN(embedding_dim, hidden_dim, n_layers, dropout=drop_prob, batch_first=True)</code> → dropout → <code>nn.Linear(hidden_dim, output_size)</code> → sigmoid [recorded]. <code>SentimentLSTM</code>: identical scaffolding with <code>nn.LSTM(...)</code> in place of <code>nn.RNN</code>, and <code>forward</code> takes <code>hidden</code> as a tuple <code>(h, c)</code> — the dual states of §45.8 surfacing in the API [recorded]. Dropout <span class="math inline">\(0.5\)</span> is §41.14(ii)’s guardrail, unchanged.</p>
+<p><strong>§43.12’s RNN rows, now grounded.</strong> “RNNs / LSTMs → RMSProp / Adam — Handles non-stationary objectives” and “Clip gradients for RNNs/transformers (<code>torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)</code>)” [recorded] — the optimizer choice and the §45.7(i) fix, as the course’s own cheat sheet.</p>
+<p><strong>Basically, …</strong> “In torch, an RNN is <code>nn.RNN(input, hidden, layers, batch_first=True)</code> plus a linear head on the last timestep; an LSTM is a drop-in swap whose hidden state comes as a <code>(h, c)</code> pair. Shape your data as (batch, time, features) — §36.4’s axis semantics — scale it (§43.9), train with Adam at the usual <span class="math inline">\(0.001\)</span>, and clip the gradients (§45.7). The deck’s math and the notebooks’ code are the same object.”</p>
+</section>
+<section id="where-this-goes-next" class="level2">
+<h2 class="anchored" data-anchor-id="where-this-goes-next">45.13 Where this goes next</h2>
+<ol type="i">
+<li><p><strong>Attention (Chapter 46).</strong> §45.10’s context-vector bottleneck is the problem attention was built for: §44.10(ii)’s “shortcut” — any decoder position talking to any encoder position directly, no single-vector squeeze. The deck’s W9–10 material takes it from here.</p></li>
+<li><p><strong>The sharing moral, complete.</strong> Chapter 44: share across space → translation robustness, parameter counts collapse (§44.7). Chapter 45: share across time → variable-length sequences, one cell — and the bill arrives as §45.7’s product-of-<span class="math inline">\(T\)</span>-matrices, §42.8’s vanishing story told along a new axis. Clipping (§45.7(i), §43.12’s torch call) and gates (§§45.8–45.9) are the two accepted payments.</p></li>
+<li><p><strong>Generative models (Chapter 47).</strong> The decoder of §45.10 <em>is</em> a generator: “assess how plausible a sequence is, or… generate new, similar sequences” (§45.1). Beam search (§45.11) is the decoding algorithm the generative chapters inherit.</p></li>
+<li><p><strong>The debugging playbook rides along.</strong> §40.5(i): “shapes first” — for an RNN that means the <code>(batch, timesteps, features)</code> reshape (§45.12) before anything trains, then scale (§43.9’s sermon — the time-series notebook scales to <span class="math inline">\((-1,1)\)</span>), then the §45.7 watch: NaNs mean the exploding regime, a flat loss on long sequences means the vanishing one.</p></li>
+</ol>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li><strong>Factor and cut.</strong> For <span class="math inline">\(x_1, x_2, x_3, x_4\)</span>: (i) write the full autoregressive factorization. (ii) Write the first-order Markov approximation. (iii) A bigram model over <span class="math inline">\(|V| = 10{,}000\)</span> words needs how many conditional-probability entries? A trigram? In one line, what does the ratio say about “the number of model parameters grows exponentially”?</li>
+<li><strong>One recurrent step, by hand.</strong> 1-neuron RNN, <span class="math inline">\(\phi = \tanh\)</span>, <span class="math inline">\(w_{xh} = 0.8\)</span>, <span class="math inline">\(w_{hh} = -0.3\)</span>, <span class="math inline">\(b_h = 0.1\)</span>, <span class="math inline">\(x_1 = 1.0\)</span>, <span class="math inline">\(h_0 = 0\)</span>. (i) Compute <span class="math inline">\(h_1\)</span> to 4 s.f. (ii) Now <span class="math inline">\(x_2 = -1.0\)</span>: compute <span class="math inline">\(h_2\)</span> to 4 s.f. (iii) In one line: which term in the <span class="math inline">\(h_2\)</span> computation is “the memory,” and what would <span class="math inline">\(h_2\)</span> be if <span class="math inline">\(w_{hh} = 0\)</span>?</li>
+<li><strong>The sharing payoff, counted.</strong> An RNN layer with input dimension <span class="math inline">\(d = 50\)</span> and hidden size <span class="math inline">\(h = 100\)</span> (include biases). (i) Count its parameters (<span class="math inline">\(W_{xh}, W_{hh}, b_h\)</span>). (ii) An MLP applied separately at each of <span class="math inline">\(T = 30\)</span> timesteps with its own weights would need how many? (iii) In one line, connect this to §44.7’s <span class="math inline">\(8{,}400\times\)</span> and say what the RNN count does as <span class="math inline">\(T\)</span> grows.</li>
+<li><strong>The two-component recursion.</strong> (i) In words: why does <span class="math inline">\(\partial L/\partial h_t\)</span> have a “current loss” term and a “future loss” term — which part of the unrolled graph does each come from? (ii) At <span class="math inline">\(t = T\)</span>, which term vanishes and why? (iii) §42.4’s <span class="math inline">\(\delta^{[l]}\)</span> recursion pushes error through <em>layers</em>; BPTT pushes it through <em>time</em>: in one line each, name the matrix that carries it in each case.</li>
+<li><strong>Finish the BPTT eg.</strong> Using §45.6’s forward values: (i) derive <span class="math inline">\(\partial L/\partial w_{hy} = \sum_t \frac{\partial L}{\partial y_t} h_t\)</span> from <span class="math inline">\(y_t = w_{hy} h_t\)</span> and evaluate it. (ii) Derive <span class="math inline">\(\partial L/\partial w_{xh} = \sum_t \frac{\partial L}{\partial h_t}(1-h_t^2)x_t\)</span> and evaluate it. (iii) In one line: why does the <span class="math inline">\(t{=}1\)</span> term of <span class="math inline">\(\partial L/\partial w_{hh}\)</span> vanish while the <span class="math inline">\(t{=}1\)</span> term of <span class="math inline">\(\partial L/\partial w_{xh}\)</span> does not?</li>
+<li><strong>Name the regime.</strong> Each backward step multiplies the error by <span class="math inline">\(\approx 0.64\)</span>. (i) After 20 steps, what fraction survives? (ii) Same question for a per-step factor of <span class="math inline">\(1.5\)</span>. (iii) In two lines, map (i)/(ii) to the deck’s vanishing/exploding rows, and connect (i) to §42.8(ii)’s sigmoid <span class="math inline">\(\le 0.25\)</span> story.</li>
+<li><strong>Clip vs truncate.</strong> (i) In one line each: what does gradient clipping fix, and what does it <em>not</em> fix? (ii) Truncated BPTT with <span class="math inline">\(\tau = 5\)</span>: in one line, what dependency length can the model no longer learn? (iii) In two lines: why does the deck still call truncated BPTT a “compromise” even though the hidden state keeps flowing forward?</li>
+<li><strong>The LSTM’s gradient path.</strong> <span class="math inline">\(f_t = (0.9, 0.2)\)</span>, <span class="math inline">\(i_t = (0.5, 0.8)\)</span>, <span class="math inline">\(\tilde c_t = (0.6, -0.4)\)</span>, <span class="math inline">\(c_{t-1} = (1.0, 2.0)\)</span>. (i) Compute <span class="math inline">\(c_t\)</span>. (ii) What is <span class="math inline">\(\partial c_t/\partial c_{t-1}\)</span> (element-wise)? (iii) In two lines: explain why the first dimension’s gradient survives far better than the second’s over many steps, using your answer to (ii).</li>
+<li><strong>The GRU’s mix.</strong> <span class="math inline">\(Z_t = (0.8, 0.1)\)</span>, <span class="math inline">\(H_{t-1} = (1.0, -1.0)\)</span>, <span class="math inline">\(\tilde H_t = (0.0, 2.0)\)</span>. (i) Compute <span class="math inline">\(H_t = Z_t \odot H_{t-1} + (1-Z_t)\odot\tilde H_t\)</span>. (ii) In one line each: what does <span class="math inline">\(Z_t \approx 1\)</span> do, and <span class="math inline">\(Z_t \approx 0\)</span>? (iii) In one line: which LSTM gate does <span class="math inline">\(Z_t\)</span> “act similarly to” (deck’s words), and why?</li>
+<li><strong>Generate and judge.</strong> (i) Target “A B C D”, predicted “A B”: compute BLEU with <span class="math inline">\(k = 2\)</span> (brevity penalty included). (ii) In two lines: why is the brevity penalty needed — what would the score be without it? (iii) Teacher forcing feeds the decoder ground-truth tokens during training but its own predictions at inference: in one line, state the resulting mismatch; in one line, say whether beam search (§45.11) fixes it.</li>
+</ol>
+<hr>
+<p><em>Sources: GenAI Weeks 7–8 “Introduction to RNN” deck = Notes <code>Week7,8-Introduction to RNN.pdf</code> (Balaji Srinivasan, Ganapathy Krishnamurthi), 80 slides — sequential-data characteristics, sequence-model target <span class="math inline">\(P(x_1,\dots,x_T)\)</span>, autoregressive factorization, Markov/n-gram (fixed memory, exponential parameters), linear window regression (<span class="math inline">\(\hat x_t = \sum w_i x_{t-i} + b\)</span>; three limitations incl.&nbsp;error accumulation <span class="math inline">\(\epsilon_1, \epsilon_2\)</span>), MLP/CNN limitations (“No Parameter Sharing Across Time”, “We need a model that processes sequences step-by-step, with memory”), tokenization/vocabulary (the/un k example), random sampling (<span class="math inline">\(\tau\)</span>, shift-by-one targets), perplexity (formula, “<span class="math inline">\(k\)</span> words” intuition), RNN hidden state (<span class="math inline">\(P(x_t|x_{&lt;t}) \approx P(x_t|h_{t-1})\)</span>, <span class="math inline">\(h_t = f(x_t,h_{t-1})\)</span>), “same weight matrix at every time step”, neuron/layer equations, next-character worked example (corrected per §45.4 Note), BPTT (“not a new algorithm”, two-component recursion “the heart of BPTT”, parameter sums, 1-neuron worked example corrected per §45.6 Note), instability product <span class="math inline">\(\prod W_{hh}^T\mathrm{diag}(\phi')\)</span>, twin-problems table (clipping / “more complex RNN architectures”), truncated BPTT (<span class="math inline">\(\tau\)</span>, trade-off), LSTM (dual states, four gate equations, additive cell update, gradient-flow interpretation), GRU (2014, two gates, no separate cell, all equations, “trains faster… just as well”), bidirectional RNNs (<span class="math inline">\(H_t = [\overrightarrow{h}_t,\overleftarrow{h}_t]\)</span>, “I am ___ happy” walkthrough), encoder–decoder (context vector, teacher forcing, masking, cross-entropy per timestep), BLEU (formula + worked example), beam search (steps, <span class="math inline">\(k\)</span>, length normalization, greedy = <span class="math inline">\(k{=}1\)</span>; illustration credited to d2l.ai); <code>Time_Series_Analysis_using_RNN.ipynb</code> — AMZN pipeline, <code>prepare_dataframe_for_lstm</code>, MinMaxScaler<span class="math inline">\((-1,1)\)</span>, <code>(samples, timesteps, features)</code> reshape, <code>RNN</code> class (<code>nn.RNN(..., batch_first=True)</code> + <code>nn.Linear</code>), Adam <span class="math inline">\(\eta{=}0.001\)</span>, <code>nn.MSELoss</code>, 50 epochs (all torch [recorded]); <code>sentiment-analysis.ipynb</code> — IMDB pipeline, <span class="math inline">\(h_t = \sigma(W_{xh}x_t + W_{hh}h_{t-1} + b_h)\)</span> framework, <code>SentimentRNN</code>/<code>SentimentLSTM</code> (embedding → recurrent → dropout <span class="math inline">\(0.5\)</span> → fc → sigmoid; LSTM <code>hidden</code> as tuple) (all torch [recorded]); deck figure credits — BPTT illustration (DOI 10.13140/RG.2.2.34411.08483), LSTM architecture (DOI 10.1109/ACCESS.2021.3125733), GRU architecture (DOI 10.1007/s11042-023-15571-y); d2l.ai RNN chapter index — live-checked, unrolled-RNN figure (Fig. 9.1, CC-BY-SA) cited as HTML-comment diagram reference only; book chapters 35 (§35.6), 36 (§36.4), 40 (§40.5(i)), 41 (§§41.4, 41.7, 41.14(ii)), 42 (§§42.3–42.4, 42.6, 42.8), 43 (§§43.9, 43.12), 44 (§44.7, §44.10).</em></p>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — Factor and cut
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>Autoregressive factorization: <span class="math display">\[P(x_1,x_2,x_3,x_4) = P(x_1)\,P(x_2\mid x_1)\,P(x_3\mid x_1,x_2)\,P(x_4\mid x_1,x_2,x_3).\]</span></p></li>
+<li><p>First-order Markov: each term conditions only on the immediately previous token: <span class="math display">\[P(x_1,x_2,x_3,x_4) \approx P(x_1)\,P(x_2\mid x_1)\,P(x_3\mid x_2)\,P(x_4\mid x_3).\]</span></p></li>
+<li><p>Bigram: one distribution over <span class="math inline">\(|V|\)</span> next-words for each of <span class="math inline">\(|V|\)</span> histories → <span class="math inline">\(|V|^2 = 10{,}000^2 = 10^8\)</span> entries. Trigram: <span class="math inline">\(|V|^2\)</span> histories → <span class="math inline">\(|V|^3 = 10^{12}\)</span> entries. Ratio <span class="math inline">\(10^{12}/10^8 = 10^4 = |V|\)</span>: every extra token of memory multiplies the table by the vocabulary size — the deck’s “grows exponentially” made concrete.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — One recurrent step, by hand
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><span class="math inline">\(h_1 = \tanh(0.8\cdot1.0 + (-0.3)\cdot0 + 0.1) = \tanh(0.9) = 0.7163\)</span>.</p></li>
+<li><p><span class="math inline">\(h_2 = \tanh(0.8\cdot(-1.0) + (-0.3)(0.7163) + 0.1) = \tanh(-0.8 - 0.2149 + 0.1) = \tanh(-0.9149) = -0.7235\)</span>.</p></li>
+<li><p>The memory term is <span class="math inline">\(w_{hh}\,h_{t-1} = -0.3 \times 0.7163 = -0.2149\)</span> — the only channel by which <span class="math inline">\(x_1\)</span> influences <span class="math inline">\(h_2\)</span>. With <span class="math inline">\(w_{hh} = 0\)</span>: <span class="math inline">\(h_2 = \tanh(-0.8 + 0.1) = \tanh(-0.7) = -0.6044\)</span>; the network becomes memoryless, each step a function of its own input only.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — The sharing payoff, counted
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><span class="math inline">\(W_{xh}\)</span>: <span class="math inline">\(50 \times 100 = 5{,}000\)</span>; <span class="math inline">\(W_{hh}\)</span>: <span class="math inline">\(100 \times 100 = 10{,}000\)</span>; <span class="math inline">\(b_h\)</span>: <span class="math inline">\(100\)</span>. Total <span class="math inline">\(15{,}100\)</span>.</p></li>
+<li><p>One timestep’s MLP: <span class="math inline">\(50\cdot100 + 100 = 5{,}100\)</span>; thirty independent copies: <span class="math inline">\(30 \times 5{,}100 = 153{,}000\)</span> — about <span class="math inline">\(10\times\)</span> more, and it still can’t share a pattern learned at position <span class="math inline">\(5\)</span> with position <span class="math inline">\(25\)</span> (§45.2(iii)).</p></li>
+<li><p>The RNN’s <span class="math inline">\(15{,}100\)</span> does not move as <span class="math inline">\(T\)</span> grows — same weights, every timestep — the temporal twin of §44.7’s <span class="math inline">\(8{,}400\times\)</span>: sharing is what makes the count independent of the input size.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — The two-component recursion
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>In the unrolled graph, <span class="math inline">\(h_t\)</span> has two outgoing edges: one down to this step’s output <span class="math inline">\(y_t\)</span> (via <span class="math inline">\(W_{hy}\)</span>), and one right to the next hidden state <span class="math inline">\(h_{t+1}\)</span> (via <span class="math inline">\(W_{hh}\)</span>). The loss reaches <span class="math inline">\(h_t\)</span> along both paths — the chain rule sums over all paths to a node (§42.2’s rule), so <span class="math inline">\(\partial L/\partial h_t\)</span> = (error from <span class="math inline">\(y_t\)</span>) + (error from <span class="math inline">\(h_{t+1}\)</span>).</p></li>
+<li><p>At <span class="math inline">\(t = T\)</span> there is no <span class="math inline">\(h_{T+1}\)</span>: the “future loss” term vanishes, leaving <span class="math inline">\(\partial L/\partial h_T = (\partial L/\partial y_T)(\partial y_T/\partial h_T)\)</span>.</p></li>
+<li><p>Feedforward <span class="math inline">\(\delta^{[l]}\)</span> recursion: the error crosses layers through <span class="math inline">\((W^{[l+1]})^T\)</span> (§42.4). BPTT: the error crosses time through <span class="math inline">\(W_{hh}^T\,\mathrm{diag}(\phi')\)</span> (§45.7’s product) — same chain-rule job, different axis.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — Finish the BPTT eg
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><span class="math inline">\(y_t = w_{hy} h_t\)</span> gives <span class="math inline">\(\partial y_t/\partial w_{hy} = h_t\)</span>, so by the chain rule <span class="math inline">\(\partial L/\partial w_{hy} = \sum_{t=1}^{2} \frac{\partial L}{\partial y_t}\,h_t\)</span> (one shared weight, two votes — §45.5). Numerically: <span class="math inline">\((-0.3907)(0.7616) + (-0.8567)(0.9292) = -0.2976 - 0.7960 = -1.0936\)</span>.</p></li>
+<li><p><span class="math inline">\(h_t = \tanh(w_{xh} x_t + w_{hh} h_{t-1})\)</span> (biases <span class="math inline">\(0\)</span>) gives <span class="math inline">\(\partial h_t/\partial w_{xh} = (1-h_t^2)\,x_t\)</span>, so <span class="math inline">\(\partial L/\partial w_{xh} = \sum_t \frac{\partial L}{\partial h_t}(1-h_t^2)x_t\)</span>. With <span class="math inline">\(\partial L/\partial h_1 = -0.1657\)</span> (current <span class="math inline">\(-0.1563\)</span>, future <span class="math inline">\(-0.0094\)</span>), <span class="math inline">\(\partial L/\partial h_2 = -0.3427\)</span>: <span class="math inline">\((-0.1657)(1-0.7616^2)(2) + (-0.3427)(1-0.9292^2)(3) = (-0.1657)(0.4200)(2) + (-0.3427)(0.1366)(3) = -0.1392 - 0.1404 = -0.2796\)</span>.</p></li>
+<li><p><span class="math inline">\(\left.\partial L/\partial w_{hh}\right|_{t=1}\)</span> carries the local factor <span class="math inline">\(h_0 = 0\)</span> — no signal passed through the memory edge at <span class="math inline">\(t{=}1\)</span>, so nothing to blame (the §42.3 Note logic). <span class="math inline">\(\left.\partial L/\partial w_{xh}\right|_{t=1}\)</span> carries the local factor <span class="math inline">\(x_1 = 2 \ne 0\)</span> — the input edge was live, so it earns its gradient.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — Name the regime
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><span class="math inline">\(0.64^{20} \approx 1.33\times10^{-4}\)</span> — about one ten-thousandth survives: <strong>vanishing</strong>.</p></li>
+<li><p><span class="math inline">\(1.5^{20} \approx 3325\)</span> — the gradient compounds to thousands: <strong>exploding</strong>.</p></li>
+<li><ol type="i">
+<li>is the deck’s vanishing row (“gradients for early time steps become nearly zero… cannot learn long-range dependencies”); (ii) is the exploding row (“gradients become enormous (NaN or infinity)”). §42.8(ii) is the same story along depth: a saturated sigmoid multiplies the error by at most <span class="math inline">\(\approx 0.045\)</span> per layer, so deep stacks strangle the signal the way long sequences do here — the two halves of one phenomenon.</li>
+</ol></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — Clip vs truncate
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>Clipping fixes <strong>explosion</strong> (caps the update size when <span class="math inline">\(\|\nabla\|\)</span> exceeds the threshold); it does <strong>not</strong> fix vanishing — a near-zero gradient stays near-zero after rescaling — and it does not shorten the <span class="math inline">\(T\)</span>-step product.</p></li>
+<li><p>Dependencies longer than <span class="math inline">\(\tau = 5\)</span> steps: the backward chain is cut, so no gradient path connects <span class="math inline">\(x_t\)</span> to <span class="math inline">\(y_{t+6}\)</span>.</p></li>
+<li><p>The hidden state still carries information forward through the full sequence (“maintaining its long-term memory”), so the <em>model</em> can in principle use long context — but the <em>gradient</em> can’t reach back past <span class="math inline">\(\tau\)</span>, so the model can never <em>learn</em> to use it. Memory without learnability: the compromise.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 8 — The LSTM’s gradient path
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><span class="math inline">\(c_t = f_t \odot c_{t-1} + i_t \odot \tilde c_t = (0.9\cdot1.0 + 0.5\cdot0.6,\ 0.2\cdot2.0 + 0.8\cdot(-0.4)) = (0.9 + 0.3,\ 0.4 - 0.32) = (1.2,\ 0.08)\)</span>.</p></li>
+<li><p><span class="math inline">\(\partial c_t/\partial c_{t-1} = f_t = (0.9,\ 0.2)\)</span> element-wise — the additive update’s derivative is the forget gate, no weight matrix involved.</p></li>
+<li><p>Over <span class="math inline">\(n\)</span> steps the first dimension’s gradient scales as <span class="math inline">\(0.9^n\)</span> (<span class="math inline">\(0.9^{10} \approx 0.35\)</span> — a third survives ten steps) while the second scales as <span class="math inline">\(0.2^n\)</span> (<span class="math inline">\(0.2^{10} \approx 10^{-7}\)</span> — gone). The gate <em>value</em> is the gradient highway: open (<span class="math inline">\(f \approx 1\)</span>) preserves, closed (<span class="math inline">\(f \approx 0\)</span>) erases — and the network learns which, per dimension.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 9 — The GRU’s mix
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><span class="math inline">\(H_t = (0.8\cdot1.0 + 0.2\cdot0.0,\ 0.1\cdot(-1.0) + 0.9\cdot2.0) = (0.8,\ -0.1 + 1.8) = (0.8,\ 1.7)\)</span>.</p></li>
+<li><p><span class="math inline">\(Z_t \approx 1\)</span>: the old hidden state is (almost) copied through — long-term memory preserved. <span class="math inline">\(Z_t \approx 0\)</span>: the old state is discarded in favor of the candidate <span class="math inline">\(\tilde H_t\)</span> — fresh start.</p></li>
+<li><p>The <strong>forget gate</strong> <span class="math inline">\(f_t\)</span> of the LSTM: both are sigmoids deciding “how much of the past survives,” and both enter an <em>additive</em> update (<span class="math inline">\(Z_t \odot H_{t-1}\)</span> here, <span class="math inline">\(f_t \odot c_{t-1}\)</span> there) — the deck’s “acts similarly to the forget gate in an LSTM.”</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 10 — Generate and judge
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>Predicted unigrams <span class="math inline">\(\{A,B\}\)</span>: <span class="math inline">\(p_1 = 2/2 = 1.0\)</span>. Predicted bigrams <span class="math inline">\(\{AB\}\)</span>: <span class="math inline">\(p_2 = 1/1 = 1.0\)</span>. Brevity penalty: <span class="math inline">\(\exp(1 - 4/2) = \exp(-1) \approx 0.3679\)</span>. <span class="math inline">\(\mathrm{BLEU} = 0.3679 \times (1.0\times1.0)^{1/2} = 0.3679\)</span>.</p></li>
+<li><p>Without the penalty the score would be <span class="math inline">\((1.0\times1.0)^{1/2} = 1.0\)</span> — “misleadingly perfect”: pure n-gram precision rewards a two-word prefix of the target as if it were the whole answer. The penalty prices length.</p></li>
+<li><p>Mismatch: training never shows the decoder its own mistakes (it always gets the true previous token), while inference runs entirely on its own — possibly erroneous — outputs, so errors compound (the §45.2(ii) error-accumulation story, learned). Beam search does not fix it: beam search is a <em>decoding</em> strategy (better search over the model’s distribution), not a <em>training</em> fix; the mismatch is baked in at training time.</p></li>
+</ol>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./44-cnns.html" class="pagination-link" aria-label="Chapter 44: CNNs — convolution, pooling, transfer learning">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./46-attention-and-transformers.html" class="pagination-link" aria-label="Chapter 46: Attention and the transformer">
+        <span class="nav-page-text"><span class="chapter-title">Chapter 46: Attention and the transformer</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

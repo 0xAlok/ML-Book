@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>2. Vectors and matrices – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./03-linear-systems-determinants-inverses.html" rel="next">
+<link href="./01-sets-functions-preliminaries.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./01-sets-functions-preliminaries.html">Part I — Mathematical Foundations</a></li><li class="breadcrumb-item"><a href="./02-vectors-and-matrices.html"><span class="chapter-title">2. Vectors and matrices</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#a-vector-a-list-of-numbers" id="toc-a-vector-a-list-of-numbers" class="nav-link active" data-scroll-target="#a-vector-a-list-of-numbers">2.1 A vector = a list of numbers</a></li>
+  <li><a href="#the-geometric-view-arrows" id="toc-the-geometric-view-arrows" class="nav-link" data-scroll-target="#the-geometric-view-arrows">2.2 The geometric view: arrows</a></li>
+  <li><a href="#addition-subtraction-scalar-multiplication" id="toc-addition-subtraction-scalar-multiplication" class="nav-link" data-scroll-target="#addition-subtraction-scalar-multiplication">2.3 Addition, subtraction, scalar multiplication</a></li>
+  <li><a href="#magnitude-norm-and-unit-vectors" id="toc-magnitude-norm-and-unit-vectors" class="nav-link" data-scroll-target="#magnitude-norm-and-unit-vectors">2.4 Magnitude (norm) and unit vectors</a></li>
+  <li><a href="#the-dot-product" id="toc-the-dot-product" class="nav-link" data-scroll-target="#the-dot-product">2.5 The dot product</a></li>
+  <li><a href="#linear-combinations" id="toc-linear-combinations" class="nav-link" data-scroll-target="#linear-combinations">2.6 Linear combinations</a></li>
+  <li><a href="#what-is-a-matrix" id="toc-what-is-a-matrix" class="nav-link" data-scroll-target="#what-is-a-matrix">2.7 What is a matrix?</a></li>
+  <li><a href="#special-matrices" id="toc-special-matrices" class="nav-link" data-scroll-target="#special-matrices">2.8 Special matrices</a></li>
+  <li><a href="#matrix-addition-and-scalar-multiplication" id="toc-matrix-addition-and-scalar-multiplication" class="nav-link" data-scroll-target="#matrix-addition-and-scalar-multiplication">2.9 Matrix addition and scalar multiplication</a></li>
+  <li><a href="#matrix-multiplication-the-heart-of-the-chapter" id="toc-matrix-multiplication-the-heart-of-the-chapter" class="nav-link" data-scroll-target="#matrix-multiplication-the-heart-of-the-chapter">2.10 Matrix multiplication: the heart of the chapter</a></li>
+  <li><a href="#the-basic-rules-and-one-famous-non-rule" id="toc-the-basic-rules-and-one-famous-non-rule" class="nav-link" data-scroll-target="#the-basic-rules-and-one-famous-non-rule">2.11 The basic rules (and one famous non-rule)</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#where-this-goes-next" id="toc-where-this-goes-next" class="nav-link" data-scroll-target="#where-this-goes-next">Where this goes next</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./01-sets-functions-preliminaries.html">Part I — Mathematical Foundations</a></li><li class="breadcrumb-item"><a href="./02-vectors-and-matrices.html"><span class="chapter-title">2. Vectors and matrices</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">2. Vectors and matrices</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Everything in deep learning is vectors and matrices. A <span class="math inline">\(dataset\)</span> is a matrix, one row per <span class="math inline">\(data\)</span> <span class="math inline">\(point\)</span>. A <span class="math inline">\(data\)</span> <span class="math inline">\(point\)</span> is a vector — its <span class="math inline">\(features\)</span> listed in order. A <span class="math inline">\(neural\)</span> <span class="math inline">\(network\)</span> <span class="math inline">\(layer\)</span> is a matrix multiplying a vector, plus a vector <span class="math inline">\(bias\)</span>. So this chapter is the vocabulary of the whole subject. Read it slowly; the rest of the book keeps pointing back here.</p>
+<section id="a-vector-a-list-of-numbers" class="level2">
+<h2 class="anchored" data-anchor-id="a-vector-a-list-of-numbers">2.1 A vector = a list of numbers</h2>
+<p>A <span class="math inline">\(vector\)</span> = an ordered list of numbers. The numbers are called <span class="math inline">\(components\)</span> (also <span class="math inline">\(coordinates\)</span> or <span class="math inline">\(entries\)</span>).</p>
+<ol type="i">
+<li>A <span class="math inline">\(row\)</span> <span class="math inline">\(vector\)</span>: <span class="math inline">\((3, 2)\)</span>, <span class="math inline">\((1, 2, 3.3)\)</span>.</li>
+<li>A <span class="math inline">\(column\)</span> <span class="math inline">\(vector\)</span>: <span class="math inline">\(\begin{pmatrix} 3 \\ 2 \end{pmatrix}\)</span>, <span class="math inline">\(\begin{pmatrix} 5 \\ -1 \\ 4 \end{pmatrix}\)</span>.</li>
+<li>From Chapter 1 (1.6): a vector with <span class="math inline">\(n\)</span> real entries is an element of <span class="math inline">\(\mathbb{R}^n\)</span> — a point of <span class="math inline">\(n\)</span>-dimensional space. Vectors with <span class="math inline">\(n\)</span> entries = vectors in <span class="math inline">\(\mathbb{R}^n\)</span> = points in <span class="math inline">\(\mathbb{R}^n\)</span>.</li>
+</ol>
+<p>Why lists? Real data arrives as tables, and a vector is just a row or a column of a table:</p>
+<ul>
+<li>The cricket row <span class="math inline">\((64.35, 31.92, 33.30, 26.00, 49.87)\)</span> = V. Kohli, Dhoni, Rohit, Rahul, Dhawan’s averages vs South Africa — five numbers, one vector.</li>
+<li>A grocery-shop column: <span class="math inline">\((150, 50, 35, 70, 25)\)</span> = stock (in kg/L/packets/bars) of rice, dal, oil, biscuits, soap.</li>
+</ul>
+<p>Note: <span class="math inline">\(order\)</span> matters in a vector. <span class="math inline">\((3, 2) \ne (2, 3)\)</span> — same reason <span class="math inline">\((a, 1) \ne (1, a)\)</span> in 1.6.</p>
+<p><strong>Basically, …</strong> A vector is a shopping list with a fixed order. “(3 kg rice, 2 kg dal)” tells you everything; shuffling it to “(2 kg rice, 3 kg dal)” changes the meaning. ML just calls these lists “vectors” and the items “features”.</p>
+</section>
+<section id="the-geometric-view-arrows" class="level2">
+<h2 class="anchored" data-anchor-id="the-geometric-view-arrows">2.2 The geometric view: arrows</h2>
+<p>For <span class="math inline">\(\mathbb{R}^2\)</span> and <span class="math inline">\(\mathbb{R}^3\)</span> we can draw vectors. The vector <span class="math inline">\((a, b)\)</span> is drawn as an <span class="math inline">\(arrow\)</span> from the <span class="math inline">\(origin\)</span> <span class="math inline">\((0, 0)\)</span> to the point <span class="math inline">\((a, b)\)</span>.</p>
+<ul>
+<li>The <span class="math inline">\(length\)</span> of the arrow = the vector’s <span class="math inline">\(magnitude\)</span> (size).</li>
+<li>The <span class="math inline">\(arrowhead\)</span> points in the vector’s <span class="math inline">\(direction\)</span>.</li>
+</ul>
+<p>Two ways to see the same vector:</p>
+<ol type="i">
+<li>As a <span class="math inline">\(point\)</span>: <span class="math inline">\((3, 2)\)</span> is the location “3 right, 2 up”.</li>
+<li>As a <span class="math inline">\(direction\)</span>: <span class="math inline">\((3, 2)\)</span> is the instruction “go 3 right, 2 up”.</li>
+</ol>
+<p>A vector has magnitude and direction but <span class="math inline">\(no\)</span> <span class="math inline">\(position\)</span>: sliding it parallel to itself (same length, same direction) does not change it. Two arrows drawn in different places are the same vector as long as their lengths and directions match.</p>
+<p>Note: the standard <span class="math inline">\(unit\)</span> <span class="math inline">\(vectors\)</span> <span class="math inline">\(\hat{\mathbf{i}} = (1, 0)\)</span> and <span class="math inline">\(\hat{\mathbf{j}} = (0, 1)\)</span> are arrows of length 1 along the axes. Any <span class="math inline">\((a, b)\)</span> = <span class="math inline">\(a\hat{\mathbf{i}} + b\hat{\mathbf{j}}\)</span>; e.g.&nbsp;<span class="math inline">\((1, 2) = 1\hat{\mathbf{i}} + 2\hat{\mathbf{j}}\)</span>. (What “length 1” means is in 2.4.)</p>
+<p><strong>Basically, …</strong> A vector is an arrow. Length says how far, the tip says which way, and where you draw it on the page doesn’t matter — only the push it represents.</p>
+</section>
+<section id="addition-subtraction-scalar-multiplication" class="level2">
+<h2 class="anchored" data-anchor-id="addition-subtraction-scalar-multiplication">2.3 Addition, subtraction, scalar multiplication</h2>
+<p>Vector <span class="math inline">\(addition\)</span> = add the matching entries (<span class="math inline">\(coordinatewise\)</span>). You can only add vectors of the same length.</p>
+<p><strong>Def.</strong> <span class="math inline">\((a_1, \ldots, a_n) + (b_1, \ldots, b_n) = (a_1 + b_1, \ldots, a_n + b_n)\)</span>.</p>
+<p><strong>eg.</strong> Arun buys <span class="math inline">\((3, 2)\)</span> (3 kg rice, 2 kg dal), Neela buys <span class="math inline">\((5, 6)\)</span>. Together: <span class="math display">\[(3, 2) + (5, 6) = (3 + 5,\ 2 + 6) = (8, 8).\]</span> 8 kg rice, 8 kg dal — nothing more than adding two lists entry by entry.</p>
+<p><strong>eg.</strong> The grocery stock-take. Stock plus new stock, minus three buyers’ purchases: <span class="math display">\[\begin{aligned}
+&amp;(150, 50, 35, 70, 25) + (-8, -8, -4, -10, -4) + (-12, -5, -7, -10, -2) \\
+&amp;\qquad + (-3, -2, -5, -5, -1) + (100, 75, 30, 80, 30).
+\end{aligned}\]</span> Add each column: rice <span class="math inline">\(150 - 8 - 12 - 3 + 100 = 227\)</span>; dal <span class="math inline">\(50 - 8 - 5 - 2 + 75 = 110\)</span>; oil <span class="math inline">\(35 - 4 - 7 - 5 + 30 = 49\)</span>; biscuits <span class="math inline">\(70 - 10 - 10 - 5 + 80 = 125\)</span>; soap <span class="math inline">\(25 - 4 - 2 - 1 + 30 = 48\)</span>. <span class="math display">\[= (227, 110, 49, 125, 48).\]</span></p>
+<p><span class="math inline">\(Scalar\)</span> <span class="math inline">\(multiplication\)</span> = multiply every entry by one number (the <span class="math inline">\(scalar\)</span>). It stretches (or shrinks, or flips) the arrow without changing its direction — unless the scalar is negative, which reverses it.</p>
+<p><strong>Def.</strong> <span class="math inline">\(c(a_1, \ldots, a_n) = (ca_1, \ldots, ca_n)\)</span> for any scalar <span class="math inline">\(c \in \mathbb{R}\)</span>.</p>
+<p><strong>eg.</strong> Buyer A repeats yesterday’s purchase exactly: <span class="math display">\[2(8, 8, 4, 10, 4) = (16, 16, 8, 20, 8).\]</span></p>
+<p>Vector <span class="math inline">\(subtraction\)</span> = add the negative: <span class="math inline">\(\mathbf{u} - \mathbf{v} = \mathbf{u} + (-1)\mathbf{v}\)</span>, done coordinatewise. <strong>eg.</strong> <span class="math inline">\((5, 6) - (3, 2) = (5 - 3,\ 6 - 2) = (2, 4)\)</span>.</p>
+<p>The <span class="math inline">\(zero\)</span> <span class="math inline">\(vector\)</span> <span class="math inline">\(\mathbf{0} = (0, 0, \ldots, 0)\)</span> = adding nothing. It satisfies <span class="math inline">\(\mathbf{v} + \mathbf{0} = \mathbf{v}\)</span> for every <span class="math inline">\(\mathbf{v}\)</span>.</p>
+<p>Geometrically, addition has two equivalent pictures:</p>
+<ol type="i">
+<li><span class="math inline">\(Head\)</span>-<span class="math inline">\(to\)</span>-<span class="math inline">\(tail\)</span>: put the tail of the second arrow at the head of the first; the sum is the arrow from the very start to the very end.</li>
+<li><span class="math inline">\(Parallelogram\)</span> <span class="math inline">\(law\)</span>: put both tails at the origin; the sum is the diagonal of the parallelogram they span.</li>
+</ol>
+<!-- Source: assets/vec-add.svg (Dive into Deep Learning, d2l.ai); reused here only as illustration for head-to-tail vector addition -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/vec-add.svg" class="img-fluid figure-img"></p>
+<figcaption>Vector addition by following one vector then the other: head-to-tail</figcaption>
+</figure>
+</div>
+<p><strong>eg.</strong> <span class="math inline">\((1, 2) + (2, 1) = (3, 3)\)</span> — the diagonal of the parallelogram with sides <span class="math inline">\((1, 2)\)</span> and <span class="math inline">\((2, 1)\)</span> lands on <span class="math inline">\((3, 3)\)</span>.</p>
+<p>Note: <span class="math inline">\(-\mathbf{v}\)</span> is the arrow of <span class="math inline">\(\mathbf{v}\)</span> reversed, and <span class="math inline">\(\mathbf{u} - \mathbf{v}\)</span> is the direction from the tip of <span class="math inline">\(\mathbf{v}\)</span> to the tip of <span class="math inline">\(\mathbf{u}\)</span>. Check: <span class="math inline">\(\mathbf{v} + (\mathbf{u} - \mathbf{v}) = \mathbf{u}\)</span>.</p>
+<p><strong>Basically, …</strong> Adding vectors = adding the lists item by item. On paper, it is walking: follow the first arrow, then follow the second from where you landed — where you finish is the sum. Scaling = making the arrow longer or shorter (a negative number also flips it around).</p>
+</section>
+<section id="magnitude-norm-and-unit-vectors" class="level2">
+<h2 class="anchored" data-anchor-id="magnitude-norm-and-unit-vectors">2.4 Magnitude (norm) and unit vectors</h2>
+<p>The <span class="math inline">\(magnitude\)</span> (or <span class="math inline">\(length\)</span>, or <span class="math inline">\(norm\)</span>) of a vector, written <span class="math inline">\(\lVert \mathbf{v} \rVert\)</span>, is the length of its arrow. For <span class="math inline">\((3, 4)\)</span> in <span class="math inline">\(\mathbb{R}^2\)</span>, Pythagoras gives <span class="math inline">\(\lVert (3, 4) \rVert = \sqrt{3^2 + 4^2} = \sqrt{25} = 5\)</span>.</p>
+<p><strong>Def.</strong> For <span class="math inline">\(\mathbf{v} = (v_1, \ldots, v_n) \in \mathbb{R}^n\)</span>, <span class="math display">\[\lVert \mathbf{v} \rVert = \sqrt{v_1^2 + v_2^2 + \cdots + v_n^2}.\]</span></p>
+<p><strong>eg.</strong> <span class="math inline">\(\lVert (1, 2, 2) \rVert = \sqrt{1 + 4 + 4} = \sqrt{9} = 3\)</span>.</p>
+<p>A <span class="math inline">\(unit\)</span> <span class="math inline">\(vector\)</span> = a vector of length 1. To make any nonzero <span class="math inline">\(\mathbf{v}\)</span> into a unit vector pointing the same way, divide by its length: <span class="math inline">\(\hat{\mathbf{v}} = \mathbf{v} / \lVert \mathbf{v} \rVert\)</span>.</p>
+<p><strong>eg.</strong> <span class="math inline">\(\mathbf{v} = (3, 4)\)</span> has <span class="math inline">\(\lVert \mathbf{v} \rVert = 5\)</span>, so <span class="math inline">\(\hat{\mathbf{v}} = (3/5, 4/5)\)</span>. Check: <span class="math inline">\(\lVert \hat{\mathbf{v}} \rVert = \sqrt{9/25 + 16/25} = \sqrt{1} = 1\)</span>. ✓</p>
+<p>Note: norms are never negative, and <span class="math inline">\(\lVert c\mathbf{v} \rVert = |c| \, \lVert \mathbf{v} \rVert\)</span>.</p>
+<p><strong>Basically, …</strong> The norm is just “how long is the arrow” — the straight-line distance from the origin to the point, computed by Pythagoras in however many dimensions you have. A unit vector is the same arrow shrunk to length 1: pure direction, no size.</p>
+</section>
+<section id="the-dot-product" class="level2">
+<h2 class="anchored" data-anchor-id="the-dot-product">2.5 The dot product</h2>
+<p>The <span class="math inline">\(dot\)</span> <span class="math inline">\(product\)</span> takes two vectors and returns a single number (a <span class="math inline">\(scalar\)</span>). It is the bridge between algebra and geometry in this chapter.</p>
+<p><strong>Def.</strong> For <span class="math inline">\(\mathbf{u} = (u_1, \ldots, u_n)\)</span>, <span class="math inline">\(\mathbf{v} = (v_1, \ldots, v_n)\)</span> in <span class="math inline">\(\mathbb{R}^n\)</span>, <span class="math display">\[\mathbf{u} \cdot \mathbf{v} = u_1 v_1 + u_2 v_2 + \cdots + u_n v_n.\]</span></p>
+<p><strong>eg.</strong> <span class="math inline">\((2, 4) \cdot (3, 5) = 2 \times 3 + 4 \times 5 = 6 + 20 = 26\)</span>. <strong>eg.</strong> <span class="math inline">\((1, 2, 3) \cdot (2, 0, 1) = 1 \times 2 + 2 \times 0 + 3 \times 1 = 2 + 0 + 3 = 5\)</span>.</p>
+<p>Three facts that make the dot product earn its keep:</p>
+<ol type="i">
+<li><p><span class="math inline">\(Length\)</span> <span class="math inline">\(from\)</span> <span class="math inline">\(dot\)</span> <span class="math inline">\(product\)</span>: <span class="math inline">\(\mathbf{v} \cdot \mathbf{v} = v_1^2 + \cdots + v_n^2 = \lVert \mathbf{v} \rVert^2\)</span>, so <span class="math display">\[\lVert \mathbf{v} \rVert = \sqrt{\mathbf{v} \cdot \mathbf{v}}.\]</span> <strong>eg.</strong> <span class="math inline">\((3, 4) \cdot (3, 4) = 9 + 16 = 25\)</span>, and <span class="math inline">\(\sqrt{25} = 5 = \lVert (3, 4) \rVert\)</span>. ✓</p></li>
+<li><p><span class="math inline">\(Symmetry\)</span>: <span class="math inline">\(\mathbf{u} \cdot \mathbf{v} = \mathbf{v} \cdot \mathbf{u}\)</span> — order does not matter.</p></li>
+<li><p><span class="math inline">\(Angle\)</span>: if <span class="math inline">\(\theta\)</span> is the angle between nonzero <span class="math inline">\(\mathbf{u}\)</span> and <span class="math inline">\(\mathbf{v}\)</span>, <span class="math display">\[\mathbf{u} \cdot \mathbf{v} = \lVert \mathbf{u} \rVert \, \lVert \mathbf{v} \rVert \cos\theta, \qquad \text{so} \qquad \cos\theta = \frac{\mathbf{u} \cdot \mathbf{v}}{\lVert \mathbf{u} \rVert \, \lVert \mathbf{v} \rVert}.\]</span></p></li>
+</ol>
+<p><strong>eg (angle, full steps).</strong> Find the angle between <span class="math inline">\(\mathbf{u} = (1, 0)\)</span> and <span class="math inline">\(\mathbf{v} = (1, 1)\)</span>. <span class="math display">\[\mathbf{u} \cdot \mathbf{v} = 1 \times 1 + 0 \times 1 = 1,\]</span> <span class="math display">\[\lVert \mathbf{u} \rVert = \sqrt{1 + 0} = 1, \qquad \lVert \mathbf{v} \rVert = \sqrt{1 + 1} = \sqrt{2},\]</span> <span class="math display">\[\cos\theta = \frac{1}{1 \cdot \sqrt{2}} = \frac{1}{\sqrt{2}} \;\Rightarrow\; \theta = 45^\circ.\]</span> Exactly what the picture says: <span class="math inline">\((1, 1)\)</span> points diagonally between the axes.</p>
+<p><strong>eg (angle, full steps).</strong> <span class="math inline">\(\mathbf{a} = (4, 3)\)</span>, <span class="math inline">\(\mathbf{b} = (-4, 3)\)</span>. <span class="math display">\[\mathbf{a} \cdot \mathbf{b} = 4 \times (-4) + 3 \times 3 = -16 + 9 = -7,\]</span> <span class="math display">\[\lVert \mathbf{a} \rVert = 5, \qquad \lVert \mathbf{b} \rVert = \sqrt{16 + 9} = 5,\]</span> <span class="math display">\[\cos\theta = \frac{-7}{5 \times 5} = \frac{-7}{25} = -0.28 \;\Rightarrow\; \theta = \cos^{-1}(-0.28) \approx 106.3^\circ.\]</span> The negative dot product means the angle is obtuse — the vectors lean away from each other.</p>
+<p>Note (ML): <span class="math inline">\(\cos\theta = \dfrac{\mathbf{u} \cdot \mathbf{v}}{\lVert \mathbf{u} \rVert \, \lVert \mathbf{v} \rVert}\)</span> is called <span class="math inline">\(cosine\)</span> <span class="math inline">\(similarity\)</span>. It is <span class="math inline">\(1\)</span> when the vectors point the same way, <span class="math inline">\(-1\)</span> when they point opposite, and <span class="math inline">\(0\)</span> when they are at right angles. In ML, two document or image vectors with cosine similarity near 1 “say the same thing” even if one is longer (brighter image, longer document) — the angle ignores length. This is why dot products show up in attention and recommendation: they measure agreement.</p>
+<p>Note (preview): <span class="math inline">\(\lVert \mathbf{v} \rVert \cos\theta\)</span> is the length of the <span class="math inline">\(projection\)</span> of <span class="math inline">\(\mathbf{v}\)</span> onto the direction of <span class="math inline">\(\mathbf{u}\)</span> — how much of <span class="math inline">\(\mathbf{v}\)</span> lies along <span class="math inline">\(\mathbf{u}\)</span>. The full projection story waits in Chapter 5.</p>
+<p><strong>Basically, …</strong> The dot product = multiply matching entries, then add. That’s the whole computation. What it tells you: how much two arrows agree. Big positive = pointing together; zero = at right angles; negative = pointing apart. ML uses it as a “similarity score” between two feature vectors.</p>
+</section>
+<section id="linear-combinations" class="level2">
+<h2 class="anchored" data-anchor-id="linear-combinations">2.6 Linear combinations</h2>
+<p>A <span class="math inline">\(linear\)</span> <span class="math inline">\(combination\)</span> = scale some vectors, then add them. One operation, two ingredients (scaling + adding).</p>
+<p><strong>Def.</strong> Let <span class="math inline">\(\mathbf{v}_1, \ldots, \mathbf{v}_k\)</span> be vectors and <span class="math inline">\(\alpha_1, \ldots, \alpha_k\)</span> scalars. Then <span class="math display">\[\alpha_1 \mathbf{v}_1 + \alpha_2 \mathbf{v}_2 + \cdots + \alpha_k \mathbf{v}_k\]</span> is a <span class="math inline">\(linear\)</span> <span class="math inline">\(combination\)</span> of the <span class="math inline">\(\mathbf{v}_i\)</span> with <span class="math inline">\(coefficients\)</span> <span class="math inline">\(\alpha_i\)</span>. The result is again a vector.</p>
+<p><strong>eg.</strong> <span class="math inline">\(2(1, 2) + 3(2, 1)\)</span>: scale first, <span class="math inline">\(2(1, 2) = (2, 4)\)</span> and <span class="math inline">\(3(2, 1) = (6, 3)\)</span>; then add, <span class="math inline">\((2, 4) + (6, 3) = (8, 7)\)</span>. <strong>eg.</strong> <span class="math inline">\((4, 5) = 2(1, 2) + 1(2, 1)\)</span>: check, <span class="math inline">\(2(1, 2) + (2, 1) = (2 + 2,\ 4 + 1) = (4, 5)\)</span>. ✓</p>
+<p>Note: vector addition is the linear combination <span class="math inline">\(1\mathbf{v}_1 + 1\mathbf{v}_2\)</span>; scalar multiplication is <span class="math inline">\(c\mathbf{v}\)</span>. Everything in 2.3 is a special case of this one idea.</p>
+<p><strong>Basically, …</strong> A linear combination is a recipe: “take twice of this arrow and three times of that arrow, add them up.” The numbers in front (coefficients) say how much of each ingredient. This single idea quietly powers all of matrix multiplication in 2.10.</p>
+</section>
+<section id="what-is-a-matrix" class="level2">
+<h2 class="anchored" data-anchor-id="what-is-a-matrix">2.7 What is a matrix?</h2>
+<p>A <span class="math inline">\(matrix\)</span> = a rectangular array of numbers, arranged in <span class="math inline">\(rows\)</span> and <span class="math inline">\(columns\)</span>. (Plural: <span class="math inline">\(matrices\)</span>.)</p>
+<ol type="i">
+<li>An <span class="math inline">\(m \times n\)</span> <span class="math inline">\(matrix\)</span> has <span class="math inline">\(m\)</span> rows and <span class="math inline">\(n\)</span> columns. Read “<span class="math inline">\(m\)</span> by <span class="math inline">\(n\)</span>”.</li>
+<li>The <span class="math inline">\((i, j)\)</span>-<span class="math inline">\(th\)</span> <span class="math inline">\(entry\)</span> <span class="math inline">\(A_{ij}\)</span> is the number in row <span class="math inline">\(i\)</span>, column <span class="math inline">\(j\)</span>. Rows and columns are numbered from 1.</li>
+</ol>
+<p><strong>eg.</strong> <span class="math display">\[A = \begin{pmatrix} 1 &amp; 2 &amp; 3 \\ 2 &amp; 3 &amp; 4 \end{pmatrix}\]</span> is a <span class="math inline">\(2 \times 3\)</span> matrix. Its <span class="math inline">\((1, 2)\)</span>-th entry is <span class="math inline">\(A_{12} = 2\)</span> and its <span class="math inline">\((2, 3)\)</span>-th entry is <span class="math inline">\(A_{23} = 4\)</span>.</p>
+<p>Two ML faces of a matrix:</p>
+<ol type="i">
+<li>A matrix is a <span class="math inline">\(table\)</span> <span class="math inline">\(of\)</span> <span class="math inline">\(data\)</span>: stack data vectors as rows. One row = one data point, one column = one feature. The cricket table of 2.1 is a <span class="math inline">\(6 \times 5\)</span> matrix.</li>
+<li>A matrix is a <span class="math inline">\(machine\)</span> that transforms vectors: <span class="math inline">\(m \times n\)</span> matrix times an <span class="math inline">\(n\)</span>-vector gives an <span class="math inline">\(m\)</span>-vector (2.10). A neural layer <span class="math inline">\(\mathbf{y} = W\mathbf{x} + \mathbf{b}\)</span> is exactly this.</li>
+</ol>
+<p><strong>Basically, …</strong> A matrix is a table of numbers with an address system: row <span class="math inline">\(i\)</span>, column <span class="math inline">\(j\)</span> picks out one cell. ML reads a matrix two ways — as a pile of data (rows = examples) and as a machine that converts one vector into another.</p>
+</section>
+<section id="special-matrices" class="level2">
+<h2 class="anchored" data-anchor-id="special-matrices">2.8 Special matrices</h2>
+<ul>
+<li><p><span class="math inline">\(Square\)</span> <span class="math inline">\(matrix\)</span> = number of rows = number of columns (<span class="math inline">\(n \times n\)</span>).</p></li>
+<li><p>The <span class="math inline">\(i\)</span>-th <span class="math inline">\(diagonal\)</span> <span class="math inline">\(entry\)</span> of a square matrix is <span class="math inline">\(A_{ii}\)</span>; the <span class="math inline">\(diagonal\)</span> is the set of all of them. <strong>eg.</strong> In <span class="math inline">\(\begin{pmatrix} 0.3 &amp; 5 &amp; -7 \\ 2.8 &amp; 0 &amp; 1 \\ 0 &amp; -2.5 &amp; -1 \end{pmatrix}\)</span> the diagonal entries are <span class="math inline">\(0.3\)</span>, <span class="math inline">\(0\)</span>, <span class="math inline">\(-1\)</span>.</p></li>
+<li><p><span class="math inline">\(Zero\)</span> <span class="math inline">\(matrix\)</span> = every entry is <span class="math inline">\(0\)</span>. Written <span class="math inline">\(0\)</span> (or <span class="math inline">\(0_{m \times n}\)</span> when the shape matters).</p></li>
+<li><p><span class="math inline">\(Diagonal\)</span> <span class="math inline">\(matrix\)</span> = square, everything off the diagonal is <span class="math inline">\(0\)</span>. <strong>eg.</strong> <span class="math inline">\(\begin{pmatrix} 1 &amp; 0 &amp; 0 \\ 0 &amp; -3 &amp; 0 \\ 0 &amp; 0 &amp; 4.2 \end{pmatrix}\)</span> is diagonal.</p></li>
+<li><p><span class="math inline">\(Scalar\)</span> <span class="math inline">\(matrix\)</span> = diagonal, and all diagonal entries are equal. <strong>eg.</strong> <span class="math inline">\(\begin{pmatrix} -3 &amp; 0 &amp; 0 \\ 0 &amp; -3 &amp; 0 \\ 0 &amp; 0 &amp; -3 \end{pmatrix}\)</span> is scalar.</p></li>
+<li><p><span class="math inline">\(Identity\)</span> <span class="math inline">\(matrix\)</span> <span class="math inline">\(I\)</span> = scalar matrix with all diagonal entries <span class="math inline">\(1\)</span> — the “do nothing” matrix. <span class="math display">\[I_3 = \begin{pmatrix} 1 &amp; 0 &amp; 0 \\ 0 &amp; 1 &amp; 0 \\ 0 &amp; 0 &amp; 1 \end{pmatrix}.\]</span></p></li>
+<li><p><span class="math inline">\(Transpose\)</span> <span class="math inline">\(A^T\)</span> = flip rows and columns: <span class="math inline">\((A^T)_{ij} = A_{ji}\)</span>. <strong>eg.</strong> <span class="math inline">\(\begin{pmatrix} 1 &amp; 2 &amp; 3 \\ 4 &amp; 5 &amp; 6 \end{pmatrix}^T = \begin{pmatrix} 1 &amp; 4 \\ 2 &amp; 5 \\ 3 &amp; 6 \end{pmatrix}\)</span>. A row vector’s transpose is a column vector and vice versa.</p></li>
+<li><p><span class="math inline">\(Symmetric\)</span> <span class="math inline">\(matrix\)</span> = square matrix equal to its own transpose: <span class="math inline">\(A^T = A\)</span> (mirror across the diagonal). <strong>eg.</strong> <span class="math inline">\(\begin{pmatrix} 2 &amp; 1 \\ 1 &amp; 3 \end{pmatrix}\)</span> is symmetric; <span class="math inline">\(\begin{pmatrix} 1 &amp; 2 \\ 3 &amp; 4 \end{pmatrix}\)</span> is not (<span class="math inline">\(2 \ne 3\)</span> off the diagonal).</p></li>
+</ul>
+<p><strong>Basically, …</strong> Special matrices are the greatest hits: the zero matrix (all zeros), the identity (1s on the diagonal — multiplying by it changes nothing, like <span class="math inline">\(\times 1\)</span>), and the transpose (rotate the table so rows become columns). Symmetric = the table looks the same after that flip.</p>
+</section>
+<section id="matrix-addition-and-scalar-multiplication" class="level2">
+<h2 class="anchored" data-anchor-id="matrix-addition-and-scalar-multiplication">2.9 Matrix addition and scalar multiplication</h2>
+<p>Exactly like vectors, done <span class="math inline">\(entrywise\)</span>. Addition needs the same shape on both sides.</p>
+<p><strong>Def.</strong> For <span class="math inline">\(m \times n\)</span> matrices <span class="math inline">\(A, B\)</span>: <span class="math inline">\((A + B)_{ij} = A_{ij} + B_{ij}\)</span>. For a scalar <span class="math inline">\(c\)</span>: <span class="math inline">\((cA)_{ij} = c \, A_{ij}\)</span>.</p>
+<p><strong>eg.</strong> <span class="math display">\[\begin{pmatrix} 2 &amp; -1 &amp; 0 \\ 3 &amp; 4 &amp; 5 \end{pmatrix} + \begin{pmatrix} 1 &amp; 3 &amp; -2 \\ 0 &amp; -4 &amp; 1 \end{pmatrix} = \begin{pmatrix} 2+1 &amp; -1+3 &amp; 0-2 \\ 3+0 &amp; 4-4 &amp; 5+1 \end{pmatrix} = \begin{pmatrix} 3 &amp; 2 &amp; -2 \\ 3 &amp; 0 &amp; 6 \end{pmatrix}.\]</span></p>
+<p><strong>eg.</strong> <span class="math display">\[3\begin{pmatrix} 1 &amp; 2 &amp; 3 \\ 4 &amp; 5 &amp; 6 \end{pmatrix} = \begin{pmatrix} 3 &amp; 6 &amp; 9 \\ 12 &amp; 15 &amp; 18 \end{pmatrix}.\]</span></p>
+<p>Note: <span class="math inline">\(A + B = B + A\)</span> (addition commutes), and <span class="math inline">\(\lambda(A + B) = \lambda A + \lambda B\)</span>. Adding a <span class="math inline">\(2 \times 3\)</span> matrix to a <span class="math inline">\(3 \times 2\)</span> matrix is simply not defined — the entries would not line up.</p>
+<p><strong>Basically, …</strong> Matrix addition = lay the tables on top of each other and add cell by cell. Scaling = multiply every cell by one number. Same as vectors, because a matrix is just vectors stacked.</p>
+</section>
+<section id="matrix-multiplication-the-heart-of-the-chapter" class="level2">
+<h2 class="anchored" data-anchor-id="matrix-multiplication-the-heart-of-the-chapter">2.10 Matrix multiplication: the heart of the chapter</h2>
+<p>Matrix multiplication looks odd at first. It is <span class="math inline">\(not\)</span> entrywise — and that is deliberate: it is built so that multiplying matrices composes the machines of 2.7.</p>
+<p><span class="math inline">\(Compatibility\)</span>: <span class="math inline">\(A_{m \times n} B_{n \times p} = (AB)_{m \times p}\)</span>. The inner dimensions must match (columns of <span class="math inline">\(A\)</span> = rows of <span class="math inline">\(B\)</span>); the result takes the outer ones.</p>
+<p><strong>Def (row-times-column).</strong> <span class="math inline">\((AB)_{ij} = \sum_{k=1}^{n} A_{ik} B_{kj}\)</span> = row <span class="math inline">\(i\)</span> of <span class="math inline">\(A\)</span> dotted with column <span class="math inline">\(j\)</span> of <span class="math inline">\(B\)</span>.</p>
+<p><strong>eg (fully worked).</strong> Multiply <span class="math inline">\(A = \begin{pmatrix} 1 &amp; 2 \\ 3 &amp; 4 \end{pmatrix}\)</span> by <span class="math inline">\(B = \begin{pmatrix} 1 &amp; 2 &amp; 3 \\ 3 &amp; 4 &amp; 5 \end{pmatrix}\)</span>. <span class="math inline">\(A\)</span> is <span class="math inline">\(2 \times 2\)</span>, <span class="math inline">\(B\)</span> is <span class="math inline">\(2 \times 3\)</span>; the inner 2s match, so <span class="math inline">\(AB\)</span> is <span class="math inline">\(2 \times 3\)</span>. Six dot products:</p>
+<ul>
+<li><span class="math inline">\((AB)_{11}\)</span> = row 1 of <span class="math inline">\(A\)</span> <span class="math inline">\(\cdot\)</span> col 1 of <span class="math inline">\(B\)</span> = <span class="math inline">\((1, 2) \cdot (1, 3) = 1 + 6 = 7\)</span></li>
+<li><span class="math inline">\((AB)_{12}\)</span> = row 1 of <span class="math inline">\(A\)</span> <span class="math inline">\(\cdot\)</span> col 2 of <span class="math inline">\(B\)</span> = <span class="math inline">\((1, 2) \cdot (2, 4) = 2 + 8 = 10\)</span></li>
+<li><span class="math inline">\((AB)_{13}\)</span> = row 1 of <span class="math inline">\(A\)</span> <span class="math inline">\(\cdot\)</span> col 3 of <span class="math inline">\(B\)</span> = <span class="math inline">\((1, 2) \cdot (3, 5) = 3 + 10 = 13\)</span></li>
+<li><span class="math inline">\((AB)_{21}\)</span> = row 2 of <span class="math inline">\(A\)</span> <span class="math inline">\(\cdot\)</span> col 1 of <span class="math inline">\(B\)</span> = <span class="math inline">\((3, 4) \cdot (1, 3) = 3 + 12 = 15\)</span></li>
+<li><span class="math inline">\((AB)_{22}\)</span> = row 2 of <span class="math inline">\(A\)</span> <span class="math inline">\(\cdot\)</span> col 2 of <span class="math inline">\(B\)</span> = <span class="math inline">\((3, 4) \cdot (2, 4) = 6 + 16 = 22\)</span></li>
+<li><span class="math inline">\((AB)_{23}\)</span> = row 2 of <span class="math inline">\(A\)</span> <span class="math inline">\(\cdot\)</span> col 3 of <span class="math inline">\(B\)</span> = <span class="math inline">\((3, 4) \cdot (3, 5) = 9 + 20 = 29\)</span></li>
+</ul>
+<p><span class="math display">\[\begin{pmatrix} 1 &amp; 2 \\ 3 &amp; 4 \end{pmatrix}\begin{pmatrix} 1 &amp; 2 &amp; 3 \\ 3 &amp; 4 &amp; 5 \end{pmatrix} = \begin{pmatrix} 7 &amp; 10 &amp; 13 \\ 15 &amp; 22 &amp; 29 \end{pmatrix}.\]</span></p>
+<p><strong>eg (matrix times vector).</strong> <span class="math inline">\(\begin{pmatrix} 1 &amp; 2 \\ 3 &amp; 4 \end{pmatrix}\begin{pmatrix} 5 \\ 6 \end{pmatrix}\)</span>: row 1 <span class="math inline">\(\cdot\)</span> <span class="math inline">\((5,6)\)</span> = <span class="math inline">\(5 + 12 = 17\)</span>; row 2 <span class="math inline">\(\cdot\)</span> <span class="math inline">\((5,6)\)</span> = <span class="math inline">\(15 + 24 = 39\)</span>. Result: <span class="math inline">\(\begin{pmatrix} 17 \\ 39 \end{pmatrix}\)</span>.</p>
+<p>There is a second view of the same computation, and it is the more useful one in ML.</p>
+<p><strong>The columns view.</strong> Write <span class="math inline">\(A\)</span> as its columns <span class="math inline">\([\mathbf{a}_1 \;\; \mathbf{a}_2 \;\; \cdots \;\; \mathbf{a}_n]\)</span>. Then <span class="math display">\[A\mathbf{x} = x_1 \mathbf{a}_1 + x_2 \mathbf{a}_2 + \cdots + x_n \mathbf{a}_n\]</span> — a <span class="math inline">\(linear\)</span> <span class="math inline">\(combination\)</span> of the columns of <span class="math inline">\(A\)</span>, with the entries of <span class="math inline">\(\mathbf{x}\)</span> as coefficients.</p>
+<p><strong>eg (same product, columns view).</strong> Columns of <span class="math inline">\(\begin{pmatrix} 1 &amp; 2 \\ 3 &amp; 4 \end{pmatrix}\)</span> are <span class="math inline">\(\mathbf{a}_1 = (1, 3)\)</span>, <span class="math inline">\(\mathbf{a}_2 = (2, 4)\)</span>. Then <span class="math display">\[\begin{pmatrix} 1 &amp; 2 \\ 3 &amp; 4 \end{pmatrix}\begin{pmatrix} 5 \\ 6 \end{pmatrix} = 5\mathbf{a}_1 + 6\mathbf{a}_2 = 5(1, 3) + 6(2, 4) = (5 + 12,\ 15 + 24) = (17, 39).\]</span> Same <span class="math inline">\((17, 39)\)</span> as the row-times-column computation above. ✓ Two views, one answer.</p>
+<!-- Source: original illustration drawn for this chapter with matplotlib; no external source -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/ch02-matvec-columns.png" class="img-fluid figure-img"></p>
+<figcaption>Matrix-vector product as a linear combination of the columns of A</figcaption>
+</figure>
+</div>
+<p>Two handy special cases:</p>
+<ol type="i">
+<li>Multiplying by a scalar matrix = scalar multiplication: <span class="math inline">\(\begin{pmatrix} c &amp; 0 &amp; 0 \\ 0 &amp; c &amp; 0 \\ 0 &amp; 0 &amp; c \end{pmatrix}\begin{pmatrix} 1 &amp; 2 \\ 3 &amp; 4 \\ 5 &amp; 6 \end{pmatrix} = \begin{pmatrix} c &amp; 2c \\ 3c &amp; 4c \\ 5c &amp; 6c \end{pmatrix} = c\begin{pmatrix} 1 &amp; 2 \\ 3 &amp; 4 \\ 5 &amp; 6 \end{pmatrix}\)</span>.</li>
+<li>Multiplying by the identity changes nothing: <span class="math inline">\(IA = A = AI\)</span> (with the right-sized <span class="math inline">\(I\)</span> on each side).</li>
+</ol>
+<p><strong>Basically, …</strong> Matrix multiplication = every row of the left table dotted with every column of the right table. And the ML-flavoured re-read: <span class="math inline">\(A\mathbf{x}\)</span> is a recipe — “take <span class="math inline">\(x_1\)</span> of column 1, <span class="math inline">\(x_2\)</span> of column 2, …” and add. The columns of <span class="math inline">\(A\)</span> are the ingredients; the entries of <span class="math inline">\(\mathbf{x}\)</span> are how much of each.</p>
+</section>
+<section id="the-basic-rules-and-one-famous-non-rule" class="level2">
+<h2 class="anchored" data-anchor-id="the-basic-rules-and-one-famous-non-rule">2.11 The basic rules (and one famous non-rule)</h2>
+<p>For matrices of compatible shapes:</p>
+<ol type="i">
+<li><p><span class="math inline">\((A + B) + C = A + (B + C)\)</span> (<span class="math inline">\(associativity\)</span> of addition).</p></li>
+<li><p><span class="math inline">\((AB)C = A(BC)\)</span> (<span class="math inline">\(associativity\)</span> of multiplication) — brackets don’t matter in a product chain, which is why <span class="math inline">\(ABC\)</span> is unambiguous.</p></li>
+<li><p><span class="math inline">\(A + B = B + A\)</span> (<span class="math inline">\(commutativity\)</span> of addition).</p></li>
+<li><p><span class="math inline">\(A(B + C) = AB + AC\)</span> and <span class="math inline">\((A + B)C = AC + BC\)</span> (<span class="math inline">\(distributivity\)</span>).</p></li>
+<li><p><span class="math inline">\(\lambda(AB) = (\lambda A)B = A(\lambda B)\)</span> — scalars slide freely through a product.</p></li>
+<li><p>The famous non-rule: in general <span class="math inline">\(AB \ne BA\)</span> (when both even make sense). Multiplication does <span class="math inline">\(not\)</span> commute. <strong>eg (counterexample, full steps).</strong> <span class="math inline">\(A = \begin{pmatrix} 1 &amp; 2 \\ 3 &amp; 4 \end{pmatrix}\)</span>, <span class="math inline">\(B = \begin{pmatrix} 1 &amp; 0 \\ 0 &amp; 0 \end{pmatrix}\)</span>: <span class="math display">\[AB = \begin{pmatrix} 1\cdot1 + 2\cdot0 &amp; 1\cdot0 + 2\cdot0 \\ 3\cdot1 + 4\cdot0 &amp; 3\cdot0 + 4\cdot0 \end{pmatrix} = \begin{pmatrix} 1 &amp; 0 \\ 3 &amp; 0 \end{pmatrix},\]</span> <span class="math display">\[BA = \begin{pmatrix} 1\cdot1 + 0\cdot3 &amp; 1\cdot2 + 0\cdot4 \\ 0\cdot1 + 0\cdot3 &amp; 0\cdot2 + 0\cdot4 \end{pmatrix} = \begin{pmatrix} 1 &amp; 2 \\ 0 &amp; 0 \end{pmatrix}.\]</span> <span class="math inline">\(AB \ne BA\)</span> — same ingredients, different order, different answer.</p></li>
+</ol>
+<p><strong>Basically, …</strong> Addition of matrices behaves like addition of numbers. Multiplication keeps associativity and distributivity — but forgets commutativity: order matters. “Rotate then stretch” is not “stretch then rotate”. (In ML this is why <span class="math inline">\(W_2(W_1\mathbf{x})\)</span> means apply <span class="math inline">\(W_1\)</span> first.)</p>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li>Compute <span class="math inline">\((5, -2, 4) + 3(1, 0, -1) - (2, 3, 0)\)</span>.</li>
+<li>Let <span class="math inline">\(\mathbf{u} = (6, 8)\)</span>. Find <span class="math inline">\(\lVert \mathbf{u} \rVert\)</span> and the unit vector pointing in the same direction as <span class="math inline">\(\mathbf{u}\)</span>.</li>
+<li>Compute the dot product of <span class="math inline">\((3, -1, 2)\)</span> and <span class="math inline">\((-2, 4, 5)\)</span>. What does the answer say about the angle between them?</li>
+<li>Find the angle between <span class="math inline">\((1, 2)\)</span> and <span class="math inline">\((2, 1)\)</span>, in degrees.</li>
+<li>Write <span class="math inline">\((7, 5)\)</span> as a linear combination of <span class="math inline">\((1, 2)\)</span> and <span class="math inline">\((2, 1)\)</span>, i.e.&nbsp;find scalars <span class="math inline">\(a, b\)</span> with <span class="math inline">\((7, 5) = a(1, 2) + b(2, 1)\)</span>.</li>
+<li>For <span class="math inline">\(A = \begin{pmatrix} 2 &amp; 0 &amp; -1 \\ 1 &amp; 3 &amp; 4 \end{pmatrix}\)</span>: what is its shape? What is the <span class="math inline">\((2, 1)\)</span>-th entry? Is <span class="math inline">\(A\)</span> square? Is it diagonal?</li>
+<li>With <span class="math inline">\(A = \begin{pmatrix} 1 &amp; -2 \\ 0 &amp; 3 \end{pmatrix}\)</span> and <span class="math inline">\(B = \begin{pmatrix} 4 &amp; 1 \\ 2 &amp; -1 \end{pmatrix}\)</span>, compute <span class="math inline">\(A + B\)</span> and <span class="math inline">\(2A - B\)</span>.</li>
+<li>Multiply <span class="math inline">\(\begin{pmatrix} 2 &amp; -1 \\ 0 &amp; 3 \\ 1 &amp; 1 \end{pmatrix}\begin{pmatrix} 1 &amp; 2 \\ 3 &amp; -1 \end{pmatrix}\)</span>, showing each entry’s computation.</li>
+<li>For <span class="math inline">\(A = \begin{pmatrix} 0 &amp; 1 \\ 1 &amp; 0 \end{pmatrix}\)</span> and <span class="math inline">\(B = \begin{pmatrix} 2 &amp; 0 \\ 0 &amp; 3 \end{pmatrix}\)</span>, compute <span class="math inline">\(AB\)</span> and <span class="math inline">\(BA\)</span>. Are they equal?</li>
+<li>Let <span class="math inline">\(\mathbf{v} = (5, 6)\)</span> and <span class="math inline">\(A = \begin{pmatrix} 1 &amp; 2 \\ 3 &amp; 4 \end{pmatrix}\)</span>. Compute <span class="math inline">\(A\mathbf{v}\)</span> two ways — row-times-column and as a linear combination of the columns of <span class="math inline">\(A\)</span> — and confirm both give the same vector.</li>
+<li>True or false, with a reason: “If <span class="math inline">\(A\)</span> is <span class="math inline">\(m \times n\)</span> and <span class="math inline">\(B\)</span> is <span class="math inline">\(n \times p\)</span>, then <span class="math inline">\(AB\)</span> is defined and has shape <span class="math inline">\(p \times m\)</span>.”</li>
+<li>Is <span class="math inline">\(\begin{pmatrix} 2 &amp; -1 \\ -1 &amp; 2 \end{pmatrix}\)</span> symmetric? Is the transpose of a row vector a column vector?</li>
+</ol>
+</section>
+<section id="where-this-goes-next" class="level2">
+<h2 class="anchored" data-anchor-id="where-this-goes-next">Where this goes next</h2>
+<p>This chapter gave you the objects and the operations. The coming chapters put them to work:</p>
+<ul>
+<li><strong>Chapter 3 (linear systems):</strong> the <span class="math inline">\(Ax = \mathbf{b}\)</span> in 2.10’s columns view — “which recipe of columns makes <span class="math inline">\(\mathbf{b}\)</span>?” — becomes solving systems of linear equations.</li>
+<li><strong>Chapter 4 (vector spaces):</strong> the loose facts about adding and scaling vectors (2.3, 2.6) get their proper home: the axioms every vector space obeys.</li>
+<li><strong>Chapter 5 (orthogonality):</strong> the dot product’s zero (2.5) gets a name — <span class="math inline">\(orthogonal\)</span> — plus projections and the geometry they unlock.</li>
+</ul>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — <span class="math inline">\((5, -2, 4) + 3(1, 0, -1) - (2, 3, 0)\)</span>. Scale first, then add coordinatewise:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="1">
+<li><span class="math inline">\((5, -2, 4) + 3(1, 0, -1) - (2, 3, 0)\)</span>. Scale first, then add coordinatewise: <span class="math display">\[3(1, 0, -1) = (3, 0, -3),\]</span> <span class="math display">\[(5, -2, 4) + (3, 0, -3) = (5 + 3,\ -2 + 0,\ 4 - 3) = (8, -2, 1),\]</span> <span class="math display">\[(8, -2, 1) - (2, 3, 0) = (8 - 2,\ -2 - 3,\ 1 - 0) = (6, -5, 1).\]</span></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — <span class="math inline">\(\mathbf{u} = (6, 8)\)</span>. Norm:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol start="2" type="1">
+<li><span class="math inline">\(\mathbf{u} = (6, 8)\)</span>. Norm: <span class="math display">\[\lVert \mathbf{u} \rVert = \sqrt{6^2 + 8^2} = \sqrt{36 + 64} = \sqrt{100} = 10.\]</span> Unit vector in the same direction: divide by the length, <span class="math display">\[\hat{\mathbf{u}} = \frac{(6, 8)}{10} = \left(\frac{3}{5}, \frac{4}{5}\right).\]</span> Check: <span class="math inline">\(\left\lVert \left(\frac{3}{5}, \frac{4}{5}\right) \right\rVert = \sqrt{\frac{9}{25} + \frac{16}{25}} = \sqrt{1} = 1\)</span>. ✓</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — <span class="math inline">\((3, -1, 2) \cdot (-2, 4, 5) = 3 \times (-2) + (-1) \times 4 + 2 \times 5 = -6 - 4 + 10 = 0\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol start="3" type="1">
+<li><span class="math inline">\((3, -1, 2) \cdot (-2, 4, 5) = 3 \times (-2) + (-1) \times 4 + 2 \times 5 = -6 - 4 + 10 = 0\)</span>. The dot product is zero, so <span class="math inline">\(\cos\theta = 0\)</span> and the angle between them is <span class="math inline">\(90^\circ\)</span> — the vectors are at right angles to each other (this gets the name <span class="math inline">\(orthogonal\)</span> in Chapter 5).</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — <span class="math inline">\(\mathbf{u} = (1, 2)\)</span>, <span class="math inline">\(\mathbf{v} = (2, 1)\)</span>:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol start="4" type="1">
+<li><span class="math inline">\(\mathbf{u} = (1, 2)\)</span>, <span class="math inline">\(\mathbf{v} = (2, 1)\)</span>: <span class="math display">\[\mathbf{u} \cdot \mathbf{v} = 1 \times 2 + 2 \times 1 = 2 + 2 = 4,\]</span> <span class="math display">\[\lVert \mathbf{u} \rVert = \sqrt{1 + 4} = \sqrt{5}, \qquad \lVert \mathbf{v} \rVert = \sqrt{4 + 1} = \sqrt{5},\]</span> <span class="math display">\[\cos\theta = \frac{4}{\sqrt{5} \cdot \sqrt{5}} = \frac{4}{5} = 0.8 \;\Rightarrow\; \theta = \cos^{-1}(0.8) \approx 36.87^\circ.\]</span></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — Want <span class="math inline">\((7, 5) = a(1, 2) + b(2, 1)\)</span>. Expanding the right side: <span class="math inline">\((a + 2b,\ 2a + b)\)</span>. Matching components:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol start="5" type="1">
+<li>Want <span class="math inline">\((7, 5) = a(1, 2) + b(2, 1)\)</span>. Expanding the right side: <span class="math inline">\((a + 2b,\ 2a + b)\)</span>. Matching components: <span class="math display">\[\begin{cases} a + 2b = 7 \\ 2a + b = 5 \end{cases}\]</span> From the first, <span class="math inline">\(a = 7 - 2b\)</span>. Substituting into the second: <span class="math inline">\(2(7 - 2b) + b = 5\)</span>, i.e.&nbsp;<span class="math inline">\(14 - 3b = 5\)</span>, so <span class="math inline">\(3b = 9\)</span> and <span class="math inline">\(b = 3\)</span>. Then <span class="math inline">\(a = 7 - 2 \times 3 = 1\)</span>. Check: <span class="math inline">\(1(1, 2) + 3(2, 1) = (1 + 6,\ 2 + 3) = (7, 5)\)</span>. ✓</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — <span class="math inline">\(A = \begin{pmatrix} 2 &amp; 0 &amp; -1 \\ 1 &amp; 3 &amp; 4 \end{pmatrix}\)</span> has 2 rows and 3 columns: shape <span class="math inline">\(2 \times 3\)</span>. The <span class="math inline">\((2, 1)\)</span>-th entry is the row-2, column-1 entry: <span class="math inline">\(A_{21} = 1\)</span>. Not square (<span class="math inline">\(2 \ne 3\)</span>), hence not diagonal either.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol start="6" type="1">
+<li><span class="math inline">\(A = \begin{pmatrix} 2 &amp; 0 &amp; -1 \\ 1 &amp; 3 &amp; 4 \end{pmatrix}\)</span> has 2 rows and 3 columns: shape <span class="math inline">\(2 \times 3\)</span>. The <span class="math inline">\((2, 1)\)</span>-th entry is the row-2, column-1 entry: <span class="math inline">\(A_{21} = 1\)</span>. Not square (<span class="math inline">\(2 \ne 3\)</span>), hence not diagonal either.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — <span class="math inline">\(A + B\)</span> entrywise:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol start="7" type="1">
+<li><span class="math inline">\(A + B\)</span> entrywise: <span class="math display">\[\begin{pmatrix} 1 &amp; -2 \\ 0 &amp; 3 \end{pmatrix} + \begin{pmatrix} 4 &amp; 1 \\ 2 &amp; -1 \end{pmatrix} = \begin{pmatrix} 1+4 &amp; -2+1 \\ 0+2 &amp; 3+(-1) \end{pmatrix} = \begin{pmatrix} 5 &amp; -1 \\ 2 &amp; 2 \end{pmatrix}.\]</span> <span class="math inline">\(2A = \begin{pmatrix} 2 &amp; -4 \\ 0 &amp; 6 \end{pmatrix}\)</span>, so <span class="math display">\[2A - B = \begin{pmatrix} 2-4 &amp; -4-1 \\ 0-2 &amp; 6-(-1) \end{pmatrix} = \begin{pmatrix} -2 &amp; -5 \\ -2 &amp; 7 \end{pmatrix}.\]</span></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 8 — <span class="math inline">\(3 \times 2\)</span> times <span class="math inline">\(2 \times 2\)</span>: inner dimensions match (2 = 2), so the result is <span class="math inline">\(3 \times 2\)</span>. Each entry = row of left dotted with column of right:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol start="8" type="1">
+<li><span class="math inline">\(3 \times 2\)</span> times <span class="math inline">\(2 \times 2\)</span>: inner dimensions match (2 = 2), so the result is <span class="math inline">\(3 \times 2\)</span>. Each entry = row of left dotted with column of right:</li>
+</ol>
+<ul>
+<li><span class="math inline">\((1,1)\)</span>: <span class="math inline">\((2, -1) \cdot (1, 3) = 2 \times 1 + (-1) \times 3 = 2 - 3 = -1\)</span></li>
+<li><span class="math inline">\((1,2)\)</span>: <span class="math inline">\((2, -1) \cdot (2, -1) = 2 \times 2 + (-1) \times (-1) = 4 + 1 = 5\)</span></li>
+<li><span class="math inline">\((2,1)\)</span>: <span class="math inline">\((0, 3) \cdot (1, 3) = 0 \times 1 + 3 \times 3 = 9\)</span></li>
+<li><span class="math inline">\((2,2)\)</span>: <span class="math inline">\((0, 3) \cdot (2, -1) = 0 \times 2 + 3 \times (-1) = -3\)</span></li>
+<li><span class="math inline">\((3,1)\)</span>: <span class="math inline">\((1, 1) \cdot (1, 3) = 1 \times 1 + 1 \times 3 = 4\)</span></li>
+<li><span class="math inline">\((3,2)\)</span>: <span class="math inline">\((1, 1) \cdot (2, -1) = 1 \times 2 + 1 \times (-1) = 1\)</span> <span class="math display">\[\begin{pmatrix} 2 &amp; -1 \\ 0 &amp; 3 \\ 1 &amp; 1 \end{pmatrix}\begin{pmatrix} 1 &amp; 2 \\ 3 &amp; -1 \end{pmatrix} = \begin{pmatrix} -1 &amp; 5 \\ 9 &amp; -3 \\ 4 &amp; 1 \end{pmatrix}.\]</span></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 9 — <span class="math display">\[AB = \begin{pmatrix} 0 &amp; 1 \\ 1 &amp; 0 \end{pmatrix}\begin{pmatrix} 2 &amp; 0 \\ 0 &amp; 3 \end{pmatrix} = \begin{pmatrix} 0\cdot2 + 1\cdot0 &amp; 0\cdot0 + 1\cdot3 \\ 1\cdot2 + 0\cdot0 &amp; 1\cdot0 + 0\cdot3 \end{pmatrix} = \begin{pmatrix} 0 &amp; 3 \\ 2 &amp; 0 \end{pmatrix},\]</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol start="9" type="1">
+<li><span class="math display">\[AB = \begin{pmatrix} 0 &amp; 1 \\ 1 &amp; 0 \end{pmatrix}\begin{pmatrix} 2 &amp; 0 \\ 0 &amp; 3 \end{pmatrix} = \begin{pmatrix} 0\cdot2 + 1\cdot0 &amp; 0\cdot0 + 1\cdot3 \\ 1\cdot2 + 0\cdot0 &amp; 1\cdot0 + 0\cdot3 \end{pmatrix} = \begin{pmatrix} 0 &amp; 3 \\ 2 &amp; 0 \end{pmatrix},\]</span> <span class="math display">\[BA = \begin{pmatrix} 2 &amp; 0 \\ 0 &amp; 3 \end{pmatrix}\begin{pmatrix} 0 &amp; 1 \\ 1 &amp; 0 \end{pmatrix} = \begin{pmatrix} 2\cdot0 + 0\cdot1 &amp; 2\cdot1 + 0\cdot0 \\ 0\cdot0 + 3\cdot1 &amp; 0\cdot1 + 3\cdot0 \end{pmatrix} = \begin{pmatrix} 0 &amp; 2 \\ 3 &amp; 0 \end{pmatrix}.\]</span> <span class="math inline">\(AB \ne BA\)</span> — another concrete case of non-commutativity.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 10 — Row-times-column: row 1 <span class="math inline">\(\cdot\)</span> <span class="math inline">\((5, 6)\)</span> = <span class="math inline">\(1 \times 5 + 2 \times 6 = 5 + 12 = 17\)</span>; row 2 <span class="math inline">\(\cdot\)</span> <span class="math inline">\((5, 6)\)</span> = <span class="math inline">\(3 \times 5 + 4 \times 6 = 15 + 24 = 39\)</span>. So <span class="math inline">\(A\mathbf{v} = (17, 39)\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol start="10" type="1">
+<li>Row-times-column: row 1 <span class="math inline">\(\cdot\)</span> <span class="math inline">\((5, 6)\)</span> = <span class="math inline">\(1 \times 5 + 2 \times 6 = 5 + 12 = 17\)</span>; row 2 <span class="math inline">\(\cdot\)</span> <span class="math inline">\((5, 6)\)</span> = <span class="math inline">\(3 \times 5 + 4 \times 6 = 15 + 24 = 39\)</span>. So <span class="math inline">\(A\mathbf{v} = (17, 39)\)</span>.</li>
+</ol>
+<p>Columns view: the columns of <span class="math inline">\(A\)</span> are <span class="math inline">\(\mathbf{a}_1 = (1, 3)\)</span>, <span class="math inline">\(\mathbf{a}_2 = (2, 4)\)</span>, and <span class="math display">\[A\mathbf{v} = 5\mathbf{a}_1 + 6\mathbf{a}_2 = 5(1, 3) + 6(2, 4) = (5, 15) + (12, 24) = (17, 39).\]</span> Both views agree. ✓</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 11 — False. The product of an <span class="math inline">\(m \times n\)</span> matrix and an <span class="math inline">\(n \times p\)</span> matrix is <span class="math inline">\(m \times p\)</span> — the <span class="math inline">\(outer\)</span> dimensions: rows from <span class="math inline">\(A\)</span>, columns from <span class="math inline">\(B\)</span>. (<span class="math inline">\(p \times m\)</span> is wrong in both order and meaning; e.g.&nbsp;a <span class="math inline">\(2 \times 3\)</span> times a <span class="math inline">\(3 \times 4\)</span> gives <span class="math inline">\(2 \times 4\)</span>, not <span class="math inline">\(4 \times 2\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-11" class="callout-11-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol start="11" type="1">
+<li>False. The product of an <span class="math inline">\(m \times n\)</span> matrix and an <span class="math inline">\(n \times p\)</span> matrix is <span class="math inline">\(m \times p\)</span> — the <span class="math inline">\(outer\)</span> dimensions: rows from <span class="math inline">\(A\)</span>, columns from <span class="math inline">\(B\)</span>. (<span class="math inline">\(p \times m\)</span> is wrong in both order and meaning; e.g.&nbsp;a <span class="math inline">\(2 \times 3\)</span> times a <span class="math inline">\(3 \times 4\)</span> gives <span class="math inline">\(2 \times 4\)</span>, not <span class="math inline">\(4 \times 2\)</span>.)</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 12 — Transpose flips rows and columns: <span class="math inline">\(\begin{pmatrix} 2 &amp; -1 \\ -1 &amp; 2 \end{pmatrix}^T = \begin{pmatrix} 2 &amp; -1 \\ -1 &amp; 2 \end{pmatrix}\)</span> — it equals itself, so yes, symmetric. And yes: a <span class="math inline">\(1 \times n\)</span> row vector’s transpose is <span class="math inline">\(n \times 1\)</span>, i.e.&nbsp;a column vector, directly from <span class="math inline">\((A^T)_{ij} = A_{ji}\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-12" class="callout-12-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol start="12" type="1">
+<li>Transpose flips rows and columns: <span class="math inline">\(\begin{pmatrix} 2 &amp; -1 \\ -1 &amp; 2 \end{pmatrix}^T = \begin{pmatrix} 2 &amp; -1 \\ -1 &amp; 2 \end{pmatrix}\)</span> — it equals itself, so yes, symmetric. And yes: a <span class="math inline">\(1 \times n\)</span> row vector’s transpose is <span class="math inline">\(n \times 1\)</span>, i.e.&nbsp;a column vector, directly from <span class="math inline">\((A^T)_{ij} = A_{ji}\)</span>.</li>
+</ol>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./01-sets-functions-preliminaries.html" class="pagination-link" aria-label="Chapter 1 — Sets, functions, and mathematical preliminaries">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./03-linear-systems-determinants-inverses.html" class="pagination-link" aria-label="3. Linear systems, determinants, inverses">
+        <span class="nav-page-text"><span class="chapter-title">3. Linear systems, determinants, inverses</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

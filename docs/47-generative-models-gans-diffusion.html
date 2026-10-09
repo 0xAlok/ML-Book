@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Chapter 47: Generative models: GANs and diffusion – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./46-attention-and-transformers.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./41-neuron-mlp-scratch.html">Part VI — Bridge to Deep Learning</a></li><li class="breadcrumb-item"><a href="./47-generative-models-gans-diffusion.html"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#two-promises-this-chapter-cashes" id="toc-two-promises-this-chapter-cashes" class="nav-link active" data-scroll-target="#two-promises-this-chapter-cashes">47.1 Two promises this chapter cashes</a></li>
+  <li><a href="#what-a-generative-model-is" id="toc-what-a-generative-model-is" class="nav-link" data-scroll-target="#what-a-generative-model-is">47.2 What a generative model is</a></li>
+  <li><a href="#the-latent-space-from-enumeration-to-noise" id="toc-the-latent-space-from-enumeration-to-noise" class="nav-link" data-scroll-target="#the-latent-space-from-enumeration-to-noise">47.3 The latent space: from enumeration to noise</a></li>
+  <li><a href="#the-gan-a-two-player-game" id="toc-the-gan-a-two-player-game" class="nav-link" data-scroll-target="#the-gan-a-two-player-game">47.4 The GAN: a two-player game</a></li>
+  <li><a href="#training-alternate-freeze-repeat" id="toc-training-alternate-freeze-repeat" class="nav-link" data-scroll-target="#training-alternate-freeze-repeat">47.5 Training: alternate, freeze, repeat</a></li>
+  <li><a href="#the-losses-worked-by-hand-verified-numpy" id="toc-the-losses-worked-by-hand-verified-numpy" class="nav-link" data-scroll-target="#the-losses-worked-by-hand-verified-numpy">47.6 The losses, worked by hand [verified-NumPy]</a></li>
+  <li><a href="#the-notebook-a-gan-on-fashionmnist-from-scratch-recorded-torch" id="toc-the-notebook-a-gan-on-fashionmnist-from-scratch-recorded-torch" class="nav-link" data-scroll-target="#the-notebook-a-gan-on-fashionmnist-from-scratch-recorded-torch">47.7 The notebook: a GAN on FashionMNIST, from scratch [recorded — torch]</a></li>
+  <li><a href="#scaling-up-dcgan-and-stylegan-recorded" id="toc-scaling-up-dcgan-and-stylegan-recorded" class="nav-link" data-scroll-target="#scaling-up-dcgan-and-stylegan-recorded">47.8 Scaling up: DCGAN and StyleGAN [recorded]</a></li>
+  <li><a href="#when-gans-break-recorded" id="toc-when-gans-break-recorded" class="nav-link" data-scroll-target="#when-gans-break-recorded">47.9 When GANs break [recorded]</a></li>
+  <li><a href="#the-diffusion-pitch-many-easy-steps" id="toc-the-diffusion-pitch-many-easy-steps" class="nav-link" data-scroll-target="#the-diffusion-pitch-many-easy-steps">47.10 The diffusion pitch: many easy steps</a></li>
+  <li><a href="#the-forward-process-the-math" id="toc-the-forward-process-the-math" class="nav-link" data-scroll-target="#the-forward-process-the-math">47.11 The forward process: the math</a></li>
+  <li><a href="#eg-two-steps-of-noise-one-jump-verified-numpy" id="toc-eg-two-steps-of-noise-one-jump-verified-numpy" class="nav-link" data-scroll-target="#eg-two-steps-of-noise-one-jump-verified-numpy">47.12 eg: two steps of noise, one jump [verified-NumPy]</a></li>
+  <li><a href="#the-reverse-process-learning-to-denoise" id="toc-the-reverse-process-learning-to-denoise" class="nav-link" data-scroll-target="#the-reverse-process-learning-to-denoise">47.13 The reverse process: learning to denoise</a></li>
+  <li><a href="#the-denoiser-a-u-net-that-knows-what-time-it-is" id="toc-the-denoiser-a-u-net-that-knows-what-time-it-is" class="nav-link" data-scroll-target="#the-denoiser-a-u-net-that-knows-what-time-it-is">47.14 The denoiser: a U-Net that knows what time it is</a></li>
+  <li><a href="#eg-a-time-embedding-by-hand-verified-numpy" id="toc-eg-a-time-embedding-by-hand-verified-numpy" class="nav-link" data-scroll-target="#eg-a-time-embedding-by-hand-verified-numpy">47.15 eg: a time embedding, by hand [verified-NumPy]</a></li>
+  <li><a href="#ddim-sampling-20100-faster" id="toc-ddim-sampling-20100-faster" class="nav-link" data-scroll-target="#ddim-sampling-20100-faster">47.16 DDIM: sampling 20–100× faster</a></li>
+  <li><a href="#eg-one-ddim-step-by-hand-verified-numpy" id="toc-eg-one-ddim-step-by-hand-verified-numpy" class="nav-link" data-scroll-target="#eg-one-ddim-step-by-hand-verified-numpy">47.17 eg: one DDIM step, by hand [verified-NumPy]</a></li>
+  <li><a href="#guidance-steering-the-denoiser" id="toc-guidance-steering-the-denoiser" class="nav-link" data-scroll-target="#guidance-steering-the-denoiser">47.18 Guidance: steering the denoiser</a></li>
+  <li><a href="#latent-diffusion-stable-diffusion" id="toc-latent-diffusion-stable-diffusion" class="nav-link" data-scroll-target="#latent-diffusion-stable-diffusion">47.19 Latent diffusion: Stable Diffusion</a></li>
+  <li><a href="#judging-the-forgeries-fid-is-clip" id="toc-judging-the-forgeries-fid-is-clip" class="nav-link" data-scroll-target="#judging-the-forgeries-fid-is-clip">47.20 Judging the forgeries: FID, IS, CLIP</a></li>
+  <li><a href="#where-this-goes-next-closing-part-vi-and-the-book" id="toc-where-this-goes-next-closing-part-vi-and-the-book" class="nav-link" data-scroll-target="#where-this-goes-next-closing-part-vi-and-the-book">47.21 Where this goes next: closing Part VI (and the book)</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./41-neuron-mlp-scratch.html">Part VI — Bridge to Deep Learning</a></li><li class="breadcrumb-item"><a href="./47-generative-models-gans-diffusion.html"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Chapter 46 closed with the observation that the decoder of §46.12 <em>is</em> a generator: it scores sequences (the §45.1 modelling target) and samples new ones; §45.13(iii) said the same of the §45.10 decoder, and §44.10(iii) promised that “GANs and diffusion models are built on conv stacks like this chapter’s — the discriminator is a CNN classifier, and the generator is the §44.9 decoder run in reverse.” This chapter cashes all three. The spine is the GenAI Week 6 deck (“Introduction to Generative Adversarial Networks,” Balaji Srinivasan and Ganapathy Krishnamurthi, 65 slides — generative models, latent space, the GAN game, DCGAN, StyleGAN, training challenges) plus its companion notebook <em>GAN_from_Scratch.ipynb</em> (a vanilla GAN on 28×28 FashionMNIST images), and the GenAI Week 11 deck (“Introduction to Diffusion Models,” same authors, 94 slides — taxonomy, FID/IS/CLIP, DDPM forward/reverse, reparameterization, schedulers, DDIM, classifier-free guidance, latent diffusion/Stable Diffusion). Every numpy number below was re-run here and is marked <strong>[verified-NumPy]</strong>; deck, notebook, and torch numbers are transcriptions, marked <strong>[recorded]</strong>. “The deck” below means the GAN deck when GANs are discussed and the diffusion deck when diffusion is — they agree on everything they share.</p>
+<p><strong>Notation.</strong> <span class="math inline">\(p_{\text{data}}\)</span> is the real data distribution; <span class="math inline">\(p_{\text{model}}\)</span> (sometimes <span class="math inline">\(p_\theta\)</span>) the model’s. <span class="math inline">\(z \sim p(z)\)</span> is a latent/noise vector, usually <span class="math inline">\(\mathcal{N}(0, I)\)</span>. The generator is <span class="math inline">\(G(z; \theta_g)\)</span>, the discriminator <span class="math inline">\(D(x) \in [0, 1]\)</span>. In diffusion, <span class="math inline">\(x_t\)</span> is the image at noise level <span class="math inline">\(t\)</span>, <span class="math inline">\(\beta_t\)</span> the noise schedule, <span class="math inline">\(\alpha_t = 1 - \beta_t\)</span>, <span class="math inline">\(\bar\alpha_t = \prod_{s=1}^{t} \alpha_s\)</span>, and <span class="math inline">\(\epsilon_\theta(x_t, t)\)</span> the network’s predicted noise.</p>
+<section id="two-promises-this-chapter-cashes" class="level2">
+<h2 class="anchored" data-anchor-id="two-promises-this-chapter-cashes">47.1 Two promises this chapter cashes</h2>
+<p><strong>i) The §46.16(i) promise.</strong> The transformer decoder <em>generates</em> by sampling next tokens autoregressively. This chapter adds two more generator families: the GAN (learn the mapping noise → image in <em>one</em> shot, trained adversarially) and the diffusion model (learn to undo noise in <em>many</em> small steps). Three ways to turn noise into data — decoder, adversary, denoiser — closing the arc that began at §45.13(iii).</p>
+<p><strong>ii) The §44.10(iii) promise.</strong> Both new families run on Chapter 44’s conv stacks. The GAN’s discriminator becomes a CNN classifier at DCGAN scale (§44.6’s stack with a sigmoid head); its generator is the §44.9 U-Net decoder run in reverse (noise up to full image). The diffusion model’s noise predictor is a U-Net with skip connections (§44.9) — the same Lego, a new game.</p>
+<p><strong>iii) The trilemma that motivated diffusion.</strong> The diffusion deck’s table (condensed) [recorded]: VAEs give <strong>stable training + good diversity</strong> but <strong>blurry samples</strong> (the MSE loss “averages out fine details”); GANs give <strong>sharp samples</strong> but <strong>poor diversity</strong> (mode collapse) and <strong>unstable training</strong>. Diffusion asks: can we keep the stability and coverage of VAEs <em>with</em> GAN-level sharpness? Its answer is to replace one hard generation step with many easy denoising steps.</p>
+<p><strong>Basically, …</strong> “Three ways to make new data from noise: the transformer writes it word by word (§46.12), the GAN forges it in one shot while a critic judges (§47.4), and diffusion sculpts it by repeatedly removing a little noise (§47.13). All three reuse the machinery of Chapters 41–46 — conv stacks, skip connections, attention, Adam.”</p>
+</section>
+<section id="what-a-generative-model-is" class="level2">
+<h2 class="anchored" data-anchor-id="what-a-generative-model-is">47.2 What a generative model is</h2>
+<p><strong>Def (the deck’s).</strong> “A generative model is a type of statistical model that is capable of learning the underlying distribution of a dataset in order to generate new, synthetic data samples that are similar to the original data.” Formally: the real data comes from <span class="math inline">\(p_{\text{data}}(x)\)</span>; the model learns a distribution <span class="math inline">\(p_{\text{model}}(x)\)</span> and training tries to make <span class="math inline">\(p_{\text{model}}\)</span> as close to <span class="math inline">\(p_{\text{data}}\)</span> as possible.</p>
+<p><strong>The generative vs.&nbsp;discriminative split.</strong> A discriminative model learns <span class="math inline">\(P(y \mid x)\)</span> — “given this image, cat or dog?” (logistic regression, SVMs, ordinary classifiers). A generative model learns <span class="math inline">\(P(x)\)</span> — “what makes an image look like a cat?” — and can then <em>sample</em> from it (VAEs, GANs, diffusion).</p>
+<p><strong>The deck’s taxonomy (condensed)</strong> [recorded]: - <strong>i) Explicit density, tractable.</strong> Define and compute <span class="math inline">\(p(x)\)</span> exactly. PixelCNN/RNN, Glow, NADE/MADE — autoregressive pixel-by-pixel models live here. - <strong>ii) Explicit density, approximate.</strong> <span class="math inline">\(p(x)\)</span> is intractable; optimize a proxy. VAEs maximize a lower bound on likelihood (ELBO); diffusion models are classified here too (“systematically add noise to data, then learn to reverse the process”). - <strong>iii) Implicit density.</strong> Never define <span class="math inline">\(p(x)\)</span> at all — just learn to <em>sample</em> from it. GANs are “the dominant family in this category.”</p>
+<p><strong>Why they’re useful (deck’s list)</strong> [recorded]: data generation, understanding latent structure, missing-data imputation (inpainting), anomaly detection, representation learning. The deck also notes the generative-classifier trick: with one generative model <span class="math inline">\(P(x \mid y = c)\)</span> per class, Bayes’ rule picks the class maximizing <span class="math inline">\(P(x \mid y = c)P(y = c)\)</span> — Naive Bayes is the textbook instance (§30’s territory).</p>
+<p><strong>The deck’s toy (2×2 grid, worked).</strong> Take an “image” as a 2×2 grid, each pixel black (0) or white (1): <span class="math inline">\(2^{2 \times 2} = 2^4 = 16\)</span> possible images. A generative model learns <span class="math inline">\(P(x_{11}, x_{12}, x_{21}, x_{22})\)</span> — for this toy, just count occurrences and normalize [recorded].</p>
+<p><strong>eg (the deck’s marginalization numbers — [verified-NumPy]).</strong> The deck’s hypothetical joint gives eight configs with <span class="math inline">\(x_{11} = 1\)</span>: <span class="math inline">\(0.05, 0.10, 0.15, 0.03, 0.02, 0.08, 0.07, 0.01\)</span>. Marginalizing means summing over the other pixels: <span class="math display">\[P(x_{11} = 1) = 0.05 + 0.10 + 0.15 + 0.03 + 0.02 + 0.08 + 0.07 + 0.01 = 0.51.\]</span> Same idea, one step harder: <strong>inpainting.</strong> If <span class="math inline">\(x_{11} = 1\)</span> is known and the rest missing, the best fill is <span class="math inline">\(\arg\max_{x_{\text{mis}}} P(x_{\text{mis}}, x_{\text{obs}})\)</span>; the deck’s table max is <span class="math inline">\(P(1, 0, 1, 0) = 0.15\)</span>, so the completion is <span class="math inline">\((x_{12}, x_{21}, x_{22}) = (0, 1, 0)\)</span> [recorded].</p>
+<p><strong>Note.</strong> The toy works because <span class="math inline">\(16\)</span> is tiny. A <span class="math inline">\(32 \times 32\)</span> grayscale image has <span class="math inline">\(2^{1024}\)</span> possible binary configurations — explicit enumeration is “computationally impossible,” the deck’s motivating fact for everything that follows. Modern models never store the joint table; they learn a <em>function</em> that approximates it or samples from it.</p>
+<p><strong>Basically, …</strong> “A generative model learns ‘what kind of data this is’ — the probability pattern — then rolls new dice weighted by that pattern. On a 2×2 toy you can write the whole probability table by hand; on real images the table is astronomically huge, so you need smarter tricks: GANs (§47.4) or diffusion (§47.10).”</p>
+</section>
+<section id="the-latent-space-from-enumeration-to-noise" class="level2">
+<h2 class="anchored" data-anchor-id="the-latent-space-from-enumeration-to-noise">47.3 The latent space: from enumeration to noise</h2>
+<p>For real data, the deck’s pivot is: don’t try to sample from <span class="math inline">\(p(x)\)</span> in pixel space — learn a <strong>mapping</strong> from a simple noise distribution to the data:</p>
+<p><strong>Def.</strong> Sample <span class="math inline">\(z \sim p(z)\)</span> (usually <span class="math inline">\(\mathcal{N}(0, I)\)</span> — easy). A generator <span class="math inline">\(G(z; \theta_g)\)</span> maps the latent space <span class="math inline">\(\mathcal{Z}\)</span> to data space <span class="math inline">\(\mathcal{X}\)</span>: <span class="math inline">\(x = G(z)\)</span>. Training finds <span class="math inline">\(\theta_g^*\)</span> so the distribution of <span class="math inline">\(G(z)\)</span> matches <span class="math inline">\(p_{\text{data}}\)</span>.</p>
+<p><strong>Why it works (the deck’s intuition).</strong> <strong>i)</strong> Most pixel configurations are meaningless noise; real images sit on a thin “manifold” inside pixel space. <strong>ii)</strong> You cannot “pick random pixels and get a cat,” but you can pick a random point in a small “idea space” and let a trained function grow the idea into an image. <strong>iii)</strong> Each <span class="math inline">\(z\)</span> is a different seed/recipe — the <em>noise is the source of variety</em>.</p>
+<p><strong>The paradigm shift (deck’s table, condensed)</strong> [recorded]: pre-deep-learning latent spaces (PCA’s §24 eigenfaces, factor analysis, LDA topics, SVD matrix factorization) went <strong>data → latent</strong> and asked “what are the hidden factors in my data?” Modern models flip the arrow — <strong>noise → data</strong> — and ask “how can I create new data that looks like my data?” The latent space got an <em>imposed</em> structure (Gaussian) instead of a discovered one, so any random point in it decodes to something sensible.</p>
+<p><strong>Basically, …</strong> “Old latent space: take a real face, squeeze it into a short code (analysis). New latent space: pick a random short code from a nice distribution, grow a face from it (synthesis). Same word, opposite arrow — and the arrow reversal is what makes generation possible.”</p>
+</section>
+<section id="the-gan-a-two-player-game" class="level2">
+<h2 class="anchored" data-anchor-id="the-gan-a-two-player-game">47.4 The GAN: a two-player game</h2>
+<p>Proposed by Goodfellow et al.&nbsp;(2014) [recorded]. The deck’s analogy: an <strong>aspiring artist</strong> (the generator) forges paintings in a master’s style without ever seeing the originals, while an <strong>art critic</strong> (the discriminator) studies real masterpieces and forgeries to learn to tell them apart. The game ends when the forgeries fool the critic half the time.</p>
+<!-- Diagram: the GAN architecture — generator fed by noise, discriminator judging real vs. generated, feedback loop; the deck's figure (source credited to Hands-On Machine Learning with Scikit-Learn, Keras & TensorFlow). Standard reference: Goodfellow et al., "Generative Adversarial Networks," https://arxiv.org/abs/1406.2661 -->
+<p><strong>i) The discriminator <span class="math inline">\(D\)</span>: the critic.</strong> Wants to classify correctly — real data as real, fakes as fake. Its objective to maximize: <span class="math display">\[\max_D \; \mathbb{E}_{x \sim p_{\text{data}}(x)}[\log D(x)] + \mathbb{E}_{z \sim p_z(z)}[\log(1 - D(G(z)))] \quad \text{[recorded]}.\]</span> First term: push <span class="math inline">\(D(x) \to 1\)</span> on real data. Second term: push <span class="math inline">\(D(G(z)) \to 0\)</span> on fakes.</p>
+<p><strong>ii) The generator <span class="math inline">\(G\)</span>: the forger.</strong> Wants to fool <span class="math inline">\(D\)</span> — minimize the second term above: <span class="math display">\[\min_G \; \mathbb{E}_{z \sim p_z(z)}[\log(1 - D(G(z)))] \quad \text{[recorded]}.\]</span></p>
+<p><strong>The combined minimax objective</strong> [recorded]: <span class="math display">\[\boxed{\min_G \max_D V(D, G) = \mathbb{E}_{x \sim p_{\text{data}}}[\log D(x)] + \mathbb{E}_{z \sim p_z}[\log(1 - D(G(z)))]}\]</span> “The Generator tries to minimize the value function that the Discriminator tries to maximize” — a zero-sum game called <strong>adversarial learning</strong>. The ideal end state is a <strong>Nash equilibrium</strong>: <span class="math inline">\(G\)</span> produces perfectly realistic data and <span class="math inline">\(D\)</span> “outputs a 50% probability for all inputs” — the critic is fooled exactly half the time [recorded].</p>
+<p><strong>Note (the deck vs.&nbsp;the notebook).</strong> The deck teaches the minimax form above. In practice — including this chapter’s notebook (§47.7) — the generator is instead trained to <strong>maximize <span class="math inline">\(\log D(G(z))\)</span></strong> (label fakes as real), which the deck flags as equivalent (“pushing the Discriminator’s output for fake images towards 1”) but with livelier gradients early on. §47.6 works both.</p>
+<p><strong>Basically, …</strong> “Two networks, one lie detector. The forger makes fakes, the critic calls them out; both get better. The score to beat: when the critic is right exactly half the time — no better than a coin flip — the forgeries are perfect.”</p>
+</section>
+<section id="training-alternate-freeze-repeat" class="level2">
+<h2 class="anchored" data-anchor-id="training-alternate-freeze-repeat">47.5 Training: alternate, freeze, repeat</h2>
+<p>The deck’s training algorithm has two phases, run in turns [recorded]:</p>
+<p><strong>Phase 1 — train <span class="math inline">\(D\)</span> (freeze <span class="math inline">\(G\)</span>).</strong> Sample real <span class="math inline">\(x \sim p_{\text{data}}\)</span> and noise <span class="math inline">\(z \sim p_z\)</span>, make fakes <span class="math inline">\(G(z)\)</span>. Gradient <strong>ascent</strong> on the discriminator’s objective (it’s a max): <span class="math display">\[\theta_d \leftarrow \theta_d + \alpha \nabla_{\theta_d} \frac{1}{m}\sum_{i=1}^{m} \big[\log D(x^{(i)}) + \log(1 - D(G(z^{(i)})))\big].\]</span></p>
+<p><strong>Phase 2 — train <span class="math inline">\(G\)</span> (freeze <span class="math inline">\(D\)</span>).</strong> Sample fresh noise <span class="math inline">\(z \sim p_z\)</span>. Gradient <strong>descent</strong> on the generator’s loss — gradients flow back <em>through the frozen discriminator</em> to reach <span class="math inline">\(G\)</span>: <span class="math display">\[\theta_g \leftarrow \theta_g - \alpha \nabla_{\theta_g} \frac{1}{m}\sum_{i=1}^{m} \log(1 - D(G(z^{(i)}))).\]</span></p>
+<p>Repeat both phases until the Nash point (or exhaustion). The freezing matters: each network learns against a fixed opponent for one step, so the “moving target” only moves between steps.</p>
+<p><strong>Basically, …</strong> “Coach the critic while the forger holds still; then coach the forger while the critic holds still. Two optimizers, two losses, one loop — and each half updates while the other is frozen, so the target stands still for a step.”</p>
+</section>
+<section id="the-losses-worked-by-hand-verified-numpy" class="level2">
+<h2 class="anchored" data-anchor-id="the-losses-worked-by-hand-verified-numpy">47.6 The losses, worked by hand [verified-NumPy]</h2>
+<p><strong>eg (own).</strong> Mini-batch of 2 real, 2 fake. Suppose <span class="math inline">\(D\)</span> outputs <span class="math inline">\(D(x) = [0.9,\ 0.7]\)</span> on real images and <span class="math inline">\(D(G(z)) = [0.3,\ 0.6]\)</span> on fakes.</p>
+<ol type="i">
+<li><p><strong>Discriminator loss (BCE).</strong> Each sample’s binary cross-entropy is <span class="math inline">\(-\log D(x)\)</span> (real) or <span class="math inline">\(-\log(1 - D(G(z)))\)</span> (fake): <span class="math display">\[\begin{aligned}
+L_D &amp;= -\tfrac{1}{4}\big[\log 0.9 + \log(1-0.3) + \log 0.7 + \log(1-0.6)\big] \\
+&amp;= -\tfrac{1}{4}\big[-0.1054 - 0.3567 - 0.3567 - 0.9163\big] = 0.4338.
+\end{aligned}\]</span></p></li>
+<li><p><strong>Generator loss, minimax version.</strong> <span class="math inline">\(L_G = -\tfrac{1}{2}[\log(1-0.3) + \log(1-0.6)] = -\tfrac{1}{2}[-0.3567 - 0.9163] = 0.6365\)</span>.</p></li>
+<li><p><strong>Generator loss, non-saturating version</strong> (the one the notebook actually uses). Label fakes as real: <span class="math inline">\(L_G = -\tfrac{1}{2}[\log 0.3 + \log 0.6] = 0.8574\)</span>.</p></li>
+</ol>
+<p><strong>Note.</strong> When <span class="math inline">\(D\)</span> is strong — say it gives a fake only <span class="math inline">\(0.05\)</span> — the non-saturating loss is <span class="math inline">\(-\log(0.05) \approx 2.9957\)</span>, still steep, while the minimax <span class="math inline">\(\log(1-0.05) \approx -0.0513\)</span> barely moves. That is the deck’s <strong>vanishing-gradient</strong> failure (§47.9): a critic that wins too early starves the forger of gradients; the non-saturating loss — the one the notebook actually trains with — is the practical patch.</p>
+<p><strong>Basically, …</strong> “The critic’s loss is plain binary cross-entropy — real images should score 1, fakes 0. The forger’s smart loss is the same BCE with flipped labels: it pays the critic to score its fakes as 1. And when the critic gets too good, the forger needs the flipped-label version, because the textbook one goes flat.”</p>
+</section>
+<section id="the-notebook-a-gan-on-fashionmnist-from-scratch-recorded-torch" class="level2">
+<h2 class="anchored" data-anchor-id="the-notebook-a-gan-on-fashionmnist-from-scratch-recorded-torch">47.7 The notebook: a GAN on FashionMNIST, from scratch [recorded — torch]</h2>
+<p>The <em>GAN_from_Scratch.ipynb</em> builds exactly the game above — plain dense networks, no convolutions yet — on 60,000 grayscale <span class="math inline">\(28 \times 28\)</span> images. <strong>Note (notebook naming slip).</strong> The code loads <code>datasets.FashionMNIST</code>, but the comments call the images “handwritten digits” (wrong — FashionMNIST is clothing items, not digits) and the final comparison panel titles them “MNIST”. The code is authoritative: the dataset is FashionMNIST.</p>
+<p><strong>The two networks</strong> [recorded]: - <strong>Generator.</strong> <span class="math inline">\(\text{Linear}(64 \to 256) \to \text{LeakyReLU}(0.2) \to \text{Linear}(256 \to 256) \to \text{LeakyReLU}(0.2) \to \text{Linear}(256 \to 784) \to \tanh\)</span>. Latent vector <span class="math inline">\(z \in \mathbb{R}^{64}\)</span>, <span class="math inline">\(\tanh\)</span> output matches the <span class="math inline">\([-1, 1]\)</span> normalized images. - <strong>Discriminator.</strong> <span class="math inline">\(\text{Linear}(784 \to 256) \to \text{LeakyReLU}(0.2) \to \text{Linear}(256 \to 256) \to \text{LeakyReLU}(0.2) \to \text{Linear}(256 \to 1) \to \text{sigmoid}\)</span> — a binary classifier (§44.6’s stack without the convolutions).</p>
+<p><strong>Parameter counts [verified-NumPy].</strong> Generator: <span class="math inline">\((64\cdot256+256) + (256\cdot256+256) + (256\cdot784+784) = 16{,}640 + 65{,}792 + 201{,}488 = 283{,}920\)</span>. Discriminator: <span class="math inline">\((784\cdot256+256) + (256\cdot256+256) + (256\cdot1+1) = 200{,}960 + 65{,}792 + 257 = 267{,}009\)</span>.</p>
+<p><strong>The training recipe</strong> [recorded]: pixels normalized to <span class="math inline">\([-1, 1]\)</span> to match the <span class="math inline">\(\tanh\)</span> head (denormalize with <span class="math inline">\((x+1)/2\)</span> for display); <strong>BCE loss</strong>; <strong>Adam, <span class="math inline">\(\eta = 0.0002\)</span></strong> with separate optimizers for <span class="math inline">\(D\)</span> and <span class="math inline">\(G\)</span>; batch <span class="math inline">\(100\)</span>; <span class="math inline">\(100\)</span> epochs <span class="math inline">\(\times\)</span> <span class="math inline">\(600\)</span> steps <span class="math inline">\(=\)</span> <span class="math inline">\(60{,}000\)</span> updates. The <span class="math inline">\(D\)</span> step calls <code>fake_images.detach()</code> — no gradient flows into <span class="math inline">\(G\)</span> while the critic trains (§47.5’s freeze, implemented as a detach). The <span class="math inline">\(G\)</span> step is the non-saturating form: BCE against <code>real_labels</code> (fakes labelled <span class="math inline">\(1\)</span>).</p>
+<p><strong>Results</strong> [recorded]: average <span class="math inline">\(L_D = 0.7651\)</span>, average <span class="math inline">\(L_G = 2.0232\)</span>; final epoch <span class="math inline">\(L_D = 0.8781\)</span>, <span class="math inline">\(L_G = 1.5290\)</span> (ratio <span class="math inline">\(G/D = 1.7413\)</span>). Early on <span class="math inline">\(D(x) \approx 0.95\)</span>, <span class="math inline">\(D(G(z)) \approx 0.05\)</span> — the critic dominates, exactly the regime §47.6’s note describes — and the generator closes the gap over the 100 epochs. The final panel shows generated digits next to real ones.</p>
+<p><strong>Basically, …</strong> “Sixty-four random numbers in, a <span class="math inline">\(28 \times 28\)</span> digit out — two small MLPs, a coin-flip game, Adam at <span class="math inline">\(0.0002\)</span>. The critic learns fast (<span class="math inline">\(0.95\)</span> on real images by epoch 1), the forger catches up slowly, and after 60,000 alternating steps the fake digits look like digits.”</p>
+</section>
+<section id="scaling-up-dcgan-and-stylegan-recorded" class="level2">
+<h2 class="anchored" data-anchor-id="scaling-up-dcgan-and-stylegan-recorded">47.8 Scaling up: DCGAN and StyleGAN [recorded]</h2>
+<p><strong>DCGAN (Deep Convolutional GAN).</strong> “A major step forward, successfully using deep convolutional nets for larger images” — and §44.10(iii) in the flesh: a CNN discriminator plus a conv-transpose generator. The deck’s stability guidelines [recorded]: - <strong>i)</strong> Replace pooling: <strong>strided convolutions</strong> in <span class="math inline">\(D\)</span> (downsampling) and <strong>transposed convolutions</strong> in <span class="math inline">\(G\)</span> (upsampling). - <strong>ii)</strong> <strong>Batch normalization</strong> in both nets — but <em>not</em> on <span class="math inline">\(G\)</span>’s output layer or <span class="math inline">\(D\)</span>’s input layer. - <strong>iii)</strong> Remove fully connected hidden layers (for deeper architectures). - <strong>iv)</strong> Activations: <strong>ReLU</strong> in <span class="math inline">\(G\)</span> everywhere except the output (<span class="math inline">\(\tanh\)</span>); <strong>LeakyReLU</strong> in <span class="math inline">\(D\)</span> everywhere.</p>
+<p><strong>StyleGAN (Nvidia).</strong> The deck’s state-of-the-art step [recorded]. Two nets inside the generator: <strong>1)</strong> a <strong>mapping network</strong> (an MLP) that sends the latent code <span class="math inline">\(z \in \mathcal{Z}\)</span> to an <em>intermediate</em> latent space <span class="math inline">\(w \in \mathcal{W}\)</span> — “disentangles the latent space and reduces correlations”; affine transforms of <span class="math inline">\(w\)</span> then produce style vectors that control different visual features (hair colour, face shape) at different scales. <strong>2)</strong> A <strong>synthesis network</strong> that starts from a learned <span class="math inline">\(4 \times 4\)</span> constant and upsamples: <strong>AdaIN</strong> (adaptive instance normalization) applies each style vector as scale-and-bias at every conv layer, and explicit <strong>noise injection</strong> at each layer models stochastic detail (freckles, hair placement) “more efficiently than encoding this in the latent code.”</p>
+<p><strong>The deck’s payoff claim</strong> [recorded]: GANs learn “rich, meaningful latent representations that allow for semantic operations, such as vector arithmetic on faces” — the same embedding arithmetic as §46.2’s king − man + woman, now over images.</p>
+<p><strong>Basically, …</strong> “DCGAN = the GAN idea with Chapter 44’s parts: stride instead of pooling, transposed conv to grow the image, batch norm, the right activations. StyleGAN = a two-stage generator: first warp the noise into a better-behaved latent space, then grow the image from a constant while dialling ‘style’ knobs (and sprinkling noise) at every layer.”</p>
+</section>
+<section id="when-gans-break-recorded" class="level2">
+<h2 class="anchored" data-anchor-id="when-gans-break-recorded">47.9 When GANs break [recorded]</h2>
+<p>“Training GANs can be notoriously difficult and unstable.” The deck’s four failure modes:</p>
+<ul>
+<li><strong>i) Mode collapse</strong> — “the biggest difficulty.” <span class="math inline">\(G\)</span> finds one output that fools <span class="math inline">\(D\)</span> (the deck’s example: images of shoes) and produces only that, “forgetting how to generate other classes” — or cycles through a few modes, never learning the full distribution. §47.1(iii)’s missing diversity, in one failure.</li>
+<li><strong>ii) Non-convergence.</strong> Parameters “oscillate, become unstable, and never converge” — the two networks chase each other forever.</li>
+<li><strong>iii) Vanishing gradients.</strong> “If the discriminator gets too good too quickly, the generator’s gradients can vanish” — §47.6’s note, now as a failure mode.</li>
+<li><strong>iv) Hyperparameter sensitivity.</strong> GANs “require significant fine-tuning” — §47.7’s Adam-at-<span class="math inline">\(0.0002\)</span> recipe is typical of how narrow the workable settings are.</li>
+</ul>
+<p><strong>Plausible fixes (the deck’s)</strong> [recorded]: <strong>WGAN</strong> (Wasserstein GAN) — measures the Wasserstein distance between the real and generated <em>distributions</em> and minimizes it, “strongly incentivizing the generator to produce a wide variety of outputs to match the diversity of the real data, thus significantly reducing mode collapse.” <strong>Minibatch discrimination</strong> — lets <span class="math inline">\(D\)</span> see whole batches and measure sample similarity, so a batch of identical fakes “can be easily rejected.” <strong>Progressive growing</strong> — start at <span class="math inline">\(4 \times 4\)</span>, then add layers to grow <span class="math inline">\(8 \times 8\)</span>, <span class="math inline">\(16 \times 16\)</span>, <span class="math inline">\(\dots\)</span>; “simplifies the learning task at each stage.”</p>
+<p><strong>Basically, …</strong> “GAN training is a balancing act on a knife edge: the forger either collapses to one trick (mode collapse), the critic gets too strong and kills the signal (vanishing gradients), or the two just orbit forever. Fixes: measure distribution distance instead of a classifier score (WGAN), punish boring batches, or grow the image gradually from tiny to full size.”</p>
+</section>
+<section id="the-diffusion-pitch-many-easy-steps" class="level2">
+<h2 class="anchored" data-anchor-id="the-diffusion-pitch-many-easy-steps">47.10 The diffusion pitch: many easy steps</h2>
+<p>The diffusion deck replays the trilemma and then changes the question: instead of <em>one</em> hard mapping noise → image (GAN) or a <em>lossy</em> compression (VAE), do the generation in <strong>many easy steps</strong> — learn to fix a <em>slightly</em> noisy image, then iterate.</p>
+<p><strong>The origin story (Sohl-Dickstein et al., 2015)</strong> [recorded]: ink diffusing in water. <strong>Forward</strong> (nature): the drop “naturally diffuses until it creates a uniform, chaotic distribution” — easy, irreversible. <strong>Reverse</strong> (learned): undo the diffusion, one small step at a time — the hard part a neural network is asked to learn.</p>
+<!-- Diagram: the forward process (image → noise) beside the reverse process (noise → image), as in the DDPM paper's figure (Ho et al., 2020, https://arxiv.org/abs/2006.11239) — the diffusion deck credits this figure to "the DDPM paper." -->
+<ul>
+<li><strong>i) The forward process <span class="math inline">\(q\)</span></strong> — “the systematic destruction of data.” Slowly add Gaussian noise to a real image over <span class="math inline">\(T\)</span> steps. <strong>Fixed: no learning here</strong>, just follow a schedule. Ends at pure noise <span class="math inline">\(x_T \sim \mathcal{N}(0, I)\)</span>.</li>
+<li><strong>ii) The reverse process <span class="math inline">\(p\)</span></strong> — “the learned restoration.” Start from pure noise; the network denoises “one step at a time.” <strong>This is the trainable part.</strong></li>
+</ul>
+<p><strong>The deck’s conclusion</strong> [recorded]: “We moved from ‘One Hard Step’ (GANs) to ‘Many Easy Steps’ (Diffusion). The trade-off: we gained training stability and mode coverage at the cost of inference speed” — and the fundamental insight: “Don’t learn to create an image from scratch; just learn to fix a slightly noisy one.”</p>
+<p><strong>Basically, …</strong> “GANs bet everything on one perfect forgery; diffusion takes a thousand tiny safe bets. Destroying an image with noise needs no learning — it’s a fixed recipe — so all the learning goes into the one easy skill: remove a little noise. That simplicity is why diffusion trains stably where GANs wobble.”</p>
+</section>
+<section id="the-forward-process-the-math" class="level2">
+<h2 class="anchored" data-anchor-id="the-forward-process-the-math">47.11 The forward process: the math</h2>
+<p><strong>The Markov chain.</strong> Each noisy step depends only on the previous one [recorded]: <span class="math display">\[q(x_{1:T} \mid x_0) = \prod_{t=1}^{T} q(x_t \mid x_{t-1}).\]</span></p>
+<p><strong>One step of noise.</strong> At step <span class="math inline">\(t\)</span>, draw from a Gaussian centred on the previous image, scaled slightly down [recorded]: <span class="math display">\[\boxed{q(x_t \mid x_{t-1}) = \mathcal{N}\!\left(x_t;\; \sqrt{1-\beta_t}\,x_{t-1},\; \beta_t I\right)}.\]</span> <span class="math inline">\(\beta_t \in (0, 1)\)</span> is the <strong>variance schedule</strong> — typically increasing, <span class="math inline">\(\beta_1 &lt; \beta_2 &lt; \cdots &lt; \beta_T\)</span> (“noise increases over time”).</p>
+<p><strong>The closed-form shortcut (the reparameterization trick).</strong> Reaching <span class="math inline">\(x_{500}\)</span> step by step costs 500 sequential ops — too slow for training. Since sums of Gaussians are Gaussian, there is a one-jump formula. Define <span class="math inline">\(\alpha_t = 1 - \beta_t\)</span> and <span class="math inline">\(\bar\alpha_t = \prod_{s=1}^{t} \alpha_s\)</span>; then [recorded]: <span class="math display">\[\boxed{x_t = \sqrt{\bar\alpha_t}\,x_0 + \sqrt{1-\bar\alpha_t}\,\epsilon, \qquad \epsilon \sim \mathcal{N}(0, I)},\]</span> i.e.&nbsp;<span class="math inline">\(q(x_t \mid x_0) = \mathcal{N}(x_t;\, \sqrt{\bar\alpha_t}\,x_0,\, (1-\bar\alpha_t)I)\)</span>. Signal weight <span class="math inline">\(\sqrt{\bar\alpha_t}\)</span> fades while noise weight <span class="math inline">\(\sqrt{1-\bar\alpha_t}\)</span> grows — the same Gaussian-sum algebra as the deck’s two-step derivation (two independent Gaussians <span class="math inline">\(a\epsilon_1 + b\epsilon_2\)</span> merge into <span class="math inline">\(\sqrt{a^2+b^2}\,\epsilon\)</span>).</p>
+<p><strong>The schedule.</strong> The standard linear schedule: <span class="math inline">\(T = 1000\)</span> steps, <span class="math inline">\(\beta\)</span> rising linearly from <span class="math inline">\(\beta_1 = 10^{-4}\)</span> to <span class="math inline">\(\beta_T = 0.02\)</span>. As <span class="math inline">\(\beta_t\)</span> grows, <span class="math inline">\(\bar\alpha_t \to 0\)</span>, and by step <span class="math inline">\(T\)</span>, <span class="math inline">\(x_T \approx \mathcal{N}(0, I)\)</span> — pure noise [recorded].</p>
+<p><strong>Basically, …</strong> “Each forward step keeps most of the old image and mixes in a little Gaussian noise (<span class="math inline">\(\beta_t\)</span> controls how much). Because Gaussians add nicely, you can skip the whole chain: jump straight from the clean image to step <span class="math inline">\(t\)</span> in one formula. Crank <span class="math inline">\(\beta\)</span> up over 1000 steps and the image melts into pure static.”</p>
+</section>
+<section id="eg-two-steps-of-noise-one-jump-verified-numpy" class="level2">
+<h2 class="anchored" data-anchor-id="eg-two-steps-of-noise-one-jump-verified-numpy">47.12 eg: two steps of noise, one jump [verified-NumPy]</h2>
+<p>Own toy: <span class="math inline">\(\beta_1 = 0.2\)</span>, <span class="math inline">\(\beta_2 = 0.25\)</span>; take a scalar “image” <span class="math inline">\(x_0 = 1.0\)</span> and sampled noise <span class="math inline">\(\epsilon = 0.7\)</span>.</p>
+<ol type="i">
+<li><p><span class="math inline">\(\alpha_1 = 0.8\)</span>, <span class="math inline">\(\alpha_2 = 0.75\)</span>, so <span class="math inline">\(\bar\alpha_2 = 0.8 \times 0.75 = 0.6\)</span>.</p></li>
+<li><p>Jump directly: <span class="math inline">\(x_2 = \sqrt{0.6}\cdot 1.0 + \sqrt{1-0.6}\cdot 0.7 = 0.7746 + 0.6325 \times 0.7 = 0.7746 + 0.4427 = 1.2173\)</span>.</p></li>
+</ol>
+<p>No 2-step chain needed — the formula carries both noise injections at once. At <span class="math inline">\(t = 2\)</span> the signal still outweighs the noise (<span class="math inline">\(\bar\alpha_2 = 0.6\)</span>); at <span class="math inline">\(t = 1000\)</span> of the real schedule the signal weight is essentially zero.</p>
+<p><strong>Basically, …</strong> “The <span class="math inline">\(\bar\alpha\)</span> bookkeeping says: after two steps, 60% of the variance is still signal, 40% is noise — and the one-line formula lands you at <span class="math inline">\(x_2 = 1.2173\)</span> without ever computing <span class="math inline">\(x_1\)</span>.”</p>
+</section>
+<section id="the-reverse-process-learning-to-denoise" class="level2">
+<h2 class="anchored" data-anchor-id="the-reverse-process-learning-to-denoise">47.13 The reverse process: learning to denoise</h2>
+<p><strong>The model.</strong> If the forward steps are small, the reverse step is (approximately) Gaussian too. Learn it with a network [recorded]: <span class="math display">\[\boxed{p_\theta(x_{t-1} \mid x_t) = \mathcal{N}\!\left(x_{t-1};\; \mu_\theta(x_t, t),\; \Sigma_\theta(t)\right)},\]</span> input: noisy image <span class="math inline">\(x_t\)</span> and timestep <span class="math inline">\(t\)</span>; output: the mean of the slightly cleaner <span class="math inline">\(x_{t-1}\)</span>. The variance <span class="math inline">\(\Sigma_\theta\)</span> is usually fixed to a constant (e.g.&nbsp;<span class="math inline">\(\beta_t\)</span>) — the deck keeps it simple and predicts only the mean.</p>
+<p><strong>The training target (the clever workaround).</strong> The true reverse <span class="math inline">\(q(x_{t-1} \mid x_t)\)</span> is intractable — it would need the distribution of <em>all</em> images. But during training we <em>know</em> <span class="math inline">\(x_0\)</span>, so the posterior <span class="math inline">\(q(x_{t-1} \mid x_t, x_0)\)</span> is tractable by Bayes’ rule [recorded]: <span class="math display">\[q(x_{t-1} \mid x_t, x_0) = \frac{q(x_t \mid x_{t-1})\,q(x_{t-1} \mid x_0)}{q(x_t \mid x_0)} = \mathcal{N}(x_{t-1};\, \tilde\mu_t(x_t, x_0),\, \tilde\beta_t I).\]</span> A product of Gaussians is a Gaussian; grinding the algebra gives the target mean [recorded]: <span class="math display">\[\tilde\mu_t(x_t, x_0) = \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\,\epsilon\right).\]</span> <strong>Key insight</strong> (the deck’s): <span class="math inline">\(x_t\)</span> is known to the network; the <em>only unknown</em> in that formula is <span class="math inline">\(\epsilon\)</span> — the noise that was added. “To predict the previous image mean <span class="math inline">\(\tilde\mu_t\)</span>, the neural network only needs to predict the noise <span class="math inline">\(\epsilon\)</span>.”</p>
+<p><strong>The loss collapses to MSE.</strong> KL divergence between the ground-truth Gaussian and <span class="math inline">\(p_\theta\)</span>, with fixed variances, reduces to matching the means; reparameterizing the mean through the predicted noise <span class="math inline">\(\epsilon_\theta\)</span> cancels the constants [recorded]: <span class="math display">\[\boxed{L_{\text{simple}} = \big\|\epsilon - \epsilon_\theta\!\left(\sqrt{\bar\alpha_t}\,x_0 + \sqrt{1-\bar\alpha_t}\,\epsilon,\; t\right)\big\|^2}.\]</span> “Take a clean image, add noise, ask the U-Net ‘what noise was added?’, MSE between actual and predicted noise. We are literally teaching the model to separate signal from noise.”</p>
+<p><strong>Training (Algorithm 1)</strong> [recorded]: repeat — sample <span class="math inline">\(x_0\)</span> from the data, sample <span class="math inline">\(t\)</span> uniformly from <span class="math inline">\(\{1, \dots, T\}\)</span>, sample <span class="math inline">\(\epsilon \sim \mathcal{N}(0, I)\)</span>, gradient-descent step on <span class="math inline">\(L_{\text{simple}}\)</span>. Note the efficiency: training never unrolls the full chain — one random timestep per step.</p>
+<p><strong>Sampling (Algorithm 2)</strong> [recorded]: start <span class="math inline">\(x_T \sim \mathcal{N}(0, I)\)</span>; for <span class="math inline">\(t = T, \dots, 1\)</span>: compute <span class="math inline">\(\mu_\theta(x_t, t) = \frac{1}{\sqrt{\alpha_t}}\left(x_t - \frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\epsilon_\theta(x_t, t)\right)\)</span>, sample <span class="math inline">\(z \sim \mathcal{N}(0, I)\)</span> (but <span class="math inline">\(z = 0\)</span> at the final step <span class="math inline">\(t = 1\)</span>), set <span class="math inline">\(x_{t-1} = \mu_\theta + \sigma_t z\)</span>. Return <span class="math inline">\(x_0\)</span>. The re-injected noise <span class="math inline">\(z\)</span> is “Langevin dynamics” — it keeps samples diverse instead of collapsing to one average image.</p>
+<p><strong>Basically, …</strong> “The network never predicts the clean image directly — it predicts the <em>noise</em> that was added, and subtracting the predicted noise is the denoising step. Training is one tidy loop: pick a random moment in the melting process and fix it. Generation runs the film backwards, adding a whisper of fresh noise each frame so every sample comes out different.”</p>
+</section>
+<section id="the-denoiser-a-u-net-that-knows-what-time-it-is" class="level2">
+<h2 class="anchored" data-anchor-id="the-denoiser-a-u-net-that-knows-what-time-it-is">47.14 The denoiser: a U-Net that knows what time it is</h2>
+<p>The noise predictor <span class="math inline">\(\epsilon_\theta\)</span> is a <strong>modified U-Net</strong> — §44.9’s encoder-decoder with skip connections, now predicting noise instead of segment masks [recorded]:</p>
+<ul>
+<li><strong>Structure.</strong> Encoder downsamples (<span class="math inline">\(64 \times 64 \to 8 \times 8\)</span> in the deck’s figure), bottleneck, decoder upsamples; <strong>skip connections</strong> carry fine detail from encoder to decoder (the §44.9 justification, verbatim).</li>
+<li><strong>Details (the deck’s table, condensed)</strong> [recorded]: <strong>GroupNorm</strong> (better than BatchNorm for small batches), <strong>SiLU/Swish</strong> activation (“smoother gradients than ReLU”), self-attention at <span class="math inline">\(16 \times 16\)</span> resolution (“captures long-range dependencies”), and <strong>noise <span class="math inline">\(\epsilon\)</span> as the prediction target</strong> (“more stable than predicting <span class="math inline">\(x_0\)</span>”).</li>
+</ul>
+<p><strong>The time problem.</strong> One network must denoise at <em>every</em> noise level — but “timestep is just a number,” and raw <span class="math inline">\(t = 500\)</span> vs <span class="math inline">\(501\)</span> “look too different” while they “should be similar.” The fix: <strong>sinusoidal time embeddings</strong>, the §46.10 trick applied to timesteps [recorded]: <span class="math display">\[\text{emb}(t)_i = \begin{cases}
+\sin\!\left(\dfrac{t}{10000^{2i/d}}\right) &amp; i\ \text{even},\\[6pt]
+\cos\!\left(\dfrac{t}{10000^{(2i-1)/d}}\right) &amp; i\ \text{odd}.
+\end{cases}\]</span> Low dimensions oscillate fast (fine time differences), high dimensions slowly (coarse), all values bounded in <span class="math inline">\([-1, 1]\)</span>, deterministic — no learning needed.</p>
+<p><strong>The pipeline</strong> [recorded]: scalar <span class="math inline">\(t \to\)</span> sinusoidal vector <span class="math inline">\(\mathbb{R}^{128} \to\)</span> 2-layer MLP (Linear + SiLU) <span class="math inline">\(\to\)</span> <span class="math inline">\(\mathbb{R}^{512}\)</span> embedding <span class="math inline">\(\text{temb}\)</span>. The embedding is broadcast and <strong>added to the feature maps in every residual block</strong>, “modulating the network’s behaviour” — the same embedding at all spatial locations. The MLP “learns a task-specific representation” on top of the fixed sinusoids.</p>
+<p><strong>Basically, …</strong> “The denoiser is a U-Net (§44.9’s shape, new job) that also gets told the clock: a sine-wave fingerprint of the timestep, refined by a small MLP, mixed into every layer — so one network can behave like 1000 different denoisers, one per noise level.”</p>
+</section>
+<section id="eg-a-time-embedding-by-hand-verified-numpy" class="level2">
+<h2 class="anchored" data-anchor-id="eg-a-time-embedding-by-hand-verified-numpy">47.15 eg: a time embedding, by hand [verified-NumPy]</h2>
+<p>Use the deck’s formula with <span class="math inline">\(d = 4\)</span>: <span class="math inline">\(i = 0\)</span> gives <span class="math inline">\(\sin(t)\)</span>, <span class="math inline">\(i = 1\)</span> gives <span class="math inline">\(\cos(t/10)\)</span>, <span class="math inline">\(i = 2\)</span> gives <span class="math inline">\(\sin(t/10000)\)</span>, <span class="math inline">\(i = 3\)</span> gives <span class="math inline">\(\cos(t/10000^{1.25})\)</span>.</p>
+<ol type="i">
+<li><p><span class="math inline">\(t = 0\)</span>: <span class="math inline">\([0,\ 1,\ 0,\ 1]\)</span>.</p></li>
+<li><p><span class="math inline">\(t = 1\)</span>: <span class="math inline">\([\sin 1,\ \cos 0.1,\ \sin 0.0001,\ \cos(1 \times 10^{-5})] = [0.8415,\ 0.9950,\ 0.0001,\ 1.0000]\)</span>.</p></li>
+</ol>
+<p>Two adjacent timesteps get nearly identical embeddings in the slow dimensions and visibly different ones in the fast dimension — exactly the “nearby timesteps should be similar” property §47.14 demanded.</p>
+<p><strong>Basically, …</strong> “Same sine-wave trick as §46.10’s positional encoding, pointed at time instead of position: <span class="math inline">\(t = 0\)</span> and <span class="math inline">\(t = 1\)</span> are neighbours, and their fingerprints say so.”</p>
+</section>
+<section id="ddim-sampling-20100-faster" class="level2">
+<h2 class="anchored" data-anchor-id="ddim-sampling-20100-faster">47.16 DDIM: sampling 20–100× faster</h2>
+<p><strong>The bottleneck.</strong> Sampling walks <span class="math inline">\(1000 \to 999 \to \cdots \to 0\)</span> — strictly sequential (“to calculate step 999, we must have the result of step 1000”), one heavy U-Net call per step. “Generating one image requires running the heavy neural network 1000 times” [recorded].</p>
+<p><strong>The insight (Song et al., 2020)</strong> [recorded]: “Does the forward process HAVE to be random?” Redefine the schedule so the noise→image mapping is <strong>deterministic</strong> — no randomness, yet the <em>same training objective</em> holds. The trajectory becomes smooth and predictable, “we don’t need to take baby steps. We can take huge strides.” <strong>Key benefit: use the exact same pre-trained DDPM model — no retraining required.</strong></p>
+<p><strong>The update rule</strong> [recorded]: <span class="math display">\[\boxed{x_{t-1} = \underbrace{\sqrt{\bar\alpha_{t-1}}\;\frac{x_t - \sqrt{1-\bar\alpha_t}\,\epsilon_\theta(x_t, t)}{\sqrt{\bar\alpha_t}}}_{\text{predicted } \hat x_0} + \underbrace{\sqrt{1-\bar\alpha_{t-1}}\,\epsilon_\theta(x_t, t)}_{\text{direction pointing to } x_t}}\]</span> Read it as a weighted mix: <span class="math inline">\(\hat x_0\)</span> (the clean image the network thinks it sees) scaled by <span class="math inline">\(\sqrt{\bar\alpha_{t-1}}\)</span>, plus the predicted noise scaled by <span class="math inline">\(\sqrt{1-\bar\alpha_{t-1}}\)</span> — “we mix clean image and noise according to the noise schedule at <span class="math inline">\(t-1\)</span>.”</p>
+<p><strong>Skipping steps.</strong> Pick a subsequence <span class="math inline">\(\tau = [1000, 950, 900, \dots, 0]\)</span> — 20 steps instead of 1000; the deck’s timing table [recorded]: DDPM 1000 steps ≈ 20 s vs DDIM 20–50 steps ≈ 1 s. “DDIM allows us to trade a tiny bit of quality for a massive gain in speed.”</p>
+<p><strong>DDIM inversion: image → noise.</strong> Determinism buys reversibility: run the update <em>backwards</em> and a real image maps to the specific noise <span class="math inline">\(x_T\)</span> that would have generated it [recorded]. That noise “encodes the original image” — composition, structure, layout — so you can edit: invert a cat photo, change the prompt to “dog,” denoise, and get “a dog in the same pose/composition as the original cat.” DDPM cannot do this (“due to randomness”). Pros/cons [recorded]: fast, deterministic, invertible, enables editing — but less diversity, small inversion errors accumulate, and a quality-vs-speed tradeoff.</p>
+<p><strong>Basically, …</strong> “DDPM rolls dice at every step, so it must creep forward. DDIM removes the dice — same trained model, same loss — and the path becomes a smooth, predictable road you can drive in 20 strides instead of 1000 baby steps. And because nothing is random, you can drive it backwards: photo in, meaningful noise out, edit, drive forward again.”</p>
+</section>
+<section id="eg-one-ddim-step-by-hand-verified-numpy" class="level2">
+<h2 class="anchored" data-anchor-id="eg-one-ddim-step-by-hand-verified-numpy">47.17 eg: one DDIM step, by hand [verified-NumPy]</h2>
+<p>Own numbers: <span class="math inline">\(\bar\alpha_t = 0.5\)</span>, <span class="math inline">\(\bar\alpha_{t-1} = 0.6\)</span>, <span class="math inline">\(x_t = 1.0\)</span>, <span class="math inline">\(\epsilon_\theta(x_t, t) = 0.4\)</span>.</p>
+<ol type="i">
+<li><p>Predicted clean image: <span class="math inline">\(\hat x_0 = \dfrac{1.0 - \sqrt{1-0.5}\times 0.4}{\sqrt{0.5}} = \dfrac{1.0 - 0.2828}{0.7071} = 1.0142\)</span>.</p></li>
+<li><p>DDIM step: <span class="math inline">\(x_{t-1} = \sqrt{0.6}\times 1.0142 + \sqrt{1-0.6}\times 0.4 = 0.7746 \times 1.0142 + 0.6325 \times 0.4 = 0.7856 + 0.2530 = 1.0386\)</span>.</p></li>
+</ol>
+<p>No randomness anywhere — rerun this and you get <span class="math inline">\(1.0386\)</span> again. That determinism is the whole point.</p>
+<p><strong>Basically, …</strong> “Predict the clean image (1.0142), then re-mix it with the predicted noise at the <em>previous</em> step’s schedule weights — landing at 1.0386. Same inputs, same output, every time: the anti-DDPM.”</p>
+</section>
+<section id="guidance-steering-the-denoiser" class="level2">
+<h2 class="anchored" data-anchor-id="guidance-steering-the-denoiser">47.18 Guidance: steering the denoiser</h2>
+<p>So far the model generates <em>anything</em>. Guidance steers it: “generate only dogs,” “a dog wearing sunglasses.”</p>
+<p><strong>Interlude: the score function</strong> [recorded]. The score is the gradient of the log-probability: <span class="math inline">\(\text{score}(x_t) = \nabla_{x_t} \log p(x_t)\)</span> — “which direction increases the probability of <span class="math inline">\(x_t\)</span>?” Noise prediction and score prediction are the same thing in different clothes [recorded]: <span class="math display">\[\nabla_{x_t} \log p(x_t) \approx -\frac{\epsilon_\theta(x_t, t)}{\sqrt{1-\bar\alpha_t}}.\]</span> Score space makes guidance math cleaner: conditioning = adding a gradient that points uphill toward the desired class.</p>
+<p><strong>Classifier guidance</strong> [recorded]: train a plain unconditional diffusion model, then at each denoising step ask a separate classifier “does this look like class <span class="math inline">\(y\)</span>?” and push along its gradient. By Bayes: <span class="math display">\[\boxed{\nabla_{x_t} \log p(x_t \mid y) = \underbrace{\nabla_{x_t} \log p(x_t)}_{\text{unconditional score}} + \lambda \cdot \underbrace{\nabla_{x_t} \log p(y \mid x_t)}_{\text{classifier gradient}}}\]</span> <span class="math inline">\(\lambda\)</span> is the guidance scale. Pros: simple, works with existing models. Cons: needs a <em>separate</em> classifier that must work on <em>noisy</em> images, limited to the classifier’s fixed classes — “can’t use text prompts.”</p>
+<p><strong>Classifier-free guidance (CFG)</strong> [recorded] — the current standard (DALL·E 2, Imagen, Stable Diffusion): train <em>one</em> model to do both conditional and unconditional generation by randomly <strong>dropping the condition 10% of the time</strong> (null condition <span class="math inline">\(\emptyset\)</span>). Rewrite the classifier-gradient term via Bayes — <span class="math inline">\(\nabla_{x_t}\log p(y \mid x_t) = \nabla_{x_t}\log p(x_t \mid y) - \nabla_{x_t}\log p(x_t)\)</span> — and substitute: <span class="math display">\[\nabla_{x_t}\log p(x_t \mid y) = (1-\lambda)\nabla_{x_t}\log p(x_t) + \lambda\,\nabla_{x_t}\log p(x_t \mid y),\]</span> in noise space [recorded]: <span class="math display">\[\boxed{\epsilon_{\text{guided}} = \epsilon_{\text{uncond}} + \lambda \cdot (\epsilon_{\text{cond}} - \epsilon_{\text{uncond}})}.\]</span> Read it as a vector: find the direction from unconditional to conditional, amplify by <span class="math inline">\(\lambda\)</span> — “higher <span class="math inline">\(\lambda\)</span> → stronger adherence to condition.” The conditioning vector <span class="math inline">\(c\)</span> (text embedding, class label) is injected into the U-Net “just like the time embedding in DDPM” (§47.14).</p>
+<p><strong>Classifier vs classifier-free (the deck’s table, condensed)</strong> [recorded]: classifier guidance — needs an external model, fixed classes, one forward pass + classifier cost, “less common” today. CFG — single model, “any condition (text, image, etc.),” two forward passes per step, typically better quality, “the dominant approach in modern text-to-image models.”</p>
+<p><strong>How the text gets in: cross-attention.</strong> At each U-Net layer [recorded]: <span class="math inline">\(Q = W_Q z_t\)</span> (from the image latent), <span class="math inline">\(K = W_K c\)</span>, <span class="math inline">\(V = W_V c\)</span> (from the text embedding), then §46.5’s formula <span class="math inline">\(\text{Attention} = \text{softmax}(QK^\top/\sqrt{d})\,V\)</span>. “Image asks: ‘What features should I have here?’ Text provides: ‘A cat should have whiskers, fur texture…’”</p>
+<p><strong>Basically, …</strong> “Unguided diffusion is a slot machine. Classifier guidance bolts on a teacher that nudges each step toward ‘dog’ — but the teacher only knows its ten classes. Classifier-free guidance trains one model on both regimes (condition dropped 10% of the time) and steers by the <em>difference</em>: push from ‘whatever’ toward ‘what the prompt says,’ scaled by <span class="math inline">\(\lambda\)</span>. Text reaches the image through cross-attention — §46.7’s mechanism, pointed at words instead of encoder states.”</p>
+</section>
+<section id="latent-diffusion-stable-diffusion" class="level2">
+<h2 class="anchored" data-anchor-id="latent-diffusion-stable-diffusion">47.19 Latent diffusion: Stable Diffusion</h2>
+<p><strong>The problem.</strong> DDPM diffuses in pixel space: a <span class="math inline">\(512 \times 512 \times 3\)</span> image is <span class="math inline">\(786{,}432\)</span> dimensions, processed <em>every</em> denoising step — “computational cost… memory intensive… slow training… slow generation” [recorded]. Key observation: “not all pixels are equally important — many pixels are redundant (e.g., clear blue sky).”</p>
+<p><strong>The fix.</strong> Compress first, diffuse the compression, decompress last. An autoencoder (encoder <span class="math inline">\(\mathcal{E}\)</span>, decoder <span class="math inline">\(\mathcal{D}\)</span>, trained with reconstruction + regularization) squeezes <span class="math inline">\(512 \times 512 \times 3\)</span> to a <span class="math inline">\(64 \times 64 \times 4\)</span> latent [recorded]: <span class="math inline">\(786{,}432\)</span> dims → <span class="math inline">\(16{,}384\)</span> dims — a <strong>48× reduction</strong> [verified-NumPy]. Latent space is “like JPEG compression… even more compressed, captures ‘essence.’”</p>
+<!-- Diagram: the latent diffusion architecture — image → VAE encoder → latent diffusion (U-Net + cross-attention with text) → VAE decoder → image; the standard figure from Rombach et al., "High-Resolution Image Synthesis with Latent Diffusion Models," https://arxiv.org/abs/2112.10752, the architecture behind Stable Diffusion. -->
+<p><strong>Training (two stages)</strong> [recorded]: <strong>1)</strong> train the autoencoder (VAE) on a large image dataset until <span class="math inline">\(\mathcal{D}(\mathcal{E}(x)) \approx x\)</span> with small latents, then <strong>freeze</strong> it; <strong>2)</strong> encode images (<span class="math inline">\(z = \mathcal{E}(x)\)</span>), add noise in latent space (<span class="math inline">\(z_t = \sqrt{\bar\alpha_t}\,z_0 + \sqrt{1-\bar\alpha_t}\,\epsilon\)</span>), and train the U-Net to predict the noise: <span class="math inline">\(L = \|\epsilon - \epsilon_\theta(z_t, t, c)\|^2\)</span>, with condition <span class="math inline">\(c\)</span> = text embeddings, class labels, etc.</p>
+<p><strong>Generation</strong> [recorded]: sample <span class="math inline">\(z_T \sim \mathcal{N}(0, I)\)</span> at <span class="math inline">\(64 \times 64 \times 4\)</span> (not <span class="math inline">\(512 \times 512 \times 3\)</span>!), take a prompt <span class="math inline">\(c\)</span> (“a cat on a sofa”), denoise <span class="math inline">\(z_T \to z_0\)</span> with the conditioned U-Net, decode <span class="math inline">\(x = \mathcal{D}(z_0)\)</span>. Full pipeline: <span class="math inline">\(\text{Text} \xrightarrow{\text{CLIP}} c \to \text{U-Net}(z_t, t, c) \to z_0 \xrightarrow{\text{Decoder}} \text{Image}\)</span>, training objective <span class="math inline">\(\mathbb{E}_{z,\epsilon,t,c}\|\epsilon - \epsilon_\theta(z_t, t, c)\|^2\)</span> [recorded].</p>
+<p><strong>Stable Diffusion in practice</strong> [recorded]: “Latent Diffusion Model released by Stability AI” — VAE compression factor <span class="math inline">\(f = 8\)</span> (<span class="math inline">\(512 \times 512 \to 64 \times 64\)</span>), 4 latent channels, CLIP ViT-L/14 text encoder (SD 1.x/2.x), cross-attention at multiple U-Net resolutions, trained on LAION-5B; “first high-quality, open-source text-to-image model that can run on consumer GPUs (RTX 3090, even RTX 3060).” Versions (deck’s table, condensed): SD 1.4 (Aug 2022, first public, <span class="math inline">\(512^2\)</span>) → 1.5 → 2.0 (OpenCLIP encoder) → 2.1 → SDXL 1.0 (Jul 2023, <span class="math inline">\(1024^2\)</span>, dual encoders, refiner) → SD 3.0 (2024, diffusion-transformer architecture) — “all based on Latent Diffusion Models (LDM) architecture.”</p>
+<p><strong>Basically, …</strong> “Denoising a full-resolution photo 50 times is expensive, so cheat: shrink the photo 48× with a VAE, do all the noisy work on the tiny version, then blow it back up. Same math, same training loop (§47.13), one frozen compressor — and suddenly a consumer GPU can paint ‘a cat on a sofa.’”</p>
+</section>
+<section id="judging-the-forgeries-fid-is-clip" class="level2">
+<h2 class="anchored" data-anchor-id="judging-the-forgeries-fid-is-clip">47.20 Judging the forgeries: FID, IS, CLIP</h2>
+<p>“Evaluating generative models is like evaluating art” — no single correct output, so the field settled on statistics [recorded].</p>
+<p><strong>i) FID — Fréchet Inception Distance</strong> [recorded]. Pass real and generated images through Inception-v3, fit a Gaussian to each feature set, and measure the Fréchet distance between the Gaussians: <span class="math display">\[\boxed{\text{FID} = \|\mu_r - \mu_g\|^2 + \mathrm{Tr}\!\left(\Sigma_r + \Sigma_g - 2(\Sigma_r\Sigma_g)^{1/2}\right)}.\]</span> <span class="math inline">\(\mu_r, \Sigma_r\)</span> = real-image feature statistics; <span class="math inline">\(\mu_g, \Sigma_g\)</span> = generated. <strong>Lower is better</strong> (<span class="math inline">\(0\)</span> = identical distributions); sensitive to <em>both</em> quality and diversity; “most widely used metric in practice”; good FID <span class="math inline">\(&lt; 10\)</span> (domain-dependent).</p>
+<p><strong>eg (own — [verified-NumPy]).</strong> <span class="math inline">\(\mu_r = (0, 0)\)</span>, <span class="math inline">\(\mu_g = (1, 0)\)</span>, <span class="math inline">\(\Sigma_r = \Sigma_g = I_2\)</span>: <span class="math inline">\((\Sigma_r\Sigma_g)^{1/2} = I\)</span>, so the trace term is <span class="math inline">\(\mathrm{Tr}(I + I - 2I) = 0\)</span> and <span class="math inline">\(\text{FID} = \|(-1, 0)\|^2 = 1.0\)</span>. Identical spreads, shifted means — the distance is just the squared shift.</p>
+<p><strong>ii) Inception Score (IS)</strong> [recorded]. Uses a pretrained Inception-v3 classifier — no real images needed. Two desiderata: each generated image should be <em>clearly classifiable</em> (low-entropy <span class="math inline">\(p(y \mid x)\)</span>, quality) and the set should span <em>many classes</em> (high-entropy marginal <span class="math inline">\(p(y)\)</span>, diversity): <span class="math display">\[\boxed{\text{IS} = \exp\!\left(\mathbb{E}_x[\mathrm{KL}(p(y \mid x)\,\|\,p(y))]\right)}.\]</span> <strong>Higher is better</strong> (typical range <span class="math inline">\(2\)</span>–<span class="math inline">\(10\)</span>). Limitation: “biased toward ImageNet classes, doesn’t compare to real data.”</p>
+<p><strong>iii) CLIP score</strong> [recorded]. For text-to-image: embed the image and the caption with CLIP (“contrastive language-image pre-training,” trained on 400M image-text pairs, shared image-text embedding space) and take cosine similarity: <span class="math display">\[\boxed{\text{CLIPScore} = \max\!\big(100 \cdot \cos(E_I(x), E_T(c)),\, 0\big)}.\]</span> Measures image–text <em>alignment</em>, not realism alone.</p>
+<p><strong>Which metric when (the deck’s table, condensed)</strong> [recorded]: FID — distribution similarity to real images — best for overall unconditional quality+diversity (needs large samples; implementation-sensitive). IS — quality + diversity — best for class-conditional generation (ignores real data; ImageNet-biased). CLIP — image-text alignment — best for text-to-image (doesn’t measure realism alone). In practice: combine them (FID + IS unconditional; FID + CLIP text-conditional) — and “human evaluation still crucial.”</p>
+<p><strong>Basically, …</strong> “FID asks: do the generated photos have the same <em>statistics</em> as real photos? (Lower wins.) Inception Score asks: is each image confidently one thing, and are the images many different things? (Higher wins.) CLIP score asks: does the image match its caption? (Higher wins.) No single number tells the truth — use them together, and trust human eyes last.”</p>
+</section>
+<section id="where-this-goes-next-closing-part-vi-and-the-book" class="level2">
+<h2 class="anchored" data-anchor-id="where-this-goes-next-closing-part-vi-and-the-book">47.21 Where this goes next: closing Part VI (and the book)</h2>
+<ol type="i">
+<li><p><strong>The generator census.</strong> Four ways to generate, four training signals: <strong>1)</strong> the autoregressive decoder (§46.12, via §45.13(iii)) — trained by next-token likelihood, sampling one token at a time; <strong>2)</strong> the GAN generator (§47.4) — trained by a learned critic, one shot from noise; <strong>3)</strong> the diffusion denoiser (§47.13) — trained by noise-prediction MSE, a thousand small steps; <strong>4)</strong> the fast variants — DDIM’s deterministic skips (§47.16) and the latent compressor (§47.19). All four are differentiable modules (§42.4’s machinery); none needed new optimization beyond §43.12’s Adam family (§47.7’s GAN used Adam at <span class="math inline">\(0.0002\)</span>).</p></li>
+<li><p><strong>The Part VI arc, complete.</strong> Chapter 41 built the neuron; 42 derived backprop; 43 tuned the optimizer; 44 shared weights across space; 45 across time; 46 let any position talk to any other; 47 turns the whole machine around and <em>generates</em> — noise in, data out. The book’s one-stop promise lands here: from a single dense layer to Stable Diffusion’s text-to-image pipeline, every step traced to a committed source and every number re-checked.</p></li>
+<li><p><strong>The debugging playbook’s last word.</strong> §40.5(i) — “shapes first” — closes the loop with this chapter: a GAN that dies at step 1 is almost always a 784-vs-28×28 reshape or a tanh-vs-sigmoid range mismatch (§47.7); a diffusion model that explodes is a schedule or time-embedding bug (§§47.11, 47.14). Same discipline, new architectures.</p></li>
+<li><p><strong>Beyond the course.</strong> The decks stop at the fundamentals; the live field keeps moving — through the supplementary shelf in GOAL.md for the follow-up reading. The foundation in this chapter — the forward/reverse split, the noise-prediction loss, guidance as a vector in score space — is the vocabulary those readings are written in.</p></li>
+</ol>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li><strong>The 2×2 marginal.</strong> The deck’s eight configurations with <span class="math inline">\(x_{11} = 1\)</span> have probabilities <span class="math inline">\(0.05, 0.10, 0.15, 0.03, 0.02, 0.08, 0.07, 0.01\)</span>. (i) Compute <span class="math inline">\(P(x_{11} = 1)\)</span> by marginalization. (ii) Given <span class="math inline">\(x_{11} = 1\)</span> and the rest missing, which completion <span class="math inline">\((x_{12}, x_{21}, x_{22})\)</span> maximizes <span class="math inline">\(P(x_{\text{mis}}, x_{\text{obs}})\)</span>? (iii) In one line, say why the same computation is impossible for a <span class="math inline">\(32 \times 32\)</span> binary image.</li>
+<li><strong>GAN losses by hand.</strong> Real outputs <span class="math inline">\(D(x) = [0.8,\ 0.95]\)</span>, fake outputs <span class="math inline">\(D(G(z)) = [0.4,\ 0.2]\)</span>. (i) Compute the discriminator’s BCE loss. (ii) Compute the generator’s loss in the minimax form. (iii) Compute the generator’s non-saturating loss and explain in one line why it is larger here.</li>
+<li><strong>The notebook’s parameter counts.</strong> The generator is <span class="math inline">\(\text{Linear}(64 \to 256)\)</span>, <span class="math inline">\(\text{Linear}(256 \to 256)\)</span>, <span class="math inline">\(\text{Linear}(256 \to 784)\)</span> with biases; the discriminator is <span class="math inline">\(\text{Linear}(784 \to 256)\)</span>, <span class="math inline">\(\text{Linear}(256 \to 256)\)</span>, <span class="math inline">\(\text{Linear}(256 \to 1)\)</span> with biases. (i) Compute both totals. (ii) Which network is larger, and by how many parameters? (iii) In one line, say why activations and batch-norm parameters (none here) don’t change the count.</li>
+<li><strong>The Nash point.</strong> (i) At Nash, <span class="math inline">\(D\)</span> outputs <span class="math inline">\(0.5\)</span> on every input: evaluate the minimax value <span class="math inline">\(V(D, G) = \mathbb{E}[\log D(x)] + \mathbb{E}[\log(1 - D(G(z)))]\)</span>. (ii) Early in training <span class="math inline">\(D(G(z)) = 0.05\)</span>: compute the generator’s non-saturating loss <span class="math inline">\(-\log D(G(z))\)</span>. (iii) In two lines, connect (ii) to the §47.6 Note — which failure mode does the non-saturating loss patch?</li>
+<li><strong>Forward diffusion numbers.</strong> <span class="math inline">\(\beta_1 = 0.1\)</span>, <span class="math inline">\(\beta_2 = 0.2\)</span>. (i) Compute <span class="math inline">\(\bar\alpha_2\)</span>. (ii) Write <span class="math inline">\(q(x_2 \mid x_0)\)</span> as <span class="math inline">\(\mathcal{N}(\cdot\, x_0,\, \cdot\, I)\)</span> with numbers. (iii) How much signal variance remains at <span class="math inline">\(t = 2\)</span> vs noise variance?</li>
+<li><strong>The linear schedule’s endpoints.</strong> <span class="math inline">\(\beta_1 = 10^{-4}\)</span>, <span class="math inline">\(\beta_{1000} = 0.02\)</span>, linear in <span class="math inline">\(t\)</span>. (i) Compute <span class="math inline">\(\beta_{500}\)</span>. (ii) The signal weight is <span class="math inline">\(\sqrt{\bar\alpha_t}\)</span>: compute it at <span class="math inline">\(t = 500\)</span> and at <span class="math inline">\(t = 1000\)</span> (values: <span class="math inline">\(\bar\alpha_{500} \approx 0.0786\)</span>, <span class="math inline">\(\bar\alpha_{1000} \approx 4.04 \times 10^{-5}\)</span>). (iii) In one line, state what <span class="math inline">\(x_{1000}\)</span> is distributed as.</li>
+<li><strong>One DDIM step.</strong> <span class="math inline">\(\bar\alpha_t = 0.7\)</span>, <span class="math inline">\(\bar\alpha_{t-1} = 0.75\)</span>, <span class="math inline">\(x_t = 0.5\)</span>, <span class="math inline">\(\epsilon_\theta(x_t, t) = -0.3\)</span>. (i) Compute the predicted clean image <span class="math inline">\(\hat x_0\)</span>. (ii) Compute <span class="math inline">\(x_{t-1}\)</span> via the DDIM update. (iii) In one line, say what changes in the answer if the network predicts <span class="math inline">\(\epsilon_\theta = 0\)</span>.</li>
+<li><strong>FID by hand.</strong> <span class="math inline">\(\mu_r = (0, 0)\)</span>, <span class="math inline">\(\mu_g = (2, 0)\)</span>, <span class="math inline">\(\Sigma_r = \Sigma_g = I_2\)</span>. (i) Compute the FID. (ii) Recompute with <span class="math inline">\(\mu_g = (0, 0)\)</span>. (iii) In two lines, say which of the deck’s desiderata — quality or diversity — a perfect FID of <span class="math inline">\(0\)</span> can still hide.</li>
+<li><strong>Classifier-free guidance numbers.</strong> <span class="math inline">\(\epsilon_{\text{uncond}} = (0.2, -0.1)\)</span>, <span class="math inline">\(\epsilon_{\text{cond}} = (0.8, 0.3)\)</span>, guidance scale <span class="math inline">\(\lambda = 3\)</span>. (i) Compute <span class="math inline">\(\epsilon_{\text{guided}}\)</span>. (ii) Recompute with <span class="math inline">\(\lambda = 1\)</span> and <span class="math inline">\(\lambda = 0\)</span>. (iii) In one line, say what <span class="math inline">\(\lambda = 0\)</span> generation corresponds to.</li>
+<li><strong>Inception Score by hand.</strong> Three generated images with <span class="math inline">\(p(y \mid x)\)</span>: <span class="math inline">\((0.9, 0.1)\)</span>, <span class="math inline">\((0.8, 0.2)\)</span>, <span class="math inline">\((0.15, 0.85)\)</span>. (i) Compute the marginal <span class="math inline">\(p(y)\)</span>. (ii) Compute the three KL divergences. (iii) Compute the IS. (iv) In one line, say whether this model’s weakness is quality or diversity, and why.</li>
+<li><strong>The book-ender.</strong> In one paragraph, name the four generator families the book built (§46.12’s decoder, the GAN generator, the diffusion denoiser, the latent-diffusion pipeline) and for each say what the generator <em>is</em> and what training signal teaches it.</li>
+</ol>
+<hr>
+<p><em>Sources: GenAI Week 6 “Generative Models and GAN” deck (Balaji Srinivasan, Ganapathy Krishnamurthi), 65 slides — <code>sources/course materials/GenAI-20261009T001550Z-1-001/GenAI/Slides/Week - 6/Generative Models and GAN - Lecture Slides.pdf</code> (the 225-page PDF is the same 65 slides with beamer overlays) and the notes PDF <code>.../GenAI/Notes/Week6-Generative Models and GAN .pdf</code> (identical content, used for cross-check) — generative-model definition and goal, 2×2 toy grid (marginalization numbers <span class="math inline">\(0.05\)</span>–<span class="math inline">\(0.01\)</span>, inpainting argmax <span class="math inline">\(P(1,0,1,0) = 0.15\)</span>), computational bottleneck (<span class="math inline">\(2^{1024}\)</span>), generative classifier (Naive Bayes), latent-space paradigm shift (PCA/LDA/SVD examples), explicit/implicit taxonomy, minimax objective and D/G objectives, non-saturating equivalence, Nash equilibrium, two-phase training algorithm, DCGAN guidelines, StyleGAN (mapping/synthesis networks, AdaIN, noise injection, latent arithmetic), training challenges (mode collapse, non-convergence, vanishing gradients, hyperparameter sensitivity) and fixes (WGAN, minibatch discrimination, progressive growing), learnopencv.com figure credits; <code>GAN_from_Scratch.ipynb</code> — vanilla GAN on 60{,}000 grayscale <span class="math inline">\(28\times28\)</span> images: latent <span class="math inline">\(64\)</span>, hidden <span class="math inline">\(256\)</span>, image <span class="math inline">\(784\)</span>; generator (LeakyReLU <span class="math inline">\(0.2\)</span>, <span class="math inline">\(\tanh\)</span>; 283{,}920 params) and discriminator (LeakyReLU <span class="math inline">\(0.2\)</span>, sigmoid; 267{,}009 params) architectures; BCE loss; Adam <span class="math inline">\(\eta = 0.0002\)</span> with separate optimizers; <span class="math inline">\([-1,1]\)</span> normalization + <span class="math inline">\((x+1)/2\)</span> denormalization; <code>detach()</code> on D’s fake pass; non-saturating G via BCE against real labels; 100 epochs <span class="math inline">\(\times\)</span> 600 steps = 60{,}000 updates; avg <span class="math inline">\(L_D = 0.7651\)</span>, avg <span class="math inline">\(L_G = 2.0232\)</span>, final <span class="math inline">\(0.8781\)</span> / <span class="math inline">\(1.5290\)</span>, ratio <span class="math inline">\(1.7413\)</span>; early-epoch <span class="math inline">\(D(x) \approx 0.95\)</span>, <span class="math inline">\(D(G(z)) \approx 0.05\)</span> (all torch code and numbers [recorded]); GenAI Week 11 “Introduction to Diffusion Models” deck (same authors), 94 slides — <code>.../Slides/Week - 11/Week11_GenAI_Diffusion20251127.pdf</code> (339-page PDF with beamer overlays, text-extractable) — generative trilemma (VAE vs GAN table), Sohl-Dickstein 2015 origin, forward/reverse definitions, Markov chain, <span class="math inline">\(q(x_t\mid x_{t-1})\)</span> formula, <span class="math inline">\(\alpha_t\)</span>/<span class="math inline">\(\bar\alpha_t\)</span> notation, reparameterization derivation, linear schedule (<span class="math inline">\(\beta_1 = 10^{-4} \to \beta_T = 0.02\)</span>, <span class="math inline">\(T = 1000\)</span>), reverse model <span class="math inline">\(p_\theta\)</span>, Bayes posterior and <span class="math inline">\(\tilde\mu_t\)</span> formula, KL→MSE, <span class="math inline">\(L_{\text{simple}}\)</span>, Algorithms 1–2 (incl.&nbsp;<span class="math inline">\(z = 0\)</span> at <span class="math inline">\(t = 1\)</span>, Langevin noise), U-Net architecture table (GroupNorm, SiLU, <span class="math inline">\(16\times16\)</span> attention, skip connections), sinusoidal time-embedding formula and MLP pipeline, DDIM (Song et al.&nbsp;2020; deterministic update, step-skipping, 20–50 steps <span class="math inline">\(\approx\)</span> 1 s vs 1000 <span class="math inline">\(\approx\)</span> 20 s, inversion, cat→dog editing example, pros/cons), score function and noise–score link, classifier guidance formula + pros/cons, classifier-free guidance (10% condition dropout, <span class="math inline">\(\epsilon_{\text{guided}}\)</span> formula, comparison table), cross-attention <span class="math inline">\(Q = W_Q z_t\)</span>, <span class="math inline">\(K = W_K c\)</span>, <span class="math inline">\(V = W_V c\)</span>, latent diffusion (48× claim: <span class="math inline">\(786{,}432 \to 16{,}384\)</span>; two-stage training; generation pipeline; training objective), Stable Diffusion specs (f <span class="math inline">\(= 8\)</span>, 4 latent channels, CLIP ViT-L/14, LAION-5B) and versions table, FID/IS/CLIP formulas and comparison table, evaluation-metrics guidance (all [recorded]); diagram references — Goodfellow et al.&nbsp;2014 (https://arxiv.org/abs/1406.2661), Ho et al.&nbsp;2020 DDPM (https://arxiv.org/abs/2006.11239), Song et al.&nbsp;2020 DDIM (https://arxiv.org/abs/2010.08092), Rombach et al.&nbsp;2021 LDM (https://arxiv.org/abs/2112.10752); book chapters 24 (PCA), 30 (Naive Bayes), 40 (§40.5(i)), 41–43 (§§42.4, 43.12), 44 (§§44.6, 44.9, 44.10), 45 (§§45.1, 45.10, 45.11, 45.13), 46 (§§46.2, 46.5, 46.7, 46.10, 46.12, 46.16).</em></p>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — The 2×2 marginal
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><span class="math inline">\(P(x_{11} = 1)\)</span> sums the eight configurations with <span class="math inline">\(x_{11} = 1\)</span>: <span class="math inline">\(0.05 + 0.10 + 0.15 + 0.03 + 0.02 + 0.08 + 0.07 + 0.01 = 0.51\)</span>.</p></li>
+<li><p>The denominator <span class="math inline">\(P(x_{\text{obs}})\)</span> is constant across candidates, so maximize the joint: the deck’s table gives <span class="math inline">\(P(1, 0, 1, 0) = 0.15\)</span> as the largest of the eight, hence <span class="math inline">\((x_{12}, x_{21}, x_{22}) = (0, 1, 0)\)</span>.</p></li>
+<li><p>A <span class="math inline">\(32 \times 32\)</span> binary image has <span class="math inline">\(2^{1024}\)</span> configurations — half the pixels missing means summing over <span class="math inline">\(2^{512}\)</span> candidates for the denominator, “computationally impossible” (§47.2).</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — GAN losses by hand
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><span class="math inline">\(L_D = -\tfrac{1}{4}[\log 0.8 + \log(1-0.4) + \log 0.95 + \log(1-0.2)] = -\tfrac{1}{4}[-0.2231 - 0.5108 - 0.0513 - 0.2231] = 0.2521\)</span>.</p></li>
+<li><p>Minimax: <span class="math inline">\(L_G = -\tfrac{1}{2}[\log(1-0.4) + \log(1-0.2)] = -\tfrac{1}{2}[-0.5108 - 0.2231] = 0.3670\)</span>.</p></li>
+<li><p>Non-saturating: <span class="math inline">\(L_G = -\tfrac{1}{2}[\log 0.4 + \log 0.2] = -\tfrac{1}{2}[-0.9163 - 1.6094] = 1.2629\)</span>. It is larger because <span class="math inline">\(D\)</span> is confident the fakes are fake (<span class="math inline">\(0.4, 0.2 \ll 0.5\)</span>), so labeling them “real” incurs a steep penalty — the steep slope is exactly the usable gradient the minimax form lacks here.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — The notebook’s parameter counts
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>Generator: <span class="math inline">\((64\cdot256 + 256) + (256\cdot256 + 256) + (256\cdot784 + 784) = 16{,}640 + 65{,}792 + 201{,}488 = 283{,}920\)</span>. Discriminator: <span class="math inline">\((784\cdot256 + 256) + (256\cdot256 + 256) + (256\cdot1 + 1) = 200{,}960 + 65{,}792 + 257 = 267{,}009\)</span>.</p></li>
+<li><p>The generator is larger, by <span class="math inline">\(283{,}920 - 267{,}009 = 16{,}911\)</span> parameters.</p></li>
+<li><p>Activations (LeakyReLU, <span class="math inline">\(\tanh\)</span>, sigmoid) have no learnable parameters; biases were included in each layer’s count (<span class="math inline">\(+256\)</span>, <span class="math inline">\(+784\)</span>, <span class="math inline">\(+1\)</span>).</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — The Nash point
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><span class="math inline">\(V = \mathbb{E}[\log 0.5] + \mathbb{E}[\log(1-0.5)] = 2 \log 0.5 = -1.3863\)</span> (natural log).</p></li>
+<li><p><span class="math inline">\(-\log 0.05 \approx 2.9957\)</span>.</p></li>
+<li><p>At (ii) the minimax generator term would be <span class="math inline">\(\log(1-0.05) \approx -0.0513\)</span> — nearly flat, the §47.6 Note’s vanishing-gradient failure (critic too strong, forger gets no signal). The non-saturating loss instead stays steep (<span class="math inline">\(\approx 2.9957\)</span>), patching that failure mode.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — Forward diffusion numbers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><span class="math inline">\(\alpha_1 = 0.9\)</span>, <span class="math inline">\(\alpha_2 = 0.8\)</span>, <span class="math inline">\(\bar\alpha_2 = 0.9 \times 0.8 = 0.72\)</span>.</p></li>
+<li><p><span class="math inline">\(q(x_2 \mid x_0) = \mathcal{N}(x_2;\, \sqrt{0.72}\,x_0,\, (1-0.72)I) = \mathcal{N}(0.8485\,x_0,\, 0.28\,I)\)</span>.</p></li>
+<li><p>Signal variance <span class="math inline">\(0.72\)</span> vs noise variance <span class="math inline">\(0.28\)</span> — <span class="math inline">\(72\%\)</span> of the variance is still the original signal at <span class="math inline">\(t = 2\)</span>.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — The linear schedule’s endpoints
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><span class="math inline">\(\beta_t = 10^{-4} + (0.02 - 10^{-4})\frac{t-1}{999}\)</span>: <span class="math inline">\(\beta_{500} = 10^{-4} + 0.0199 \times \frac{499}{999} \approx 0.0100\)</span>.</p></li>
+<li><p><span class="math inline">\(\sqrt{\bar\alpha_{500}} = \sqrt{0.0786} \approx 0.2803\)</span> — about <span class="math inline">\(28\%\)</span> of the signal’s scale survives at the midpoint. At <span class="math inline">\(t = 1000\)</span>: <span class="math inline">\(\sqrt{\bar\alpha_{1000}} = \sqrt{4.04 \times 10^{-5}} \approx 0.0064\)</span> — effectively gone.</p></li>
+<li><p><span class="math inline">\(x_{1000} \sim \mathcal{N}(0, I)\)</span>: pure noise, the §47.11 claim verified numerically.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — One DDIM step
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><span class="math inline">\(\hat x_0 = \dfrac{0.5 - \sqrt{1-0.7}\times(-0.3)}{\sqrt{0.7}} = \dfrac{0.5 + 0.1643}{0.8367} = \dfrac{0.6643}{0.8367} = 0.7940\)</span>.</p></li>
+<li><p><span class="math inline">\(x_{t-1} = \sqrt{0.75}\times 0.7940 + \sqrt{1-0.75}\times(-0.3) = 0.8660 \times 0.7940 - 0.5 \times 0.3 = 0.6876 - 0.15 = 0.5376\)</span>.</p></li>
+<li><p>If <span class="math inline">\(\epsilon_\theta = 0\)</span>, then <span class="math inline">\(\hat x_0 = x_t/\sqrt{\bar\alpha_t}\)</span> (the network claims the image is already clean, just rescaled) and the step is <span class="math inline">\(x_{t-1} = \sqrt{\bar\alpha_{t-1}}\,\hat x_0\)</span> — pure rescaling, no noise mixing.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 8 — FID by hand
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><span class="math inline">\((\Sigma_r\Sigma_g)^{1/2} = I_2\)</span>, so the trace term is <span class="math inline">\(\mathrm{Tr}(I + I - 2I) = 0\)</span>; <span class="math inline">\(\text{FID} = \|(0,0)-(2,0)\|^2 = 4.0\)</span>.</p></li>
+<li><p>With <span class="math inline">\(\mu_g = (0,0)\)</span>: <span class="math inline">\(\text{FID} = 0\)</span> — identical Gaussians.</p></li>
+<li><p>FID measures distribution <em>statistics</em>: a model that memorizes and regurgitates a small set of real images can score near <span class="math inline">\(0\)</span> while having no true diversity (the deck’s warning that FID is “sensitive to both quality and diversity” cuts both ways — here, memorization games the diversity side).</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 9 — Classifier-free guidance numbers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><span class="math inline">\(\epsilon_{\text{guided}} = (0.2, -0.1) + 3\times\big((0.8, 0.3) - (0.2, -0.1)\big) = (0.2, -0.1) + 3\times(0.6, 0.4) = (2.0,\ 1.1)\)</span>.</p></li>
+<li><p><span class="math inline">\(\lambda = 1\)</span>: <span class="math inline">\((0.2, -0.1) + (0.6, 0.4) = (0.8, 0.3) = \epsilon_{\text{cond}}\)</span> — pure conditional. <span class="math inline">\(\lambda = 0\)</span>: <span class="math inline">\((0.2, -0.1) = \epsilon_{\text{uncond}}\)</span> — pure unconditional.</p></li>
+<li><p><span class="math inline">\(\lambda = 0\)</span> ignores the prompt entirely: unguided generation (§47.18’s slot machine).</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 10 — Inception Score by hand
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><span class="math inline">\(p(y) = \frac{1}{3}\big[(0.9, 0.1) + (0.8, 0.2) + (0.15, 0.85)\big] = (0.6167,\ 0.3833)\)</span>.</p></li>
+<li><p><span class="math inline">\(\mathrm{KL}_1 = 0.9\log\frac{0.9}{0.6167} + 0.1\log\frac{0.1}{0.3833} = 0.9(0.3788) + 0.1(-1.3445) = 0.2059\)</span>; <span class="math inline">\(\mathrm{KL}_2 = 0.8\log\frac{0.8}{0.6167} + 0.2\log\frac{0.2}{0.3833} = 0.8(0.2595) + 0.2(-0.6505) = 0.0781\)</span>; <span class="math inline">\(\mathrm{KL}_3 = 0.15\log\frac{0.15}{0.6167} + 0.85\log\frac{0.85}{0.3833} = 0.15(-1.4145) + 0.85(0.7962) = 0.4648\)</span>.</p></li>
+<li><p>Mean KL <span class="math inline">\(= (0.2059 + 0.0781 + 0.4648)/3 = 0.2496\)</span>; <span class="math inline">\(\text{IS} = \exp(0.2496) = 1.2835\)</span>.</p></li>
+<li><p><strong>Diversity</strong> is the weakness: each image is confidently one class (good quality), but two of three images fall in the same class — the marginal <span class="math inline">\((0.6167, 0.3833)\)</span> is skewed, so the model is near a mode-collapse regime (§47.9).</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 11 — The book-ender
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-11" class="callout-11-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Accept any well-argued paragraph along these lines: <strong>1)</strong> the §46.12 transformer decoder — a next-token distribution trained by likelihood on sequences, generating autoregressively; <strong>2)</strong> the GAN generator — a noise→image map trained adversarially by a discriminator’s binary signal, generating in one shot; <strong>3)</strong> the diffusion denoiser — a U-Net trained by the noise-prediction MSE (§47.13’s <span class="math inline">\(L_{\text{simple}}\)</span>), generating by iterating the reverse process from pure noise; <strong>4)</strong> the latent-diffusion pipeline — same denoiser operating on VAE-compressed latents (§47.19), optionally steered by classifier-free guidance and cross-attention (§47.18). All four rest on the same Chapters 41–46 machinery: MLPs, backprop, Adam, conv stacks, skip connections, attention.</p>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./46-attention-and-transformers.html" class="pagination-link" aria-label="Chapter 46: Attention and the transformer">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Chapter 46: Attention and the transformer</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

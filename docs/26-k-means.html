@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>26. K-means clustering – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./27-kernel-methods.html" rel="next">
+<link href="./25-gmm-em.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./26-k-means.html">Part IV — Machine Learning Techniques</a></li><li class="breadcrumb-item"><a href="./26-k-means.html"><span class="chapter-title">26. K-means clustering</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#the-clustering-task-grouping-unlabelled-data" id="toc-the-clustering-task-grouping-unlabelled-data" class="nav-link active" data-scroll-target="#the-clustering-task-grouping-unlabelled-data">26.1 The clustering task: grouping unlabelled data</a></li>
+  <li><a href="#how-many-partitions-counting-the-assignments" id="toc-how-many-partitions-counting-the-assignments" class="nav-link" data-scroll-target="#how-many-partitions-counting-the-assignments">26.2 How many partitions? Counting the assignments</a></li>
+  <li><a href="#the-k-means-objective-within-cluster-sum-of-squares" id="toc-the-k-means-objective-within-cluster-sum-of-squares" class="nav-link" data-scroll-target="#the-k-means-objective-within-cluster-sum-of-squares">26.3 The k-means objective: within-cluster sum of squares</a></li>
+  <li><a href="#lloyds-algorithm-assign-re-mean-repeat" id="toc-lloyds-algorithm-assign-re-mean-repeat" class="nav-link" data-scroll-target="#lloyds-algorithm-assign-re-mean-repeat">26.4 Lloyd’s algorithm: assign, re-mean, repeat</a></li>
+  <li><a href="#worked-one-lloyd-iteration-by-hand" id="toc-worked-one-lloyd-iteration-by-hand" class="nav-link" data-scroll-target="#worked-one-lloyd-iteration-by-hand">26.5 Worked: one Lloyd iteration by hand</a></li>
+  <li><a href="#the-shape-of-the-clusters-half-spaces-and-bisectors" id="toc-the-shape-of-the-clusters-half-spaces-and-bisectors" class="nav-link" data-scroll-target="#the-shape-of-the-clusters-half-spaces-and-bisectors">26.6 The shape of the clusters: half-spaces and bisectors</a></li>
+  <li><a href="#initialization-uniform-vs-k-means" id="toc-initialization-uniform-vs-k-means" class="nav-link" data-scroll-target="#initialization-uniform-vs-k-means">26.7 Initialization: uniform vs k-means++</a></li>
+  <li><a href="#choosing-k-the-lectures-penalty-idea" id="toc-choosing-k-the-lectures-penalty-idea" class="nav-link" data-scroll-target="#choosing-k-the-lectures-penalty-idea">26.8 Choosing <span class="math inline">\(K\)</span>: the lecture’s penalty idea</a></li>
+  <li><a href="#the-hard-assignment-cousin-of-gmmem" id="toc-the-hard-assignment-cousin-of-gmmem" class="nav-link" data-scroll-target="#the-hard-assignment-cousin-of-gmmem">26.9 The hard-assignment cousin of GMM/EM</a></li>
+  <li><a href="#cautions-from-the-practice-bench" id="toc-cautions-from-the-practice-bench" class="nav-link" data-scroll-target="#cautions-from-the-practice-bench">26.10 Cautions from the practice bench</a></li>
+  <li><a href="#where-this-goes-next" id="toc-where-this-goes-next" class="nav-link" data-scroll-target="#where-this-goes-next">26.11 Where this goes next</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./26-k-means.html">Part IV — Machine Learning Techniques</a></li><li class="breadcrumb-item"><a href="./26-k-means.html"><span class="chapter-title">26. K-means clustering</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">26. K-means clustering</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><strong>Part IV opens here.</strong> §25.12(iv) previewed this part: the modern ML toolbox — k-means, kernels, regularization, trees, SVMs, ensembles — with Part II’s probability machinery underneath. The toolbox opens with the oldest and simplest clustering algorithm there is, and it keeps a promise §25.12(i) made: EM on a GMM clusters <em>softly</em>, handing every point a responsibility vector; the hard-assignment cousin, k-means, is this chapter’s job. Same unsupervised spirit as Chapters 24–25 (§22.11) — a different goal: not compressing the data, not scoring it, but <em>grouping</em> it.</p>
+<p>Everything in §§26.1–26.10 comes from the MLT Week 3 lecture notes on k-means (Lloyd’s algorithm) and the Week 3 practice assignment; the hand-worked example in §26.5 follows the lecture’s step order exactly, with every number recomputed independently (review log).</p>
+<p><strong>Notation.</strong> Data <span class="math inline">\(D = \{x_1, \ldots, x_n\}\)</span>, <span class="math inline">\(x_i \in \mathbb{R}^d\)</span> (subscript convention, Chapters 24–25). The number of clusters <span class="math inline">\(K\)</span> is fixed <em>before</em> the algorithm runs — an input, like GMM’s <span class="math inline">\(K\)</span> (§25.3(iii)). Each point carries a <strong>cluster indicator</strong> <span class="math inline">\(z_i \in \{1, \ldots, K\}\)</span>: <span class="math inline">\(z_i = k\)</span> means “<span class="math inline">\(x_i\)</span> belongs to cluster <span class="math inline">\(k\)</span>”. Cluster <span class="math inline">\(k\)</span>’s center is <span class="math inline">\(\mu_k \in \mathbb{R}^d\)</span>, the <strong>centroid</strong>.</p>
+<section id="the-clustering-task-grouping-unlabelled-data" class="level2">
+<h2 class="anchored" data-anchor-id="the-clustering-task-grouping-unlabelled-data">26.1 The clustering task: grouping unlabelled data</h2>
+<p><strong>Def (clustering).</strong> Given unlabelled <span class="math inline">\(x_1, \ldots, x_n\)</span>, partition them into <span class="math inline">\(K\)</span> groups — <strong>clusters</strong> — so that points in the same group are similar and points in different groups are dissimilar.</p>
+<ol type="i">
+<li><strong>Unsupervised, §22.11’s third verb.</strong> §22.11 says unsupervised learning compresses, explains, and <em>groups</em>. PCA compressed (§24), GMMs explained via probability (§25); k-means <em>groups</em>. No labels, no <span class="math inline">\(y_i\)</span> — the groups are discovered, not taught.</li>
+<li><strong>The use case (§22.11).</strong> §22.11’s marketing manager: a million tweets a week, unreadable — group them into 10 clusters (selfies-with-Coke, co-branding, paid promotions, …), then a human reads the 10 groups. The grouping is the algorithm’s job; giving the groups meaning is the human’s.</li>
+<li><strong><span class="math inline">\(K\)</span> is your call.</strong> The algorithm does not discover how many clusters exist; you hand it <span class="math inline">\(K\)</span> up front (§26.8 is about choosing it).</li>
+</ol>
+<p><strong>Basically, …</strong> “You have a pile of unlabelled points and a number <span class="math inline">\(K\)</span>. Sort the pile into <span class="math inline">\(K\)</span> heaps so each heap’s points huddle together. Nobody tells you the right heaps — ‘right’ has to be defined by the algorithm itself, which is §26.3’s job.”</p>
+</section>
+<section id="how-many-partitions-counting-the-assignments" class="level2">
+<h2 class="anchored" data-anchor-id="how-many-partitions-counting-the-assignments">26.2 How many partitions? Counting the assignments</h2>
+<p>Fix <span class="math inline">\(K\)</span>. An assignment is a choice of <span class="math inline">\(z_1, \ldots, z_n\)</span>, each in <span class="math inline">\(\{1, \ldots, K\}\)</span>.</p>
+<p><strong>Count.</strong> <span class="math inline">\(n\)</span> points, <span class="math inline">\(K\)</span> independent choices each (clusters allowed to be empty): <span class="math display">\[\boxed{K^n \text{ possible assignments}}\]</span> — the lecture’s count, stated exactly this way.</p>
+<ol type="i">
+<li><strong>Brute force is hopeless.</strong> <span class="math inline">\(K^n\)</span> grows brutally: <span class="math inline">\(n = 100\)</span>, <span class="math inline">\(K = 3\)</span> gives <span class="math inline">\(3^{100}\)</span> assignments. Nobody enumerates.</li>
+<li><strong>So we iterate, not enumerate.</strong> Lloyd’s algorithm (§26.4) walks through assignments — each step either moves to a strictly better one or stops — instead of checking all <span class="math inline">\(K^n\)</span>.</li>
+<li><strong>Labels are bookkeeping.</strong> As with GMM components (§25.4), permuting cluster labels changes nothing — assignments differing only by renaming clusters describe the same partition. The <span class="math inline">\(K^n\)</span> count ignores this; it is an upper bound on <em>distinct</em> partitions, which is all the convergence argument (§26.4) needs.</li>
+</ol>
+<p><strong>eg 1 (counting, tiny).</strong> <span class="math inline">\(n = 3\)</span> points, <span class="math inline">\(K = 2\)</span>: <span class="math inline">\(2^3 = 8\)</span> assignments — <span class="math inline">\((1,1,1), (1,1,2), (1,2,1), (1,2,2), (2,1,1), (2,1,2), (2,2,1), (2,2,2)\)</span>. Note <span class="math inline">\((1,1,2)\)</span> and <span class="math inline">\((2,2,1)\)</span> are the same partition with renamed labels — the double-counting (iii) mentions.</p>
+<p><strong>Basically, …</strong> “Every point independently picks one of <span class="math inline">\(K\)</span> buckets: <span class="math inline">\(K^n\)</span> ways to fill them. For any real dataset that number is astronomical, so the algorithm never lists assignments — it improves its way to a good one instead.”</p>
+</section>
+<section id="the-k-means-objective-within-cluster-sum-of-squares" class="level2">
+<h2 class="anchored" data-anchor-id="the-k-means-objective-within-cluster-sum-of-squares">26.3 The k-means objective: within-cluster sum of squares</h2>
+<p>Given an assignment, how good is it? The lecture’s answer: add up, over all points, the squared distance from each point to its own cluster’s center.</p>
+<p><strong>Def (k-means objective).</strong> With <span class="math inline">\(\mu_{z_i}\)</span> = the center of the cluster assigned to <span class="math inline">\(x_i\)</span>, <span class="math display">\[\boxed{F(z_1, \ldots, z_n) = \sum_{i=1}^{n} \|x_i - \mu_{z_i}\|^2}.\]</span> Also called the <strong>distortion</strong> or the <strong>within-cluster sum of squares (WCSS)</strong>: it measures how scattered each cluster is around its center. <strong>Goal: minimize <span class="math inline">\(F\)</span>.</strong></p>
+<p><strong>Def (centroid).</strong> The center <span class="math inline">\(\mu_k\)</span> is the <em>mean</em> of the points assigned to cluster <span class="math inline">\(k\)</span>: <span class="math display">\[\boxed{\mu_k = \frac{\sum_{i=1}^{n} x_i\,\mathbf{1}(z_i = k)}{\sum_{i=1}^{n} \mathbf{1}(z_i = k)}}\]</span> — the lecture’s formula: the cluster’s points summed, divided by the cluster’s headcount (<span class="math inline">\(\mathbf{1}(\cdot)\)</span> is the indicator, <span class="math inline">\(1\)</span> when true, <span class="math inline">\(0\)</span> when false).</p>
+<ol type="i">
+<li><strong>Why the mean?</strong> For a fixed assignment, the mean is what <em>minimizes</em> that cluster’s contribution to <span class="math inline">\(F\)</span>: differentiating <span class="math inline">\(\sum_{i:z_i=k}\|x_i - \mu\|^2\)</span> w.r.t. <span class="math inline">\(\mu\)</span> (componentwise, the §20.6 calculation) gives <span class="math inline">\(-2\sum_{i:z_i=k}(x_i - \mu) = 0\)</span>, i.e.&nbsp;<span class="math inline">\(\mu =\)</span> average. The centroid isn’t an arbitrary “center” — it is the optimal one for the points it serves.</li>
+<li><strong><span class="math inline">\(F\)</span> is a loss, §22.11-style.</strong> Unsupervised learning has no <span class="math inline">\(y_i\)</span> to check against, so each task invents its own loss (§22.11(i)): PCA invented reconstruction error (§22.12), density estimation invented negative log-likelihood (§22.13), and clustering invents <span class="math inline">\(F\)</span>.</li>
+<li><strong><span class="math inline">\(F \ge 0\)</span> always</strong>, and <span class="math inline">\(F = 0\)</span> means every point sits exactly on its centroid — possible only if each cluster’s points coincide, or (trivially) with <span class="math inline">\(K = n\)</span> (§26.8).</li>
+</ol>
+<p><strong>eg 2 (reading <span class="math inline">\(F\)</span>).</strong> 1-D data <span class="math inline">\(\{0, 2, 9, 10\}\)</span>, <span class="math inline">\(K = 2\)</span>, assignment <span class="math inline">\(z = (1,1,2,2)\)</span>: - cluster 1: <span class="math inline">\(\{0,2\}\)</span>, <span class="math inline">\(\mu_1 = 1\)</span>: contributions <span class="math inline">\((0-1)^2 + (2-1)^2 = 2\)</span>; - cluster 2: <span class="math inline">\(\{9,10\}\)</span>, <span class="math inline">\(\mu_2 = 9.5\)</span>: contributions <span class="math inline">\(0.25 + 0.25 = 0.5\)</span>; <span class="math display">\[\boxed{F = 2.5}.\]</span> A worse grouping scores worse — Problem 1 works this out on similar data, where a bad split scores <span class="math inline">\(\tfrac{146}{3}\)</span> against <span class="math inline">\(1\)</span> for the good one. That sensitivity is the point: <span class="math inline">\(F\)</span> <em>scores</em> assignments.</p>
+<p><strong>Basically, …</strong> “<span class="math inline">\(F\)</span> is the total ‘unhappiness’: every point measures its squared distance to its cluster’s center, and you add them all up. Good clustering = small <span class="math inline">\(F\)</span> = every point snuggled close to its own center. And the center is just the average of its points — the one location that minimizes that cluster’s unhappiness.”</p>
+</section>
+<section id="lloyds-algorithm-assign-re-mean-repeat" class="level2">
+<h2 class="anchored" data-anchor-id="lloyds-algorithm-assign-re-mean-repeat">26.4 Lloyd’s algorithm: assign, re-mean, repeat</h2>
+<p>Minimizing <span class="math inline">\(F\)</span> over <span class="math inline">\(K^n\)</span> assignments by brute force is out (§26.2). The lecture’s algorithm — <strong>Lloyd’s algorithm</strong> — alternates two steps, each trivial, each unable to increase <span class="math inline">\(F\)</span>.</p>
+<p><strong>Initialization.</strong> Pick <span class="math inline">\(z_1^0, \ldots, z_n^0 \in \{1, \ldots, K\}\)</span> — an initial assignment (§26.7 is about choosing it well).</p>
+<p><strong>Until convergence, repeat:</strong> - <strong>Compute means.</strong> For each <span class="math inline">\(k\)</span>, <span class="math display">\[\boxed{\forall k,\quad \mu_k^t = \frac{\sum_{i=1}^{n} x_i\,\mathbf{1}(z_i = k)}{\sum_{i=1}^{n} \mathbf{1}(z_i = k)}}\]</span> (the centroid formula, applied to the current assignment). - <strong>Reassignment step.</strong> For each <span class="math inline">\(i\)</span>, <span class="math display">\[\boxed{\forall i,\quad z_i^{t+1} = \arg\min_{k} \|x_i - \mu_k^t\|^2}\]</span> — every point moves to its <em>nearest</em> centroid. (Ties: keep the old label; it changes nothing — a convention, not in the lecture.)</p>
+<p><strong>Why each step is safe</strong> (neither can increase <span class="math inline">\(F\)</span>): i) <strong>The mean step</strong> fixes the assignment and re-centers: by §26.3(i), the mean minimizes each cluster’s squared-deviation sum, so recomputing <span class="math inline">\(\mu_k\)</span> can only <em>lower</em> (or leave) <span class="math inline">\(F\)</span>. ii) <strong>The reassignment step</strong> fixes the centers and re-assigns: each point independently picks the <span class="math inline">\(k\)</span> minimizing its own term <span class="math inline">\(\|x_i - \mu_k^t\|^2\)</span>, so the sum <span class="math inline">\(F\)</span> can only <em>lower</em> (or leave). Hence, with <span class="math inline">\(F^t\)</span> = the objective after iteration <span class="math inline">\(t\)</span>: <span class="math display">\[\boxed{F^{t+1} \le F^t}\]</span> — the practice assignment’s answer, and the lecture’s “every reassignment reduces the value of the objective function”, stated with exactly the strictness the sources support: <em>strictly</em> smaller whenever at least one point actually changes cluster — a point moves only if it finds a <em>strictly</em> closer center (the lecture’s “unhappy” points).</p>
+<p><strong>Why it must stop (the lecture’s convergence argument).</strong> In the lecture’s four lines: i) In every iteration, only unhappy points change clusters. ii) Every reassignment that moves a point reduces <span class="math inline">\(F\)</span>. iii) Every reassignment results in a <em>new</em> partition — <span class="math inline">\(F\)</span> strictly dropped, so this partition cannot be one already visited (the practice solution’s (a)+(c)+(e): partitions never repeat, and a change in <span class="math inline">\(F\)</span> means the partition changed). iv) There are only finitely many partitions (<span class="math inline">\(\le K^n\)</span>, §26.2) — a strictly decreasing sequence over a finite set must end. The algorithm converges.</p>
+<p><strong>What “converges” does NOT mean</strong> (practice assignment, Q6/Q9 — stated exactly as sourced): i) <strong>No global optimum.</strong> Different initializations can land in different local minima of <span class="math inline">\(F\)</span> — “one initialization might get stuck in local minima, while another may lead to global minima” (Q9(b)). ii) <strong>Init affects speed.</strong> The number of iterations to converge depends on the start (Q9(d)). iii) <strong>It always stops.</strong> Q9(c) (“one initialization may converge while another may not”) is <em>false</em> — the finiteness argument holds for every start. iv) <strong><span class="math inline">\(K^n\)</span> bounds partitions, not iterations</strong> — Q6(f) is false: <span class="math inline">\(K^n\)</span> is only the upper limit on possible partitions, not the iteration count (in practice Lloyd stops far, far earlier).</p>
+<p><strong>Note (empty clusters).</strong> The <span class="math inline">\(K^n\)</span> count allows empty clusters, but the centroid formula divides by the cluster’s headcount — a cluster that empties out breaks the formula. The lecture prescribes no fix; in practice, re-seed or drop the empty center. (Flagged in the review log as a point the lecture leaves open.)</p>
+<p><strong>Basically, …</strong> “Two dance steps, repeated: (1) each cluster’s center moves to its points’ average; (2) each point defects to its nearest center. Neither step can ever make <span class="math inline">\(F\)</span> worse — so <span class="math inline">\(F\)</span> ratchets down every round. There are only finitely many assignments, so the ratchet must click to a stop. <em>Where</em> it stops depends on where you started: Lloyd finds a local valley of <span class="math inline">\(F\)</span>, not necessarily the deepest one.”</p>
+</section>
+<section id="worked-one-lloyd-iteration-by-hand" class="level2">
+<h2 class="anchored" data-anchor-id="worked-one-lloyd-iteration-by-hand">26.5 Worked: one Lloyd iteration by hand</h2>
+<p>Six points in 2-D, <span class="math inline">\(K = 2\)</span> — deliberately bad initial assignment so things move: <span class="math display">\[x_1=(1,1),\; x_2=(1,2),\; x_3=(2,1),\; x_4=(6,6),\; x_5=(6,7),\; x_6=(7,6),\]</span> <span class="math display">\[z^0 = (1,1,2,1,2,2)\]</span> (points <span class="math inline">\(1,2,4\)</span> start in cluster 1; <span class="math inline">\(3,5,6\)</span> in cluster 2).</p>
+<p><strong>Step 1 — compute means.</strong> Cluster 1: <span class="math inline">\(\{x_1,x_2,x_4\}\)</span>, <span class="math inline">\(\mu_1^0 = \big(\tfrac{1+1+6}{3}, \tfrac{1+2+6}{3}\big) = \boxed{\big(\tfrac83, 3\big)}\)</span>. Cluster 2: <span class="math inline">\(\{x_3,x_5,x_6\}\)</span>, <span class="math inline">\(\mu_2^0 = \big(\tfrac{2+6+7}{3}, \tfrac{1+7+6}{3}\big) = \boxed{\big(5, \tfrac{14}{3}\big)}\)</span>.</p>
+<p>Initial objective (each point to its <em>assigned</em> center): - cluster 1: <span class="math inline">\(\|x_1-\mu_1^0\|^2 = \tfrac{61}{9}\)</span>, <span class="math inline">\(\|x_2-\mu_1^0\|^2 = \tfrac{34}{9}\)</span>, <span class="math inline">\(\|x_4-\mu_1^0\|^2 = \tfrac{181}{9}\)</span> → <span class="math inline">\(\tfrac{276}{9}\)</span>; - cluster 2: <span class="math inline">\(\|x_3-\mu_2^0\|^2 = \tfrac{202}{9}\)</span>, <span class="math inline">\(\|x_5-\mu_2^0\|^2 = \tfrac{58}{9}\)</span>, <span class="math inline">\(\|x_6-\mu_2^0\|^2 = \tfrac{52}{9}\)</span> → <span class="math inline">\(\tfrac{312}{9}\)</span>; <span class="math display">\[\boxed{F^0 = \tfrac{276+312}{9} = \tfrac{196}{3} \approx 65.33}.\]</span></p>
+<p><strong>Step 2 — reassign</strong> (squared distances to the two centers; smaller wins):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>point</th>
+<th>to <span class="math inline">\(\mu_1^0\)</span></th>
+<th>to <span class="math inline">\(\mu_2^0\)</span></th>
+<th>new <span class="math inline">\(z\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(x_1\)</span></td>
+<td><span class="math inline">\(\tfrac{61}{9}\approx6.78\)</span></td>
+<td><span class="math inline">\(\tfrac{265}{9}\approx29.44\)</span></td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(x_2\)</span></td>
+<td><span class="math inline">\(\tfrac{34}{9}\approx3.78\)</span></td>
+<td><span class="math inline">\(\tfrac{208}{9}\approx23.11\)</span></td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(x_3\)</span></td>
+<td><span class="math inline">\(\tfrac{40}{9}\approx4.44\)</span></td>
+<td><span class="math inline">\(\tfrac{202}{9}\approx22.44\)</span></td>
+<td><strong>1</strong> (was 2)</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(x_4\)</span></td>
+<td><span class="math inline">\(\tfrac{181}{9}\approx20.11\)</span></td>
+<td><span class="math inline">\(\tfrac{25}{9}\approx2.78\)</span></td>
+<td><strong>2</strong> (was 1)</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(x_5\)</span></td>
+<td><span class="math inline">\(\tfrac{244}{9}\approx27.11\)</span></td>
+<td><span class="math inline">\(\tfrac{58}{9}\approx6.44\)</span></td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(x_6\)</span></td>
+<td><span class="math inline">\(\tfrac{250}{9}\approx27.78\)</span></td>
+<td><span class="math inline">\(\tfrac{52}{9}\approx5.78\)</span></td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p>eg, <span class="math inline">\(x_3=(2,1)\)</span>: to <span class="math inline">\(\mu_1^0\)</span>: <span class="math inline">\((2-\tfrac83)^2 + (1-3)^2 = \tfrac{4}{9}+4 = \tfrac{40}{9}\)</span>; to <span class="math inline">\(\mu_2^0\)</span>: <span class="math inline">\((2-5)^2 + (1-\tfrac{14}{3})^2 = 9 + \tfrac{121}{9} = \tfrac{202}{9}\)</span>. Closer to <span class="math inline">\(\mu_1^0\)</span> — it defects. Two unhappy points move (<span class="math inline">\(x_3\)</span>: <span class="math inline">\(2\to1\)</span>, <span class="math inline">\(x_4\)</span>: <span class="math inline">\(1\to2\)</span>); the rest stay. <span class="math display">\[\boxed{z^1 = (1,1,1,2,2,2)}.\]</span></p>
+<p><strong>Step 3 — recompute means.</strong> <span class="math inline">\(\mu_1^1 = \big(\tfrac{1+1+2}{3},\tfrac{1+2+1}{3}\big) = \boxed{\big(\tfrac43,\tfrac43\big)}\)</span>; <span class="math inline">\(\mu_2^1 = \big(\tfrac{6+6+7}{3},\tfrac{6+7+6}{3}\big) = \boxed{\big(\tfrac{19}{3},\tfrac{19}{3}\big)}\)</span> — the centers have slid onto the two natural blobs. <span class="math display">\[F^1 = \underbrace{\tfrac29+\tfrac59+\tfrac59}_{\text{cluster 1}} + \underbrace{\tfrac29+\tfrac59+\tfrac59}_{\text{cluster 2}} = \boxed{\tfrac83 \approx 2.67},\]</span> down from <span class="math inline">\(65.33\)</span>. <strong>Convergence check:</strong> reassigning with <span class="math inline">\(\mu_1^1,\mu_2^1\)</span> moves no point (eg <span class="math inline">\(x_3\)</span>: <span class="math inline">\(\tfrac59\)</span> vs <span class="math inline">\(\tfrac{425}{9}\)</span> — stays), so <span class="math inline">\(z^2 = z^1\)</span> and the algorithm stops. Every number above was recomputed independently (fractions and numpy) in the review log.</p>
+<!-- Original matplotlib illustration drawn for this chapter (not reused from any URL): initial vs after-one-iteration assignment of the six 2-D points with centroid stars and the perpendicular bisector of the final centers -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/26-k-means-lloyd-iteration.png" class="img-fluid figure-img"></p>
+<figcaption>Lloyd’s algorithm on the six 2-D points of the hand-worked example: initial assignment (left) vs after one iteration (right); stars are centroids; the dashed line is the perpendicular bisector of the final centers.</figcaption>
+</figure>
+</div>
+<p><strong>Basically, …</strong> “One round is enough to watch it work: the centers jump to their points’ averages, the two misplaced points defect to the nearer center, the centers jump again onto the real blobs, and <span class="math inline">\(F\)</span> collapses from <span class="math inline">\(65.3\)</span> to <span class="math inline">\(2.7\)</span>. Then nothing wants to move — done.”</p>
+</section>
+<section id="the-shape-of-the-clusters-half-spaces-and-bisectors" class="level2">
+<h2 class="anchored" data-anchor-id="the-shape-of-the-clusters-half-spaces-and-bisectors">26.6 The shape of the clusters: half-spaces and bisectors</h2>
+<p>Fix the final centers. Which points of the plane would join cluster 1 vs cluster 2? The lecture’s geometric answer:</p>
+<ol type="i">
+<li><strong>The boundary between two centers is a perpendicular bisector.</strong> The set of points equidistant from <span class="math inline">\(\mu_1,\mu_2\)</span> — <span class="math inline">\(\|x-\mu_1\| = \|x-\mu_2\|\)</span> — is the hyperplane perpendicular to the segment <span class="math inline">\(\mu_1\mu_2\)</span> through its midpoint (practice Q3; Problem 4 proves it).</li>
+<li><strong>Each cluster’s region is an intersection of half-spaces.</strong> Cluster <span class="math inline">\(k\)</span>’s region = points closer to <span class="math inline">\(\mu_k\)</span> than to <em>every</em> other center = the intersection of the <span class="math inline">\(K-1\)</span> half-spaces cut by the bisectors with centers <span class="math inline">\(1,\ldots,K\)</span> (excluding <span class="math inline">\(k\)</span>) — the lecture’s statement.</li>
+<li><strong>Consequence.</strong> Every cluster region is convex (an intersection of convex half-spaces, §§12.3–12.4) and polygonal/polyhedral. k-means can only draw <em>straight</em> boundaries — it will never carve out a crescent or a ring.</li>
+</ol>
+<p><strong>eg 3 (the worked example’s bisector).</strong> Final centers <span class="math inline">\(\mu_1 = (\tfrac43,\tfrac43)\)</span>, <span class="math inline">\(\mu_2 = (\tfrac{19}{3},\tfrac{19}{3})\)</span>. Midpoint: <span class="math inline">\((\tfrac{23}{6},\tfrac{23}{6})\)</span>. Equidistance <span class="math inline">\(\|x-\mu_1\|^2 = \|x-\mu_2\|^2\)</span> gives <span class="math inline">\(2x^T(\mu_2-\mu_1) = \|\mu_2\|^2-\|\mu_1\|^2\)</span>, i.e.&nbsp;<span class="math inline">\(10(x_1+x_2) = \tfrac{230}{3}\)</span>: <span class="math display">\[\boxed{x_1 + x_2 = \tfrac{23}{3}}\]</span> — the dashed line in the figure: perpendicular to the segment joining the centers (direction <span class="math inline">\((1,1)\)</span>), through the midpoint (check: <span class="math inline">\(\tfrac{23}{6}+\tfrac{23}{6} = \tfrac{23}{3}\)</span> ✓). Points with <span class="math inline">\(x_1+x_2 &lt; \tfrac{23}{3}\)</span> join cluster 1 — all of <span class="math inline">\(x_1,x_2,x_3\)</span> satisfy this (<span class="math inline">\(2,3,3 &lt; 7.67\)</span>); <span class="math inline">\(x_4,x_5,x_6\)</span> don’t (<span class="math inline">\(12,13,13 &gt; 7.67\)</span>).</p>
+<p><strong>Basically, …</strong> “Once the centers freeze, the plane is divided like a cake cut with straight knives: each pair of centers contributes the perpendicular bisector of the segment between them, and your cluster is the piece containing your center. Straight cuts only — k-means can’t do curves.”</p>
+</section>
+<section id="initialization-uniform-vs-k-means" class="level2">
+<h2 class="anchored" data-anchor-id="initialization-uniform-vs-k-means">26.7 Initialization: uniform vs k-means++</h2>
+<p>Lloyd’s start matters (§26.4: local minima, iteration count). The lecture gives two ways to choose the initial centers:</p>
+<ol type="i">
+<li><strong>Uniformly at random.</strong> Pick the initial centers (or assignments) with equal probability over the data. Simple; sometimes unlucky.</li>
+<li><strong>k-means++.</strong> Idea, in the lecture’s words: “cluster centers should be as far apart as possible.” Procedure:</li>
+</ol>
+<ol type="1">
+<li>Choose the first center <span class="math inline">\(\mu_1^0\)</span> uniformly at random from <span class="math inline">\(x_1,\ldots,x_n\)</span>.</li>
+<li>For <span class="math inline">\(l = 2, 3, \ldots, K\)</span>: choose <span class="math inline">\(\mu_l^0\)</span> <em>probabilistically</em>, with probability proportional to the score <span class="math display">\[\boxed{S(x) = \min_{j=1,\ldots,l-1} \|x - \mu_j^0\|^2 \qquad \forall x}\]</span> — the squared distance to the <em>nearest</em> already-chosen center.</li>
+</ol>
+<p><strong>Reading the score.</strong> <span class="math inline">\(S(x)\)</span> is big exactly when <span class="math inline">\(x\)</span> is far from all existing centers — so far-flung points are <em>likely</em> (not certain) to become new centers, and the centers spread out. Two edge facts: a point sitting exactly on an existing center has <span class="math inline">\(S = 0\)</span> and is never re-chosen; and “proportional to” means <em>probabilities</em>, not a maximum — the highest-score point is the most likely pick but not a guaranteed one (practice Q5: scores <span class="math inline">\(25,67,89,24,56\)</span> → the <span class="math inline">\(89\)</span> point has the highest <em>probability</em>, yet might not be chosen).</p>
+<p><strong>eg 4 (k-means++ scoring, on §26.5’s data).</strong> Suppose the first pick is <span class="math inline">\(\mu_1^0 = x_4 = (6,6)\)</span>. Then <span class="math inline">\(S(x) = \|x-(6,6)\|^2\)</span>: <span class="math inline">\(S(x_1)=50,\ S(x_2)=41,\ S(x_3)=41,\ S(x_4)=0,\ S(x_5)=1,\ S(x_6)=1\)</span>; total <span class="math inline">\(134\)</span>. <span class="math display">\[P(\mu_2^0 = x_1) = \tfrac{50}{134} \approx 0.373,\quad P(x_2)=P(x_3)=\tfrac{41}{134}\approx0.306,\quad P(x_5)=P(x_6)=\tfrac1{134}\approx0.0075,\quad P(x_4)=0.\]</span> The far blob (<span class="math inline">\(x_1,x_2,x_3\)</span>) soaks up <span class="math inline">\(\approx 98.5\%\)</span> of the probability — the second center will almost surely land far from the first, as intended.</p>
+<p><strong>Basically, …</strong> “Random start = throw <span class="math inline">\(K\)</span> darts blindfolded. k-means++ = throw the first dart blindfolded, then throw each next dart <em>aiming away</em> from where darts already landed — ‘away’ measured by squared distance, a dice roll deciding exactly where. Spread-out starts, fewer bad valleys.”</p>
+</section>
+<section id="choosing-k-the-lectures-penalty-idea" class="level2">
+<h2 class="anchored" data-anchor-id="choosing-k-the-lectures-penalty-idea">26.8 Choosing <span class="math inline">\(K\)</span>: the lecture’s penalty idea</h2>
+<p><span class="math inline">\(K\)</span> is an input (§26.1(iii)) — but which <span class="math inline">\(K\)</span>? The lecture reasons from the objective:</p>
+<ol type="i">
+<li><strong><span class="math inline">\(K = n\)</span> trivializes <span class="math inline">\(F\)</span>.</strong> Every point its own cluster, each point its own centroid: <span class="math inline">\(\|x_i - \mu_{z_i}\| = 0\)</span> for all <span class="math inline">\(i\)</span>, so <span class="math inline">\(\boxed{F = 0}\)</span> (practice Q8). Perfect score, useless clustering.</li>
+<li><strong>More centers never hurt the optimum.</strong> With <span class="math inline">\(K+1\)</span> clusters you can always match the best <span class="math inline">\(K\)</span>-cluster solution (leave one cluster empty), so the <em>optimal</em> <span class="math inline">\(F\)</span> is non-increasing in <span class="math inline">\(K\)</span> (practice Q7: among <span class="math inline">\(K = 1, 10, 100\)</span>, <span class="math inline">\(K = 1\)</span> gives the largest <span class="math inline">\(F\)</span>).</li>
+<li><strong>So <span class="math inline">\(F\)</span> alone can’t pick <span class="math inline">\(K\)</span>.</strong> The lecture’s resolution, stated as a slogan rather than a formula: <span class="math display">\[\boxed{\text{minimize}\quad F\ \text{(objective value)}\ +\ \text{Penalty}(K)}\]</span> — want <span class="math inline">\(F\)</span> small <em>and</em> <span class="math inline">\(K\)</span> small; penalize large <span class="math inline">\(K\)</span> to block the <span class="math inline">\(K=n\)</span> triviality.</li>
+</ol>
+<p><strong>Note (the lecture stops here).</strong> No concrete penalty and no selection rule appear in the lecture — the elbow method and other criteria belong to later material, not these sources (flagged in the review log). The takeaway is the <em>principle</em>: fit quality and model complexity pull in opposite directions, and <span class="math inline">\(K\)</span> sits at the tradeoff.</p>
+<p><strong>Basically, …</strong> “Asking ‘<span class="math inline">\(F\)</span> alone, which <span class="math inline">\(K\)</span> is best?’ always answers ‘<span class="math inline">\(K=n\)</span>, perfect zero’ — which is cheating. So you pay a tax for every extra cluster and minimize score + tax. The lecture states the tax idea but doesn’t hand you the tax table.”</p>
+</section>
+<section id="the-hard-assignment-cousin-of-gmmem" class="level2">
+<h2 class="anchored" data-anchor-id="the-hard-assignment-cousin-of-gmmem">26.9 The hard-assignment cousin of GMM/EM</h2>
+<p>§25.12(i)’s promise, kept. The two algorithms side by side — same skeleton, one decisive difference:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>GMM + EM (§25)</th>
+<th>k-means (§26)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Assignment</strong></td>
+<td>soft: responsibility vector <span class="math inline">\(\gamma(z_{ik}) \in [0,1]\)</span>, <span class="math inline">\(\sum_k\gamma(z_{ik})=1\)</span> (§25.8)</td>
+<td>hard: single label <span class="math inline">\(z_i \in \{1,\ldots,K\}\)</span></td>
+</tr>
+<tr class="even">
+<td><strong>“E”-step</strong></td>
+<td>Bayes: <span class="math inline">\(\gamma(z_{ik}) \propto \pi_k\,N(x_i\mid\mu_k,\Sigma_k)\)</span></td>
+<td><span class="math inline">\(\arg\min\)</span>: nearest centroid, a 0/1 stamp</td>
+</tr>
+<tr class="odd">
+<td><strong>“M”-step</strong></td>
+<td>responsibility-<em>weighted</em> mean/covariance/weights (§25.9)</td>
+<td>plain mean of the assigned points (§26.3)</td>
+</tr>
+<tr class="even">
+<td><strong><span class="math inline">\(K\)</span></strong></td>
+<td>fixed input (§25.3(iii))</td>
+<td>fixed input (§26.1(iii))</td>
+</tr>
+<tr class="odd">
+<td><strong>Convergence</strong></td>
+<td>to a local optimum; init matters (§25.10)</td>
+<td>to a local minimum of <span class="math inline">\(F\)</span>; init matters (§26.4)</td>
+</tr>
+</tbody>
+</table>
+<ol type="i">
+<li><strong>The bridge is exact in one direction.</strong> Take EM’s M-step (§25.9) and force every responsibility to <span class="math inline">\(0\)</span> or <span class="math inline">\(1\)</span>: <span class="math inline">\(\mu_k = \frac{1}{N_k}\sum_i \gamma(z_{ik})x_i\)</span> becomes <em>the mean of the points assigned to <span class="math inline">\(k\)</span></em> — exactly k-means’ centroid formula — and <span class="math inline">\(N_k\)</span> becomes the headcount (Problem 8). §25.9(i) already noted this collapse; k-means is what EM’s M-step looks like when the E-step stops hedging.</li>
+<li><strong>What k-means gives up.</strong> No <span class="math inline">\(\pi_k\)</span> (cluster sizes aren’t modeled, just counted), no <span class="math inline">\(\Sigma_k\)</span> (clusters are implicitly spherical — every direction counts equally in <span class="math inline">\(\|x_i-\mu_k\|^2\)</span>), no uncertainty for boundary points (a point is <em>in</em> or <em>out</em>; §25.8’s <span class="math inline">\(x = -2\)</span> would get stamped instead of split <span class="math inline">\(20\%/80\%\)</span>).</li>
+<li><strong>What k-means gains.</strong> Simplicity and speed: no densities to evaluate, no covariances to maintain — just distances and means. The lecture’s closing application of EM was “one of the building blocks of clustering” (§25.12(i)); k-means is the other, harder-edged block.</li>
+</ol>
+<p><strong>Note (the <span class="math inline">\(\sigma^2\to0\)</span> limit).</strong> The textbook story — k-means as the zero-variance limit of a spherical GMM — is <em>not</em> in these lectures, so this chapter doesn’t claim it (flagged in the review log).</p>
+<p><strong>Basically, …</strong> “EM says: every point belongs to every cluster a little bit — here are the percentages. k-means says: pick one. Same alternating skeleton (assign-ish, then re-mean), same fixed <span class="math inline">\(K\)</span>, same init-sensitivity, same local-optimum honesty. Freeze EM’s percentages into 0s and 1s and its update formulas turn into k-means’ — that’s the family resemblance, proved in Problem 8.”</p>
+</section>
+<section id="cautions-from-the-practice-bench" class="level2">
+<h2 class="anchored" data-anchor-id="cautions-from-the-practice-bench">26.10 Cautions from the practice bench</h2>
+<p>Two warnings the Week 3 practice assignment insists on:</p>
+<ol type="i">
+<li><strong>Outliers hurt.</strong> k-means minimizes <em>squared</em> distances with <em>means</em> — both are outlier-magnets. One far-flung point drags its cluster’s centroid toward itself and can wreck the grouping of the honest points (practice Q10: yes, sensitive).</li>
+<li><strong>Geometry can fool it.</strong> Two parallel lines of points, <span class="math inline">\(K = 2\)</span> (practice Q4): with a lucky initialization you get the two lines as clusters; with an unlucky one you get a left-half/right-half split — and if the lines are far apart relative to the gaps between points, initialization stops mattering. The clusters you get depend on the start <em>and</em> on the data’s geometry, because <span class="math inline">\(F\)</span> has multiple valleys.</li>
+</ol>
+<p><strong>Basically, …</strong> “Squared distance + mean = outlier-sensitive by construction. And <span class="math inline">\(F\)</span>’s landscape can have several valleys — which one you land in depends on where you start and how the data is shaped. k-means is simple, not magic.”</p>
+</section>
+<section id="where-this-goes-next" class="level2">
+<h2 class="anchored" data-anchor-id="where-this-goes-next">26.11 Where this goes next</h2>
+<ol type="i">
+<li><strong>The unsupervised arc, complete.</strong> §22.11 asked for models that compress, explain, and group: PCA compressed (§24), GMMs explained (§25), k-means groups (§26). Three answers, one spirit — no labels anywhere.</li>
+<li><strong>Part IV continues.</strong> Next in the toolbox: kernel methods, regularization, trees, SVMs, ensembles (§25.12(iv)’s list) — and the coming chapters will reuse this chapter’s moves: alternating minimization, distance-based decisions, and the ever-present question of how complex a model to fit.</li>
+</ol>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li><strong>Objective arithmetic.</strong> 1-D data <span class="math inline">\(\{0, 1, 9, 10\}\)</span>, <span class="math inline">\(K = 2\)</span>. (i) Compute <span class="math inline">\(F\)</span> for <span class="math inline">\(z = (1,1,2,2)\)</span>. (ii) Compute <span class="math inline">\(F\)</span> for <span class="math inline">\(z = (1,2,2,2)\)</span>. (iii) Which assignment is better, and what does “better” mean here?</li>
+<li><strong>One Lloyd step.</strong> 1-D data <span class="math inline">\(\{1, 2, 9, 10\}\)</span>, <span class="math inline">\(K = 2\)</span>, initial assignment <span class="math inline">\(z^0 = (1,1,1,2)\)</span>. (i) Compute <span class="math inline">\(\mu_1^0, \mu_2^0\)</span>. (ii) Perform the reassignment step: give <span class="math inline">\(z^1\)</span>. (iii) Compute <span class="math inline">\(F^0\)</span> and <span class="math inline">\(F^1\)</span>; verify <span class="math inline">\(F^1 &lt; F^0\)</span>.</li>
+<li><strong>Monotonicity, proved (guided).</strong> (i) For a fixed assignment, show the centroid <span class="math inline">\(\mu_k\)</span> minimizes cluster <span class="math inline">\(k\)</span>’s contribution <span class="math inline">\(\sum_{i:z_i=k}\|x_i-\mu\|^2\)</span> (differentiate w.r.t. <span class="math inline">\(\mu\)</span>). (ii) Conclude the compute-means step cannot increase <span class="math inline">\(F\)</span>. (iii) Conclude the reassignment step cannot increase <span class="math inline">\(F\)</span> (each point minimizes its own term). (iv) Conclude <span class="math inline">\(F^{t+1} \le F^t\)</span>, with strict inequality iff at least one point changes cluster.</li>
+<li><strong>Bisector geometry.</strong> Centers <span class="math inline">\(\mu_1 = (0,0)\)</span>, <span class="math inline">\(\mu_2 = (4,0)\)</span>. (i) Find the equation of the boundary between the clusters. (ii) Which cluster does <span class="math inline">\((1,1)\)</span> join? (iii) Prove the general claim: the boundary is perpendicular to the segment <span class="math inline">\(\mu_1\mu_2\)</span> and passes through its midpoint.</li>
+<li><strong>k-means++ scoring.</strong> 1-D data <span class="math inline">\(\{0, 5, 6\}\)</span>; first center <span class="math inline">\(\mu_1^0 = 0\)</span>. (i) Compute <span class="math inline">\(S(x)\)</span> for each point. (ii) Give <span class="math inline">\(P(\mu_2^0 = x)\)</span> for each point. (iii) Which point is most likely chosen as <span class="math inline">\(\mu_2^0\)</span>, and can you <em>guarantee</em> it will be?</li>
+<li><strong>Choosing <span class="math inline">\(K\)</span>.</strong> (i) Show that <span class="math inline">\(K = n\)</span> achieves <span class="math inline">\(F = 0\)</span> for any dataset. (ii) For <span class="math inline">\(100\)</span> points, which of <span class="math inline">\(K = 1, 10, 100\)</span> gives the largest optimal <span class="math inline">\(F\)</span>, and why? (iii) In one line: why does the lecture say to penalize large <span class="math inline">\(K\)</span>?</li>
+<li><strong>True or false, one-line justification:</strong> (i) Two runs of Lloyd’s algorithm from different initializations always return the same clusters. (ii) <span class="math inline">\(F\)</span> can never increase from one iteration to the next. (iii) Lloyd’s algorithm can visit the same partition twice. (iv) k-means is insensitive to outliers. (v) Every k-means cluster region is convex.</li>
+<li><strong>Hard vs soft (the §25.12(i) bridge).</strong> (i) In EM’s M-step (§25.9), suppose every responsibility <span class="math inline">\(\gamma(z_{ik}) \in \{0,1\}\)</span>. Show the <span class="math inline">\(\mu_k\)</span> update becomes exactly k-means’ centroid formula, and interpret <span class="math inline">\(N_k\)</span> and <span class="math inline">\(\pi_k = N_k/n\)</span>. (ii) In one line: what does k-means’ reassignment step do that EM’s E-step does not?</li>
+</ol>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — Objective arithmetic
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Data <span class="math inline">\(\{0, 1, 9, 10\}\)</span>, <span class="math inline">\(K = 2\)</span>.</p>
+<p><strong>(i)</strong> <span class="math inline">\(z = (1,1,2,2)\)</span>. Cluster 1: <span class="math inline">\(\{0,1\}\)</span>, <span class="math inline">\(\mu_1 = 0.5\)</span>; contributions <span class="math inline">\((0-0.5)^2 + (1-0.5)^2 = 0.25 + 0.25 = 0.5\)</span>. Cluster 2: <span class="math inline">\(\{9,10\}\)</span>, <span class="math inline">\(\mu_2 = 9.5\)</span>; contributions <span class="math inline">\(0.25 + 0.25 = 0.5\)</span>. <span class="math display">\[\boxed{F = 1}.\]</span></p>
+<p><strong>(ii)</strong> <span class="math inline">\(z = (1,2,2,2)\)</span>. Cluster 1: <span class="math inline">\(\{0\}\)</span>, <span class="math inline">\(\mu_1 = 0\)</span>; contribution <span class="math inline">\(0\)</span>. Cluster 2: <span class="math inline">\(\{1,9,10\}\)</span>, <span class="math inline">\(\mu_2 = \tfrac{20}{3}\)</span>; contributions <span class="math display">\[\left(1-\tfrac{20}{3}\right)^2 + \left(9-\tfrac{20}{3}\right)^2 + \left(10-\tfrac{20}{3}\right)^2 = \tfrac{289}{9} + \tfrac{49}{9} + \tfrac{100}{9} = \tfrac{438}{9} = \tfrac{146}{3}.\]</span> <span class="math display">\[\boxed{F = \tfrac{146}{3} \approx 48.67}.\]</span></p>
+<p><strong>(iii)</strong> <span class="math inline">\(z = (1,1,2,2)\)</span> is better. “Better” here means <em>smaller <span class="math inline">\(F\)</span></em>: the points sit tighter around their centroids (two natural pairs), whereas <span class="math inline">\(z = (1,2,2,2)\)</span> lumps <span class="math inline">\(\{1,9,10\}\)</span> into one stretched cluster. <span class="math inline">\(F\)</span> is the score; smaller wins.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — One Lloyd step
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Data <span class="math inline">\(\{1, 2, 9, 10\}\)</span>, <span class="math inline">\(K = 2\)</span>, <span class="math inline">\(z^0 = (1,1,1,2)\)</span>.</p>
+<p><strong>(i)</strong> <span class="math inline">\(\mu_1^0 = \tfrac{1+2+9}{3} = \boxed{4}\)</span>, <span class="math inline">\(\mu_2^0 = \boxed{10}\)</span>.</p>
+<p><strong>(ii)</strong> Squared distances to <span class="math inline">\((4, 10)\)</span>: - <span class="math inline">\(x=1\)</span>: <span class="math inline">\(9\)</span> vs <span class="math inline">\(81\)</span> → 1; - <span class="math inline">\(x=2\)</span>: <span class="math inline">\(4\)</span> vs <span class="math inline">\(64\)</span> → 1; - <span class="math inline">\(x=9\)</span>: <span class="math inline">\(25\)</span> vs <span class="math inline">\(1\)</span> → 2; - <span class="math inline">\(x=10\)</span>: <span class="math inline">\(36\)</span> vs <span class="math inline">\(0\)</span> → 2. <span class="math display">\[\boxed{z^1 = (1,1,2,2)}.\]</span></p>
+<p><strong>(iii)</strong> <span class="math inline">\(F^0\)</span>: cluster 1 <span class="math inline">\(= \{1,2,9\}\)</span> about <span class="math inline">\(\mu_1^0 = 4\)</span>: <span class="math inline">\(9+4+25 = 38\)</span>; cluster 2 <span class="math inline">\(= \{10\}\)</span>: <span class="math inline">\(0\)</span>. <span class="math inline">\(\boxed{F^0 = 38}\)</span>. Recompute means for <span class="math inline">\(z^1\)</span>: <span class="math inline">\(\mu_1^1 = 1.5\)</span>, <span class="math inline">\(\mu_2^1 = 9.5\)</span>. <span class="math inline">\(F^1\)</span>: cluster 1: <span class="math inline">\(0.25+0.25 = 0.5\)</span>; cluster 2: <span class="math inline">\(0.25+0.25 = 0.5\)</span>. <span class="math inline">\(\boxed{F^1 = 1 &lt; 38 = F^0}\)</span> ✓ — the unhappy point <span class="math inline">\(x = 9\)</span> defected and <span class="math inline">\(F\)</span> collapsed.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — Monotonicity, proved
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> Fix the assignment; for cluster <span class="math inline">\(k\)</span> minimize <span class="math inline">\(g(\mu) = \sum_{i:z_i=k}\|x_i-\mu\|^2\)</span>. <span class="math inline">\(\nabla_\mu g = -2\sum_{i:z_i=k}(x_i-\mu) = 0\)</span> gives <span class="math inline">\(\mu\sum_{i:z_i=k}1 = \sum_{i:z_i=k}x_i\)</span>, i.e. <span class="math display">\[\boxed{\mu_k = \frac{\sum_{i:z_i=k}x_i}{\#\{i:z_i=k\}}},\]</span> the centroid. (Hessian <span class="math inline">\(2m_k I \succ 0\)</span>: it is the minimizer.)</p>
+<p><strong>(ii)</strong> The compute-means step replaces each <span class="math inline">\(\mu_k\)</span> by the minimizer of that cluster’s contribution to <span class="math inline">\(F\)</span> while the assignment is frozen — each cluster’s sum can only drop, so <span class="math inline">\(F\)</span> cannot increase.</p>
+<p><strong>(iii)</strong> The reassignment step freezes the centers; each point’s new label is <span class="math inline">\(\arg\min_k\|x_i-\mu_k^t\|^2\)</span>, the minimizer of that point’s term in <span class="math inline">\(F\)</span>. Every term can only drop, so <span class="math inline">\(F\)</span> cannot increase.</p>
+<p><strong>(iv)</strong> Both steps are non-increasing, so <span class="math inline">\(\boxed{F^{t+1} \le F^t}\)</span>. Strictness: the mean step is strictly decreasing unless the centers were already the centroids; the reassignment step is strictly decreasing iff at least one point moves (a point moves only to a <em>strictly</em> closer center). So <span class="math inline">\(F^{t+1} &lt; F^t\)</span> iff at least one point changes cluster in iteration <span class="math inline">\(t\)</span>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — Bisector geometry
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> <span class="math inline">\(\|x-\mu_1\|^2 = \|x-\mu_2\|^2\)</span>: <span class="math inline">\(x_1^2+x_2^2 = (x_1-4)^2+x_2^2\)</span>, i.e.&nbsp;<span class="math inline">\(0 = -8x_1+16\)</span>: <span class="math display">\[\boxed{x_1 = 2}.\]</span></p>
+<p><strong>(ii)</strong> <span class="math inline">\((1,1)\)</span>: to <span class="math inline">\(\mu_1\)</span>: <span class="math inline">\(1+1 = 2\)</span>; to <span class="math inline">\(\mu_2\)</span>: <span class="math inline">\(9+1 = 10\)</span>. Closer to <span class="math inline">\(\mu_1\)</span> → <span class="math inline">\(\boxed{\text{cluster } 1}\)</span> (also: <span class="math inline">\(1 &lt; 2\)</span>, left of the boundary).</p>
+<p><strong>(iii)</strong> <span class="math inline">\(\|x-\mu_1\|^2 = \|x-\mu_2\|^2 \iff -2x^T\mu_1 + \|\mu_1\|^2 = -2x^T\mu_2 + \|\mu_2\|^2 \iff 2x^T(\mu_2-\mu_1) = \|\mu_2\|^2-\|\mu_1\|^2\)</span>. This is a hyperplane with normal vector <span class="math inline">\(\mu_2-\mu_1\)</span> — hence perpendicular to the segment <span class="math inline">\(\mu_1\mu_2\)</span>. The midpoint <span class="math inline">\(m = \tfrac{\mu_1+\mu_2}{2}\)</span> satisfies it: <span class="math inline">\(2m^T(\mu_2-\mu_1) = (\mu_1+\mu_2)^T(\mu_2-\mu_1) = \|\mu_2\|^2-\|\mu_1\|^2\)</span> ✓. So the boundary is the perpendicular bisector. ∎</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — k-means++ scoring
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> <span class="math inline">\(S(x) = \|x - 0\|^2 = x^2\)</span>: <span class="math inline">\(\boxed{S(0) = 0,\ S(5) = 25,\ S(6) = 36}\)</span>.</p>
+<p><strong>(ii)</strong> Total <span class="math inline">\(= 61\)</span>: <span class="math display">\[\boxed{P(\mu_2^0 = 0) = 0,\quad P(\mu_2^0 = 5) = \tfrac{25}{61} \approx 0.410,\quad P(\mu_2^0 = 6) = \tfrac{36}{61} \approx 0.590}.\]</span></p>
+<p><strong>(iii)</strong> <span class="math inline">\(x = 6\)</span> is most likely (highest score → highest probability). No — the choice is <em>probabilistic</em>, not a max: <span class="math inline">\(6\)</span> is picked with probability <span class="math inline">\(\tfrac{36}{61}\)</span>, not <span class="math inline">\(1\)</span>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — Choosing <span class="math inline">\(K\)</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> With <span class="math inline">\(K = n\)</span>, put each <span class="math inline">\(x_i\)</span> in its own cluster; then <span class="math inline">\(\mu_{z_i} = x_i\)</span> and every term <span class="math inline">\(\|x_i-\mu_{z_i}\|^2 = 0\)</span>. <span class="math inline">\(\boxed{F = 0}\)</span> for any dataset.</p>
+<p><strong>(ii)</strong> <span class="math inline">\(\boxed{K = 1}\)</span> gives the largest optimal <span class="math inline">\(F\)</span>: one centroid must serve all <span class="math inline">\(100\)</span> points, so every point’s distance is measured from the single global mean; adding centers can only let points sit closer to their own center (practice Q7’s argument).</p>
+<p><strong>(iii)</strong> Because <span class="math inline">\(F\)</span> alone is minimized by the trivial <span class="math inline">\(K = n\)</span> (<span class="math inline">\(F = 0\)</span>, useless) — without a penalty on <span class="math inline">\(K\)</span> there is nothing stopping the degenerate solution.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — True or false
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><strong>False.</strong> Different initializations can converge to different local minima of <span class="math inline">\(F\)</span> (practice Q9(b)).</li>
+<li><strong>True.</strong> <span class="math inline">\(F^{t+1} \le F^t\)</span> every iteration — neither Lloyd step can increase <span class="math inline">\(F\)</span> (Problem 3; practice Q2/Q6).</li>
+<li><strong>False.</strong> Every reassignment strictly reduces <span class="math inline">\(F\)</span>, so a visited partition — with its <span class="math inline">\(F\)</span> value — can never recur (practice Q6(a)).</li>
+<li><strong>False.</strong> k-means minimizes squared distances about means; both are outlier-sensitive (practice Q10).</li>
+<li><strong>True.</strong> Each cluster region is an intersection of <span class="math inline">\(K-1\)</span> half-spaces (§26.6); half-spaces are convex (§12.3) and intersections preserve convexity (§12.4).</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 8 — Hard vs soft
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> EM’s M-step (§25.9): <span class="math inline">\(\mu_k = \frac{1}{N_k}\sum_{i=1}^{n}\gamma(z_{ik})x_i\)</span> with <span class="math inline">\(N_k = \sum_i\gamma(z_{ik})\)</span>. If <span class="math inline">\(\gamma(z_{ik}) \in \{0,1\}\)</span>, the sum keeps exactly the points with <span class="math inline">\(\gamma(z_{ik}) = 1\)</span> — i.e.&nbsp;the points <em>assigned</em> to <span class="math inline">\(k\)</span> — and <span class="math inline">\(N_k\)</span> is their headcount: <span class="math display">\[\boxed{\mu_k = \frac{\sum_{i:z_i=k}x_i}{\#\{i:z_i=k\}}},\]</span> k-means’ centroid formula (§26.3). <span class="math inline">\(\pi_k = N_k/n\)</span> becomes the <em>fraction of data points in cluster <span class="math inline">\(k\)</span></em> — the empirical cluster proportion.</p>
+<p><strong>(ii)</strong> k-means’ reassignment stamps each point with a single hard label (nearest centroid); EM’s E-step instead distributes each point <em>softly</em> across components via Bayes’ rule.</p>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./25-gmm-em.html" class="pagination-link" aria-label="25. GMMs and the EM algorithm">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">25. GMMs and the EM algorithm</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./27-kernel-methods.html" class="pagination-link" aria-label="27. Kernel methods and kernel regression">
+        <span class="nav-page-text"><span class="chapter-title">27. Kernel methods and kernel regression</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>8. Single-variable calculus: continuity, differentiability, derivatives – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./09-multivariable-calculus.html" rel="next">
+<link href="./07-svd-positive-definite.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./01-sets-functions-preliminaries.html">Part I — Mathematical Foundations</a></li><li class="breadcrumb-item"><a href="./08-single-variable-calculus.html"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#limits-the-approach-idea" id="toc-limits-the-approach-idea" class="nav-link active" data-scroll-target="#limits-the-approach-idea">8.1 Limits: the “approach” idea</a>
+  <ul class="collapse">
+  <li><a href="#the-varepsilondelta-definition-stated-carefully" id="toc-the-varepsilondelta-definition-stated-carefully" class="nav-link" data-scroll-target="#the-varepsilondelta-definition-stated-carefully">8.1.1 The <span class="math inline">\(\varepsilon\)</span>–<span class="math inline">\(\delta\)</span> definition, stated carefully</a></li>
+  <li><a href="#one-sided-limits" id="toc-one-sided-limits" class="nav-link" data-scroll-target="#one-sided-limits">8.1.2 One-sided limits</a></li>
+  </ul></li>
+  <li><a href="#continuity-no-jumps" id="toc-continuity-no-jumps" class="nav-link" data-scroll-target="#continuity-no-jumps">8.2 Continuity: no jumps</a>
+  <ul class="collapse">
+  <li><a href="#continuity-is-preserved-by-the-usual-operations" id="toc-continuity-is-preserved-by-the-usual-operations" class="nav-link" data-scroll-target="#continuity-is-preserved-by-the-usual-operations">8.2.1 Continuity is preserved by the usual operations</a></li>
+  <li><a href="#the-intermediate-value-theorem-one-paragraph" id="toc-the-intermediate-value-theorem-one-paragraph" class="nav-link" data-scroll-target="#the-intermediate-value-theorem-one-paragraph">8.2.2 The intermediate value theorem (one paragraph)</a></li>
+  </ul></li>
+  <li><a href="#the-derivative-how-fast-is-it-changing" id="toc-the-derivative-how-fast-is-it-changing" class="nav-link" data-scroll-target="#the-derivative-how-fast-is-it-changing">8.3 The derivative: how fast is it changing?</a>
+  <ul class="collapse">
+  <li><a href="#definition-a-limit-of-difference-quotients" id="toc-definition-a-limit-of-difference-quotients" class="nav-link" data-scroll-target="#definition-a-limit-of-difference-quotients">8.3.1 Definition: a limit of difference quotients</a></li>
+  <li><a href="#the-geometric-twin-slope-of-the-tangent-line" id="toc-the-geometric-twin-slope-of-the-tangent-line" class="nav-link" data-scroll-target="#the-geometric-twin-slope-of-the-tangent-line">8.3.2 The geometric twin: slope of the tangent line</a></li>
+  </ul></li>
+  <li><a href="#differentiable-rightarrow-continuous-but-not-conversely" id="toc-differentiable-rightarrow-continuous-but-not-conversely" class="nav-link" data-scroll-target="#differentiable-rightarrow-continuous-but-not-conversely">8.4 Differentiable <span class="math inline">\(\Rightarrow\)</span> continuous (but not conversely)</a></li>
+  <li><a href="#the-derivative-rules-a-toolbox" id="toc-the-derivative-rules-a-toolbox" class="nav-link" data-scroll-target="#the-derivative-rules-a-toolbox">8.5 The derivative rules: a toolbox</a></li>
+  <li><a href="#linear-approximation-replace-the-curve-by-its-tangent" id="toc-linear-approximation-replace-the-curve-by-its-tangent" class="nav-link" data-scroll-target="#linear-approximation-replace-the-curve-by-its-tangent">8.6 Linear approximation: replace the curve by its tangent</a></li>
+  <li><a href="#finding-maxima-and-minima" id="toc-finding-maxima-and-minima" class="nav-link" data-scroll-target="#finding-maxima-and-minima">8.7 Finding maxima and minima</a>
+  <ul class="collapse">
+  <li><a href="#increasing-decreasing-and-turning-points" id="toc-increasing-decreasing-and-turning-points" class="nav-link" data-scroll-target="#increasing-decreasing-and-turning-points">8.7.1 Increasing, decreasing, and turning points</a></li>
+  <li><a href="#critical-points-and-the-second-derivative-test" id="toc-critical-points-and-the-second-derivative-test" class="nav-link" data-scroll-target="#critical-points-and-the-second-derivative-test">8.7.2 Critical points and the second derivative test</a></li>
+  <li><a href="#closed-intervals-and-global-extrema" id="toc-closed-intervals-and-global-extrema" class="nav-link" data-scroll-target="#closed-intervals-and-global-extrema">8.7.3 Closed intervals and global extrema</a></li>
+  </ul></li>
+  <li><a href="#where-this-goes-next" id="toc-where-this-goes-next" class="nav-link" data-scroll-target="#where-this-goes-next">8.8 Where this goes next</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./01-sets-functions-preliminaries.html">Part I — Mathematical Foundations</a></li><li class="breadcrumb-item"><a href="./08-single-variable-calculus.html"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Chapter 7 ended with a one-dimensional sketch: derivatives as local linear maps, and the “bowl” idea that decides minima. This chapter builds that sketch into the full one-variable machinery — limits, continuity, the derivative, and how to <em>find</em> maxima and minima. Everything in machine learning is, at bottom, a function you want to minimize (the loss) or a rate at which something changes (the loss with respect to a parameter). This chapter is the instrument panel for reading those functions.</p>
+<p>The single-variable story has three acts:</p>
+<ol type="i">
+<li><strong>Limits</strong> — what it means for <span class="math inline">\(f(x)\)</span> to “approach” a value.</li>
+<li><strong>Continuity</strong> — no jumps: the limit equals the value.</li>
+<li><strong>Differentiability</strong> — how fast <span class="math inline">\(f\)</span> changes, and where it bottoms out.</li>
+</ol>
+<section id="limits-the-approach-idea" class="level2">
+<h2 class="anchored" data-anchor-id="limits-the-approach-idea">8.1 Limits: the “approach” idea</h2>
+<p>Intuitively, we write <span class="math display">\[\lim_{x \to a} f(x) = L\]</span> to mean: as <span class="math inline">\(x\)</span> gets closer and closer to <span class="math inline">\(a\)</span> (from either side), the values <span class="math inline">\(f(x)\)</span> get closer and closer to <span class="math inline">\(L\)</span>. The key question this answers: <em>what would <span class="math inline">\(f\)</span> equal at <span class="math inline">\(a\)</span> if it behaved nicely there?</em> — regardless of what <span class="math inline">\(f(a)\)</span> actually is, or whether <span class="math inline">\(f(a)\)</span> is even defined.</p>
+<p><strong>Note:</strong> The limit as <span class="math inline">\(x \to a\)</span> has nothing to do with the value (or existence) of <span class="math inline">\(f(a)\)</span>. A limit only looks at <span class="math inline">\(x\)</span> <em>near</em> <span class="math inline">\(a\)</span>, never <em>at</em> <span class="math inline">\(a\)</span>.</p>
+<section id="the-varepsilondelta-definition-stated-carefully" class="level3">
+<h3 class="anchored" data-anchor-id="the-varepsilondelta-definition-stated-carefully">8.1.1 The <span class="math inline">\(\varepsilon\)</span>–<span class="math inline">\(\delta\)</span> definition, stated carefully</h3>
+<p>“Gets closer and closer” is too vague to prove anything with. The formal definition pins down <em>how close</em> with two tolerances: <span class="math inline">\(\varepsilon\)</span> (how close the outputs must be to <span class="math inline">\(L\)</span>) and <span class="math inline">\(\delta\)</span> (how close the inputs must be to <span class="math inline">\(a\)</span>).</p>
+<p><strong>Def.</strong> <span class="math inline">\(\lim_{x \to a} f(x) = L\)</span> means: <strong>for every</strong> <span class="math inline">\(\varepsilon &gt; 0\)</span> <strong>there exists</strong> a <span class="math inline">\(\delta &gt; 0\)</span> such that, for every <span class="math inline">\(x\)</span> in the domain with <span class="math inline">\(0 &lt; |x - a| &lt; \delta\)</span>, <span class="math display">\[|f(x) - L| &lt; \varepsilon.\]</span></p>
+<p>Read it with the quantifier shorthand from §1.11: <span class="math display">\[\forall \varepsilon &gt; 0,\ \exists \delta &gt; 0 \text{ such that } \bigl(0 &lt; |x - a| &lt; \delta \;\Rightarrow\; |f(x) - L| &lt; \varepsilon\bigr).\]</span> The order matters: <em>first</em> someone hands you any tolerance <span class="math inline">\(\varepsilon\)</span> on the output (<span class="math inline">\(\forall \varepsilon &gt; 0\)</span>); <em>then</em> you must produce a window <span class="math inline">\(\delta\)</span> around <span class="math inline">\(a\)</span> (<span class="math inline">\(\exists \delta &gt; 0\)</span>) that forces every output inside it to satisfy the tolerance. The <span class="math inline">\(\delta\)</span> is allowed to depend on <span class="math inline">\(\varepsilon\)</span> — smaller tolerance, tighter window. The <span class="math inline">\(0 &lt;\)</span> part says <span class="math inline">\(x = a\)</span> itself is excluded: the limit does not care about <span class="math inline">\(f(a)\)</span>.</p>
+<p><strong>Basically, …</strong> Pick any bullseye size <span class="math inline">\(\varepsilon\)</span> around <span class="math inline">\(L\)</span> on the <span class="math inline">\(y\)</span>-axis. The definition promises you can find a (possibly tiny) window <span class="math inline">\(\delta\)</span> around <span class="math inline">\(a\)</span> on the <span class="math inline">\(x\)</span>-axis so that the whole graph inside that window — except possibly the point at <span class="math inline">\(a\)</span> itself — lands inside the bullseye.</p>
+<p><em>Remark on the sources.</em> The course book builds limits from <em>sequences</em>: <span class="math inline">\(\lim_{x \to a} f(x) = L\)</span> iff <span class="math inline">\(f(x_n) \to L\)</span> for every sequence <span class="math inline">\(x_n \to a\)</span>. That sequential definition and the <span class="math inline">\(\varepsilon\)</span>–<span class="math inline">\(\delta\)</span> one above are equivalent — they certify the same limits. We use <span class="math inline">\(\varepsilon\)</span>–<span class="math inline">\(\delta\)</span> here because it is the standard working form (and it is exactly the language the MLF lectures use when they say “as <span class="math inline">\(x\)</span> approaches <span class="math inline">\(a\)</span>”).</p>
+<p><strong>eg 1 — proving a limit with <span class="math inline">\(\varepsilon\)</span>–<span class="math inline">\(\delta\)</span> (full steps).</strong> Claim: <span class="math inline">\(\lim_{x \to 1} x^2 = 1\)</span>.</p>
+<p>Let <span class="math inline">\(\varepsilon &gt; 0\)</span> be given. We need <span class="math inline">\(\delta &gt; 0\)</span> with <span class="math inline">\(0 &lt; |x - 1| &lt; \delta \Rightarrow |x^2 - 1| &lt; \varepsilon\)</span>.</p>
+<ol type="i">
+<li>Factor the output distance: <span class="math inline">\(|x^2 - 1| = |x - 1|\,|x + 1|\)</span>.</li>
+<li>Tame the <span class="math inline">\(|x + 1|\)</span> factor: first demand <span class="math inline">\(\delta \le 1\)</span>, so <span class="math inline">\(|x - 1| &lt; 1\)</span> gives <span class="math inline">\(0 &lt; x &lt; 2\)</span>, hence <span class="math inline">\(|x + 1| = x + 1 &lt; 3\)</span>.</li>
+<li>Then <span class="math inline">\(|x^2 - 1| = |x - 1|\,|x + 1| &lt; 3|x - 1|\)</span>. To make this <span class="math inline">\(&lt; \varepsilon\)</span>, it suffices to have <span class="math inline">\(|x - 1| &lt; \varepsilon/3\)</span>.</li>
+<li>Choose <span class="math inline">\(\delta = \min(1, \varepsilon/3) &gt; 0\)</span>. Then <span class="math inline">\(0 &lt; |x - 1| &lt; \delta\)</span> gives <span class="math inline">\(|x^2 - 1| &lt; 3\delta \le 3(\varepsilon/3) = \varepsilon\)</span>. ∎</li>
+</ol>
+<p><strong>Basically, …</strong> An <span class="math inline">\(\varepsilon\)</span>–<span class="math inline">\(\delta\)</span> proof is a recipe: “you give me the output tolerance, I hand you back the input window.” Step ii) is the standard trick — first lock <span class="math inline">\(x\)</span> into a small fixed neighborhood so the extra factor can’t misbehave, then shrink <span class="math inline">\(\delta\)</span> further to hit the tolerance.</p>
+</section>
+<section id="one-sided-limits" class="level3">
+<h3 class="anchored" data-anchor-id="one-sided-limits">8.1.2 One-sided limits</h3>
+<p><span class="math inline">\(x\)</span> can approach <span class="math inline">\(a\)</span> from the left (<span class="math inline">\(x &lt; a\)</span>) or the right (<span class="math inline">\(x &gt; a\)</span>). If the two sides disagree, the two-sided limit does not exist.</p>
+<p><strong>Def.</strong> <span class="math inline">\(\lim_{x \to a^-} f(x) = L_1\)</span> (left limit) and <span class="math inline">\(\lim_{x \to a^+} f(x) = L_2\)</span> (right limit) are defined the same way, except <span class="math inline">\(x\)</span> is restricted to <span class="math inline">\(x &lt; a\)</span> (resp. <span class="math inline">\(x &gt; a\)</span>). The two-sided limit exists <strong>iff</strong> both one-sided limits exist <em>and are equal</em> — and then it equals their common value.</p>
+<p><strong>eg 2 — a limit that does not exist: the floor function.</strong> Let <span class="math inline">\(f(x) = \lfloor x \rfloor\)</span> and <span class="math inline">\(a = -1\)</span>. From the left, <span class="math inline">\(x\)</span> is just below <span class="math inline">\(-1\)</span> (e.g.&nbsp;<span class="math inline">\(-1.1\)</span>), so <span class="math inline">\(\lfloor x \rfloor = -2\)</span>: <span class="math inline">\(\lim_{x \to -1^-} \lfloor x \rfloor = -2\)</span>. From the right, <span class="math inline">\(x\)</span> is just above <span class="math inline">\(-1\)</span> (e.g.&nbsp;<span class="math inline">\(-0.9\)</span>), so <span class="math inline">\(\lfloor x \rfloor = -1\)</span>: <span class="math inline">\(\lim_{x \to -1^+} \lfloor x \rfloor = -1\)</span>. The sides disagree, so <span class="math inline">\(\lim_{x \to -1} \lfloor x \rfloor\)</span> does not exist. Verdict: <em>no limit</em>.</p>
+<p><strong>eg 3 — limits at infinity.</strong> <span class="math inline">\(\lim_{x \to \infty} \frac{1}{x} = 0\)</span>: as <span class="math inline">\(x\)</span> grows larger and larger, <span class="math inline">\(\frac{1}{x}\)</span> hugs <span class="math inline">\(0\)</span> (same for <span class="math inline">\(x \to -\infty\)</span>). The idea is identical — only the “approach” is “toward <span class="math inline">\(\infty\)</span>” instead of “toward <span class="math inline">\(a\)</span>”. Verdict: <em>limit <span class="math inline">\(0\)</span></em>.</p>
+<p><strong>eg 4 — oscillation kills the limit.</strong> <span class="math inline">\(f(x) = \sin\frac{1}{x}\)</span> on <span class="math inline">\(\mathbb{R} \setminus \{0\}\)</span>: as <span class="math inline">\(x \to 0\)</span>, the function swings between <span class="math inline">\(-1\)</span> and <span class="math inline">\(1\)</span> faster and faster, never settling. Along <span class="math inline">\(x_n = \frac{1}{\pi/2 + 2\pi n} \to 0\)</span> we get <span class="math inline">\(f(x_n) = 1\)</span> always; along <span class="math inline">\(y_n = \frac{1}{3\pi/2 + 2\pi n} \to 0\)</span> we get <span class="math inline">\(f(y_n) = -1\)</span> always. Verdict: <em>no limit at <span class="math inline">\(0\)</span></em> — approaching does not mean settling.</p>
+</section>
+</section>
+<section id="continuity-no-jumps" class="level2">
+<h2 class="anchored" data-anchor-id="continuity-no-jumps">8.2 Continuity: no jumps</h2>
+<p><strong>Def.</strong> <span class="math inline">\(f\)</span> is <strong>continuous at</strong> <span class="math inline">\(a\)</span> (in its domain) if <span class="math display">\[\lim_{x \to a} f(x) = f(a),\]</span> i.e.&nbsp;(i) both one-sided limits exist, and (ii) they equal each other <em>and</em> the actual value <span class="math inline">\(f(a)\)</span>. <span class="math inline">\(f\)</span> is continuous on its domain if it is continuous at every point of it.</p>
+<p>Three things must hold: <span class="math inline">\(f(a)\)</span> is defined; the limit exists; the limit equals the value. In words: <strong>continuity means the limit can be found by just plugging in</strong> — the graph has no jump, hole, or break at <span class="math inline">\(a\)</span>.</p>
+<p><strong>Basically, …</strong> A continuous function is one you can draw without lifting the pen. Discontinuous means the pen has to jump.</p>
+<p><strong>eg 5 — <span class="math inline">\(|x|\)</span> is continuous at <span class="math inline">\(0\)</span>.</strong> From either side, <span class="math inline">\(|x| \to 0\)</span> as <span class="math inline">\(x \to 0\)</span>, and <span class="math inline">\(f(0) = 0\)</span>. Left limit = right limit = value. Verdict: <em>continuous at <span class="math inline">\(0\)</span></em> (in fact everywhere).</p>
+<p><strong>eg 6 — a jump: discontinuous.</strong> <span class="math inline">\(f(x) = x + 1\)</span> for <span class="math inline">\(-4 \le x &lt; 2\)</span>, <span class="math inline">\(f(x) = x^2 - 4\)</span> for <span class="math inline">\(2 \le x \le 3\)</span>, at <span class="math inline">\(a = 2\)</span>. Left limit: <span class="math inline">\(x + 1 \to 3\)</span> as <span class="math inline">\(x \to 2^-\)</span>. Right limit: <span class="math inline">\(x^2 - 4 \to 0\)</span> as <span class="math inline">\(x \to 2^+\)</span>. <span class="math inline">\(3 \ne 0\)</span>, so condition (ii) fails. Verdict: <em>not continuous at <span class="math inline">\(x = 2\)</span></em> — a genuine jump.</p>
+<p><strong>eg 7 — <span class="math inline">\(\lfloor x \rfloor\)</span> fails at every integer.</strong> We saw in eg 2 that the one-sided limits at <span class="math inline">\(-1\)</span> disagree; the same happens at every integer <span class="math inline">\(n\)</span>. Verdict: <em>discontinuous at every integer, continuous everywhere else</em>.</p>
+<section id="continuity-is-preserved-by-the-usual-operations" class="level3">
+<h3 class="anchored" data-anchor-id="continuity-is-preserved-by-the-usual-operations">8.2.1 Continuity is preserved by the usual operations</h3>
+<p><strong>Theorem.</strong> If <span class="math inline">\(f\)</span> and <span class="math inline">\(g\)</span> are continuous at <span class="math inline">\(a\)</span>, then <span class="math inline">\(f \pm g\)</span>, <span class="math inline">\(f \cdot g\)</span> are continuous at <span class="math inline">\(a\)</span>; if additionally <span class="math inline">\(g(a) \ne 0\)</span>, then <span class="math inline">\(f/g\)</span> is continuous at <span class="math inline">\(a\)</span>. And composition preserves continuity: if <span class="math inline">\(g\)</span> is continuous at <span class="math inline">\(a\)</span> and <span class="math inline">\(f\)</span> is continuous at <span class="math inline">\(g(a)\)</span>, then <span class="math inline">\(f(g(x))\)</span> is continuous at <span class="math inline">\(a\)</span>.</p>
+<p><strong>eg 8 — chaining the theorems (full steps).</strong> Is <span class="math inline">\(f(x) = \dfrac{\sin(x^2)}{x^2 - 1}\)</span> continuous at <span class="math inline">\(x = 0\)</span>?</p>
+<ol type="i">
+<li><span class="math inline">\(x^2\)</span> is continuous at <span class="math inline">\(0\)</span>; <span class="math inline">\(\sin\)</span> is continuous at <span class="math inline">\(0 = 0^2\)</span>; so <span class="math inline">\(\sin(x^2)\)</span> is continuous at <span class="math inline">\(0\)</span> (composition).</li>
+<li><span class="math inline">\(x^2\)</span> and <span class="math inline">\(1\)</span> are continuous at <span class="math inline">\(0\)</span>, so <span class="math inline">\(x^2 - 1\)</span> is continuous at <span class="math inline">\(0\)</span> (difference).</li>
+<li><span class="math inline">\(x^2 - 1\)</span> equals <span class="math inline">\(-1 \ne 0\)</span> at <span class="math inline">\(x = 0\)</span>, so the quotient is continuous at <span class="math inline">\(0\)</span>. Verdict: <em>continuous at <span class="math inline">\(0\)</span></em> — no <span class="math inline">\(\varepsilon\)</span>–<span class="math inline">\(\delta\)</span> needed, just the algebra of continuity.</li>
+</ol>
+<p><strong>Basically, …</strong> Anything you can build out of continuous pieces with <span class="math inline">\(+\)</span>, <span class="math inline">\(-\)</span>, <span class="math inline">\(\times\)</span>, <span class="math inline">\(\div\)</span> (no division by zero), and nesting stays continuous. Polynomials, <span class="math inline">\(\sin\)</span>, <span class="math inline">\(\cos\)</span>, <span class="math inline">\(e^x\)</span>, <span class="math inline">\(\log\)</span> — all continuous wherever they are defined.</p>
+</section>
+<section id="the-intermediate-value-theorem-one-paragraph" class="level3">
+<h3 class="anchored" data-anchor-id="the-intermediate-value-theorem-one-paragraph">8.2.2 The intermediate value theorem (one paragraph)</h3>
+<p>If <span class="math inline">\(f\)</span> is continuous on a closed interval <span class="math inline">\([a, b]\)</span> and <span class="math inline">\(L\)</span> is any number between <span class="math inline">\(f(a)\)</span> and <span class="math inline">\(f(b)\)</span>, then there is some <span class="math inline">\(c \in (a, b)\)</span> with <span class="math inline">\(f(c) = L\)</span>. This is the “no lifting the pen” idea made precise: a continuous graph cannot jump over a value on its way from one endpoint to the other. (The course book invokes it only as a hint — e.g.&nbsp;to argue that <span class="math inline">\(x^3 + 5\)</span> attains every real value — but the statement is standard.) <strong>eg.</strong> <span class="math inline">\(f(x) = x^3 + x - 5\)</span> is a continuous polynomial with <span class="math inline">\(f(1) = -3 &lt; 0 &lt; 5 = f(2)\)</span>, so some <span class="math inline">\(c \in (1, 2)\)</span> satisfies <span class="math inline">\(f(c) = 0\)</span>: a root is <em>guaranteed</em> even though we never solved for it.</p>
+</section>
+</section>
+<section id="the-derivative-how-fast-is-it-changing" class="level2">
+<h2 class="anchored" data-anchor-id="the-derivative-how-fast-is-it-changing">8.3 The derivative: how fast is it changing?</h2>
+<p>Average rate of change is easy; <em>instantaneous</em> rate of change is what calculus is for. The course book opens with a truck: Jalandhar to Trichy, <span class="math inline">\(2900\)</span> km in <span class="math inline">\(72\)</span> hours, so the <em>average</em> speed is <span class="math inline">\(\frac{2900}{72} \approx 40.28\)</span> km/h. But the driver was fined for speeding near Nagpur — on one <span class="math inline">\(260\)</span> km stretch covered in <span class="math inline">\(3\)</span> hours his average was <span class="math inline">\(\frac{260}{3} \approx 86.67\)</span> km/h, over the limit. Average speed over a long trip says nothing about the speedometer <em>at one instant</em>. To get the instantaneous speed, shrink the time window <span class="math inline">\(\Delta t\)</span> toward <span class="math inline">\(0\)</span>: <span class="math display">\[\text{instantaneous speed} = \lim_{\Delta t \to 0} \frac{\text{distance in time } \Delta t}{\Delta t}.\]</span> That limit is the model for the derivative.</p>
+<section id="definition-a-limit-of-difference-quotients" class="level3">
+<h3 class="anchored" data-anchor-id="definition-a-limit-of-difference-quotients">8.3.1 Definition: a limit of difference quotients</h3>
+<p>For <span class="math inline">\(f\)</span> defined on an interval around <span class="math inline">\(a\)</span>, the increment of <span class="math inline">\(f\)</span> when we step from <span class="math inline">\(a\)</span> to <span class="math inline">\(a + h\)</span> is <span class="math inline">\(f(a+h) - f(a)\)</span>, and the <em>average</em> rate of change over that step is the difference quotient <span class="math display">\[\frac{f(a+h) - f(a)}{h}.\]</span></p>
+<p><strong>Def.</strong> <span class="math inline">\(f\)</span> is <strong>differentiable at</strong> <span class="math inline">\(a\)</span> if the limit <span class="math display">\[f'(a) = \lim_{h \to 0} \frac{f(a+h) - f(a)}{h}\]</span> exists. The number <span class="math inline">\(f'(a)\)</span> is the <strong>derivative</strong> of <span class="math inline">\(f\)</span> at <span class="math inline">\(a\)</span> — the instantaneous rate of change of <span class="math inline">\(f\)</span> at <span class="math inline">\(a\)</span>.</p>
+<p><strong>Basically, …</strong> The derivative is what the average rate of change <em>settles down to</em> as you shrink the measurement window to a point. Speedometer reading = derivative of the odometer.</p>
+</section>
+<section id="the-geometric-twin-slope-of-the-tangent-line" class="level3">
+<h3 class="anchored" data-anchor-id="the-geometric-twin-slope-of-the-tangent-line">8.3.2 The geometric twin: slope of the tangent line</h3>
+<p>The same limit has a picture. The secant line through <span class="math inline">\((a, f(a))\)</span> and <span class="math inline">\((a+h, f(a+h))\)</span> has slope exactly the difference quotient. As <span class="math inline">\(h \to 0\)</span>, the second point slides into the first, and the secant <em>settles</em> onto the <strong>tangent line</strong> — the line that “just touches” the graph at <span class="math inline">\((a, f(a))\)</span> and points in the graph’s instantaneous direction.</p>
+<!-- Original illustration drawn for this chapter with matplotlib (no external source): secants of x^2 through (1,1) converging to the tangent y=2x-1, and the |x| corner at 0 with its mismatched one-sided slopes. -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/ch08-secant-tangent-abs-corner.png" class="img-fluid figure-img"></p>
+<figcaption>Left: secants of f(x)=x^2 through (1,1) for shrinking h converging to the tangent y=2x-1. Right: f(x)=|x| has a corner at x=0, with left slope -1 and right slope +1.</figcaption>
+</figure>
+</div>
+<p>If <span class="math inline">\(f'(a)\)</span> exists, the tangent exists, is unique, and its equation is <span class="math display">\[y - f(a) = f'(a)\,(x - a) \qquad\text{i.e.}\qquad y = f(a) + f'(a)(x - a).\]</span> Conversely, a non-vertical tangent at <span class="math inline">\(a\)</span> <em>is</em> differentiability at <span class="math inline">\(a\)</span>. So: <strong>derivative = limit of secant slopes = slope of the tangent line.</strong> Two names for one idea — analytic and geometric.</p>
+<p><strong>eg 9 — from the definition (full steps): <span class="math inline">\(f(x) = x^2\)</span>.</strong> <span class="math display">\[f'(x) = \lim_{h \to 0} \frac{(x+h)^2 - x^2}{h} = \lim_{h \to 0} \frac{x^2 + 2xh + h^2 - x^2}{h} = \lim_{h \to 0} \frac{2xh + h^2}{h} = \lim_{h \to 0} (2x + h) = 2x.\]</span> The <span class="math inline">\(h\)</span> cancels, then <span class="math inline">\(h \to 0\)</span> kills the leftover. At <span class="math inline">\(x = 1\)</span>: <span class="math inline">\(f'(1) = 2\)</span> — the tangent slope in the figure.</p>
+<p><strong>eg 10 — from the definition (full steps): <span class="math inline">\(f(x) = \sin x\)</span>.</strong> <span class="math display">\[\begin{align*}
+f'(x) &amp;= \lim_{h \to 0} \frac{\sin(x+h) - \sin x}{h} \\
+&amp;= \lim_{h \to 0} \frac{\sin x \cos h + \cos x \sin h - \sin x}{h} \\
+&amp;= \lim_{h \to 0} \left( \sin x \cdot \frac{\cos h - 1}{h} + \cos x \cdot \frac{\sin h}{h} \right) \\
+&amp;= \sin x \cdot 0 + \cos x \cdot 1 = \cos x,
+\end{align*}\]</span> using the two standard limits <span class="math inline">\(\lim_{h \to 0} \frac{\sin h}{h} = 1\)</span> and <span class="math inline">\(\lim_{h \to 0} \frac{\cos h - 1}{h} = 0\)</span>.</p>
+<p><strong>eg 11 — a tangent line (full steps).</strong> Tangent to <span class="math inline">\(f(x) = \cos x\)</span> at <span class="math inline">\(x = \frac{\pi}{3}\)</span>: <span class="math inline">\(f\!\left(\frac{\pi}{3}\right) = \cos\frac{\pi}{3} = \frac{1}{2}\)</span>; <span class="math inline">\(f'(x) = -\sin x\)</span>, so <span class="math inline">\(f'\!\left(\frac{\pi}{3}\right) = -\sin\frac{\pi}{3} = -\frac{\sqrt{3}}{2}\)</span>. The tangent is <span class="math display">\[y = -\frac{\sqrt{3}}{2}\left(x - \frac{\pi}{3}\right) + \frac{1}{2}.\]</span> Recipe, always: evaluate <span class="math inline">\(f\)</span>, evaluate <span class="math inline">\(f'\)</span>, plug into <span class="math inline">\(y = f(a) + f'(a)(x - a)\)</span>.</p>
+</section>
+</section>
+<section id="differentiable-rightarrow-continuous-but-not-conversely" class="level2">
+<h2 class="anchored" data-anchor-id="differentiable-rightarrow-continuous-but-not-conversely">8.4 Differentiable <span class="math inline">\(\Rightarrow\)</span> continuous (but not conversely)</h2>
+<p><strong>Theorem.</strong> If <span class="math inline">\(f\)</span> is differentiable at <span class="math inline">\(a\)</span>, then <span class="math inline">\(f\)</span> is continuous at <span class="math inline">\(a\)</span>.</p>
+<p><em>Proof (brief).</em> Differentiability gives <span class="math inline">\(L = \lim_{h \to 0} \frac{f(a+h) - f(a)}{h}\)</span>. Then <span class="math display">\[\lim_{h \to 0} \bigl(f(a+h) - f(a)\bigr) = \lim_{h \to 0} \frac{f(a+h) - f(a)}{h} \cdot h = L \cdot 0 = 0,\]</span> so <span class="math inline">\(\lim_{h \to 0} f(a+h) = f(a)\)</span>: both one-sided limits equal the value. ∎</p>
+<p><strong>Basically, …</strong> If the graph is smooth enough to have a well-defined slope at <span class="math inline">\(a\)</span>, it certainly cannot jump there. Smoothness is <em>stronger</em> than no-jumps.</p>
+<p>The converse is false, and the counterexample is famous:</p>
+<p><strong>eg 12 — <span class="math inline">\(|x|\)</span> at <span class="math inline">\(0\)</span>: continuous, but NOT differentiable (full reasoning).</strong> Continuity at <span class="math inline">\(0\)</span> was eg 5. For differentiability, <span class="math display">\[\frac{f(0+h) - f(0)}{h} = \frac{|h|}{h}.\]</span> Now <span class="math inline">\(|h| = h\)</span> for <span class="math inline">\(h \ge 0\)</span> and <span class="math inline">\(|h| = -h\)</span> for <span class="math inline">\(h &lt; 0\)</span>, so the one-sided limits of the quotient are <span class="math display">\[\lim_{h \to 0^+} \frac{|h|}{h} = \lim_{h \to 0^+} \frac{h}{h} = 1, \qquad \lim_{h \to 0^-} \frac{|h|}{h} = \lim_{h \to 0^-} \frac{-h}{h} = -1.\]</span> They disagree, so the two-sided limit does not exist: <span class="math inline">\(f'(0)\)</span> does not exist. Geometrically, the graph has a <em>corner</em> at <span class="math inline">\(0\)</span> — the left “slope” is <span class="math inline">\(-1\)</span>, the right “slope” is <span class="math inline">\(+1\)</span>, and no single tangent line fits (right panel of the figure). Verdict: <em>continuous at <span class="math inline">\(0\)</span>, not differentiable at <span class="math inline">\(0\)</span></em>.</p>
+<p>Two more one-line verdicts from the course book: (i) <span class="math inline">\(f(x) = x^{1/3}\)</span> at <span class="math inline">\(0\)</span>: the difference quotient is <span class="math inline">\(h^{-2/3}\)</span>, which blows up as <span class="math inline">\(h \to 0\)</span> — the tangent would be <em>vertical</em>, so no (finite) derivative. Verdict: <em>not differentiable at <span class="math inline">\(0\)</span></em>. (ii) <span class="math inline">\(f(x) = \lfloor x \rfloor\)</span> at any integer: not continuous there, hence by the theorem cannot be differentiable. Verdict: <em>not differentiable at integers</em>.</p>
+<p><strong>Note (for ML):</strong> differentiability is the ticket that lets gradients exist. The <span class="math inline">\(|x|\)</span> corner is exactly the shape of the ReLU activation at <span class="math inline">\(0\)</span> — a kink where the derivative is ambiguous, and practical ML just picks a one-sided value there. Corners need care; smooth functions do not.</p>
+</section>
+<section id="the-derivative-rules-a-toolbox" class="level2">
+<h2 class="anchored" data-anchor-id="the-derivative-rules-a-toolbox">8.5 The derivative rules: a toolbox</h2>
+<p>Computing every derivative from the limit definition would be miserable. These rules reduce differentiation to algebra.</p>
+<p><strong>Power rule.</strong> <span class="math inline">\((x^n)' = n x^{n-1}\)</span> (for the usual <span class="math inline">\(n\)</span>). From eg 9: <span class="math inline">\((x^2)' = 2x\)</span>. Also <span class="math inline">\((x)' = 1\)</span>, <span class="math inline">\((c)' = 0\)</span> for constant <span class="math inline">\(c\)</span>.</p>
+<p><strong>Linearity.</strong> If <span class="math inline">\(f, g\)</span> are differentiable at <span class="math inline">\(a\)</span>: <span class="math inline">\((f \pm g)'(a) = f'(a) \pm g'(a)\)</span>, and <span class="math inline">\((cf)'(a) = c\,f'(a)\)</span> for constant <span class="math inline">\(c\)</span>.</p>
+<p><strong>eg 13 — a polynomial (full steps).</strong> <span class="math inline">\(p(x) = 3x^3 - 2x^2 + x - 5\)</span>: <span class="math display">\[p'(x) = 3 \cdot 3x^2 - 2 \cdot 2x + 1 \cdot 1 - 0 = 9x^2 - 4x + 1.\]</span> Term by term, power rule on each, constants die.</p>
+<p><strong>Product rule.</strong> <span class="math inline">\((fg)'(a) = f'(a)g(a) + f(a)g'(a)\)</span>. Mnemonic: differentiate the first, leave the second; leave the first, differentiate the second; add.</p>
+<p><strong>eg 14 — product (full steps).</strong> <span class="math inline">\(h(x) = x^7 \sin x\)</span>. Take <span class="math inline">\(f(x) = x^7\)</span>, <span class="math inline">\(g(x) = \sin x\)</span>; then <span class="math inline">\(f'(x) = 7x^6\)</span>, <span class="math inline">\(g'(x) = \cos x\)</span>, and <span class="math display">\[h'(x) = f'(x)g(x) + f(x)g'(x) = 7x^6 \sin x + x^7 \cos x.\]</span></p>
+<p><strong>Quotient rule.</strong> <span class="math inline">\(\left(\frac{f}{g}\right)'(a) = \dfrac{f'(a)g(a) - f(a)g'(a)}{g(a)^2}\)</span>, provided <span class="math inline">\(g(a) \ne 0\)</span>.</p>
+<p><strong>eg 15 — quotient (full steps).</strong> <span class="math inline">\(h(x) = \tan x = \dfrac{\sin x}{\cos x}\)</span>. With <span class="math inline">\(f = \sin x\)</span>, <span class="math inline">\(g = \cos x\)</span> (<span class="math inline">\(f' = \cos x\)</span>, <span class="math inline">\(g' = -\sin x\)</span>): <span class="math display">\[h'(x) = \frac{\cos x \cdot \cos x - \sin x \cdot (-\sin x)}{\cos^2 x} = \frac{\cos^2 x + \sin^2 x}{\cos^2 x} = \frac{1}{\cos^2 x} = \sec^2 x.\]</span></p>
+<p><strong>Chain rule.</strong> If <span class="math inline">\(f\)</span> and <span class="math inline">\(g\)</span> are differentiable, so is the composition, and <span class="math display">\[\bigl(f(g(x))\bigr)' = f'\bigl(g(x)\bigr) \cdot g'(x).\]</span> Outer derivative <em>evaluated at the inner function</em>, times the inner derivative. The course book states this without proof — it is the workhorse rule, so it gets extra care below.</p>
+<p><strong>eg 16 — chain rule (full steps).</strong> <span class="math inline">\(h(x) = \tan(2x)\)</span>: outer <span class="math inline">\(f(u) = \tan u\)</span>, inner <span class="math inline">\(g(x) = 2x\)</span>. Then <span class="math inline">\(f'(u) = \sec^2 u\)</span>, <span class="math inline">\(g'(x) = 2\)</span>, so <span class="math display">\[h'(x) = f'(g(x))\,g'(x) = \sec^2(2x) \cdot 2 = 2\sec^2(2x).\]</span></p>
+<p><strong>eg 17 — chain rule again (full steps).</strong> <span class="math inline">\(h(x) = \sin(x^2)\)</span>: outer <span class="math inline">\(f(u) = \sin u\)</span>, inner <span class="math inline">\(g(x) = x^2\)</span>. Then <span class="math inline">\(f'(u) = \cos u\)</span>, <span class="math inline">\(g'(x) = 2x\)</span>, so <span class="math display">\[h'(x) = \cos(x^2) \cdot 2x = 2x\cos(x^2).\]</span> Peel from the outside in: derivative of the outer layer, with the inner layer left untouched inside it, times the derivative of the inner layer.</p>
+<p><strong>Basically, …</strong> The chain rule is for onions. <span class="math inline">\(h(x) = \sin(x^2)\)</span> is “sine <em>of</em> a square”. Differentiate the sine (getting cosine), keep the square intact inside it, then multiply by the derivative of the square. Every nested function differentiates layer by layer, outside → in.</p>
+<p><strong>Note — why this rule matters for ML.</strong> A neural network is a long chain of compositions: weights feed activations feed more weights feed the loss. The derivative of the <em>loss with respect to an early weight</em> is a chain rule applied dozens of times — that repeated peeling is exactly <strong>backpropagation</strong> (Chapter 42). Master the chain rule here and backprop is bookkeeping, not magic.</p>
+<p>A short table of standard derivatives (verify each yourself from the definition or the rules):</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(f(x)\)</span></th>
+<th><span class="math inline">\(f'(x)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(x^n\)</span></td>
+<td><span class="math inline">\(n x^{n-1}\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\sin(ax)\)</span></td>
+<td><span class="math inline">\(a\cos(ax)\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\cos(ax)\)</span></td>
+<td><span class="math inline">\(-a\sin(ax)\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(e^{ax}\)</span></td>
+<td><span class="math inline">\(a e^{ax}\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\ln(ax)\)</span></td>
+<td><span class="math inline">\(\frac{1}{x}\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\log_b(ax)\)</span></td>
+<td><span class="math inline">\(\frac{1}{x \ln b}\)</span></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="linear-approximation-replace-the-curve-by-its-tangent" class="level2">
+<h2 class="anchored" data-anchor-id="linear-approximation-replace-the-curve-by-its-tangent">8.6 Linear approximation: replace the curve by its tangent</h2>
+<p>Start from the derivative at a point <span class="math inline">\(x^*\)</span>: <span class="math display">\[f'(x^*) = \lim_{x \to x^*} \frac{f(x) - f(x^*)}{x - x^*}.\]</span> When <span class="math inline">\(x\)</span> is <em>close to</em> <span class="math inline">\(x^*\)</span>, the limit is nearly attained, so <span class="math display">\[f'(x^*) \approx \frac{f(x) - f(x^*)}{x - x^*} \qquad (x \text{ near } x^*).\]</span> Rearranging, <span class="math display">\[f(x) \;\approx\; f(x^*) + f'(x^*)\,(x - x^*) \qquad (x \text{ near } x^*).\]</span> The right-hand side is a <em>linear</em> function of <span class="math inline">\(x\)</span> (slope <span class="math inline">\(f'(x^*)\)</span>, a constant). This is the <strong>linear approximation</strong> — the course book’s “best linear approximation”, and the MLF lectures’ “key expression in first-order calculus”. Its graph is exactly the tangent line: the tangent is the <em>geometric</em> object, the linear approximation the <em>functional</em> one.</p>
+<p><strong>eg 18 — linear approximations (full steps).</strong> <span class="math inline">\(f(x) = x^3\)</span> at <span class="math inline">\(a = 1\)</span>: <span class="math inline">\(f(1) = 1\)</span>, <span class="math inline">\(f'(x) = 3x^2\)</span>, <span class="math inline">\(f'(1) = 3\)</span>. So <span class="math display">\[L(x) = 1 + 3(x - 1) = 3x - 2,\]</span> and <span class="math inline">\(x^3 \approx 3x - 2\)</span> for <span class="math inline">\(x\)</span> near <span class="math inline">\(1\)</span>. Check: at <span class="math inline">\(x = 1.1\)</span>, <span class="math inline">\(L = 1.3\)</span> vs <span class="math inline">\(1.1^3 = 1.331\)</span> — close.</p>
+<p><strong>eg 19 — a flat one.</strong> <span class="math inline">\(f(x) = \sec x\)</span> at <span class="math inline">\(a = 0\)</span>: <span class="math inline">\(f(0) = 1\)</span>, <span class="math inline">\(f'(x) = \sec x \tan x\)</span>, <span class="math inline">\(f'(0) = 0\)</span>. So <span class="math inline">\(L(x) = 1 + 0 \cdot x = 1\)</span>: near <span class="math inline">\(0\)</span>, <span class="math inline">\(\sec x \approx 1\)</span>. (The tangent is horizontal — consistent with §8.7’s story.)</p>
+<p>The famous small-<span class="math inline">\(x\)</span> approximations all come from this one formula, expanded at <span class="math inline">\(0\)</span>:</p>
+<ol type="i">
+<li><span class="math inline">\(\sin x \approx x\)</span> near <span class="math inline">\(0\)</span> (since <span class="math inline">\(\sin 0 = 0\)</span>, <span class="math inline">\((\sin)' = \cos\)</span>, <span class="math inline">\(\cos 0 = 1\)</span>).</li>
+<li><span class="math inline">\(e^x \approx 1 + x\)</span> near <span class="math inline">\(0\)</span> (since <span class="math inline">\(e^0 = 1\)</span>, <span class="math inline">\((e^x)' = e^x\)</span>, value <span class="math inline">\(1\)</span> at <span class="math inline">\(0\)</span>).</li>
+<li><span class="math inline">\(\ln(1 + x) \approx x\)</span> near <span class="math inline">\(0\)</span> (since <span class="math inline">\(\ln 1 = 0\)</span>, derivative <span class="math inline">\(\frac{1}{1+x}\)</span>, value <span class="math inline">\(1\)</span> at <span class="math inline">\(0\)</span>).</li>
+<li><span class="math inline">\((1 + x)^r \approx 1 + rx\)</span> near <span class="math inline">\(0\)</span> (since value <span class="math inline">\(1\)</span> at <span class="math inline">\(0\)</span>, derivative <span class="math inline">\(r(1+x)^{r-1}\)</span>, value <span class="math inline">\(r\)</span> at <span class="math inline">\(0\)</span>).</li>
+</ol>
+<p><strong>eg 20 — using the approximation (full steps).</strong> Which is closest to <span class="math inline">\(0.99^7\)</span>: <span class="math inline">\(0.95\)</span>, <span class="math inline">\(0.93\)</span>, <span class="math inline">\(0.91\)</span>, <span class="math inline">\(0.90\)</span>? Write <span class="math inline">\(0.99^7 = (1 + x)^7\)</span> with <span class="math inline">\(x = -0.01\)</span>, close enough to <span class="math inline">\(0\)</span> for the linear approximation: <span class="math inline">\((1+x)^7 \approx 1 + 7x = 1 + 7(-0.01) = 0.93\)</span>. Answer: <strong><span class="math inline">\(0.93\)</span></strong>. (This is simple interest standing in for compound interest — valid only because the rate is small.)</p>
+<p><strong>On the error.</strong> The approximation is <em>exact</em> at <span class="math inline">\(x = x^*\)</span> and degrades as <span class="math inline">\(x\)</span> moves away — the tangent hugs the curve near the touch point and drifts off farther out. Everything above is only trustworthy “around” the expansion point; the formula itself never warns you when you have wandered too far. That is the honest limitation of every first-order method in ML, including the one in Chapter 10.</p>
+<p><strong>Basically, …</strong> Zoom in close enough on any smooth curve and it looks straight. The linear approximation is that straight line, written down: value at the point, plus slope times how far you walked.</p>
+</section>
+<section id="finding-maxima-and-minima" class="level2">
+<h2 class="anchored" data-anchor-id="finding-maxima-and-minima">8.7 Finding maxima and minima</h2>
+<section id="increasing-decreasing-and-turning-points" class="level3">
+<h3 class="anchored" data-anchor-id="increasing-decreasing-and-turning-points">8.7.1 Increasing, decreasing, and turning points</h3>
+<p>On an interval, <span class="math inline">\(f\)</span> is <strong>increasing</strong> if <span class="math inline">\(x_1 &lt; x_2 \Rightarrow f(x_1) &lt; f(x_2)\)</span>, and <strong>decreasing</strong> if <span class="math inline">\(x_1 &lt; x_2 \Rightarrow f(x_1) &gt; f(x_2)\)</span>. A point where an increase ends and a decrease begins (or vice versa) is a <strong>turning point</strong>: the first kind is a <strong>local maximum</strong>, the second a <strong>local minimum</strong>.</p>
+<p>The derivative reads monotonicity directly: where <span class="math inline">\(f'(x) &gt; 0\)</span> the function climbs (<span class="math inline">\(f\)</span> increasing), where <span class="math inline">\(f'(x) &lt; 0\)</span> it falls (<span class="math inline">\(f\)</span> decreasing). Just as <span class="math inline">\(f'\)</span> checks the monotonicity of <span class="math inline">\(f\)</span>, the second derivative <span class="math inline">\(f''\)</span> checks the monotonicity of <span class="math inline">\(f'\)</span>.</p>
+<p>At a turning point the graph levels out — the tangent, if it exists, is horizontal:</p>
+<p><strong>Theorem.</strong> If <span class="math inline">\(a\)</span> is a turning point and <span class="math inline">\(f'(a)\)</span> exists, then <span class="math inline">\(f'(a) = 0\)</span>.</p>
+<p><em>Idea of proof.</em> Left of a local max, the difference quotient <span class="math inline">\(\frac{f(a) - f(a-h)}{h} \ge 0\)</span>; right of it, <span class="math inline">\(\frac{f(a+h) - f(a)}{h} \le 0\)</span>. Both tend to <span class="math inline">\(f'(a)\)</span>, which is therefore both <span class="math inline">\(\ge 0\)</span> and <span class="math inline">\(\le 0\)</span>: hence <span class="math inline">\(0\)</span>. ∎</p>
+</section>
+<section id="critical-points-and-the-second-derivative-test" class="level3">
+<h3 class="anchored" data-anchor-id="critical-points-and-the-second-derivative-test">8.7.2 Critical points and the second derivative test</h3>
+<p><strong>Def.</strong> <span class="math inline">\(a\)</span> is a <strong>critical point</strong> of <span class="math inline">\(f\)</span> if <span class="math inline">\(f\)</span> is not differentiable at <span class="math inline">\(a\)</span> <strong>or</strong> <span class="math inline">\(f'(a) = 0\)</span>. Every turning point is a critical point — so the hunt for maxima/minima starts by solving <span class="math inline">\(f'(x) = 0\)</span> (and listing points of non-differentiability).</p>
+<p>But not every critical point turns: a critical point that is neither a max nor a min is a <strong>saddle point</strong> (the course book’s example: <span class="math inline">\(f(x) = (x^2 - 4x + 3.8)(x+2)x^3\)</span> has <span class="math inline">\(f'(0) = 0\)</span> at <span class="math inline">\(x = 0\)</span> with no turn there).</p>
+<p><strong>Second derivative test.</strong> Let <span class="math inline">\(f\)</span> be twice differentiable at <span class="math inline">\(c\)</span> with <span class="math inline">\(f'(c) = 0\)</span>: - <span class="math inline">\(f''(c) &lt; 0 \Rightarrow\)</span> local maximum at <span class="math inline">\(c\)</span> (<span class="math inline">\(f'\)</span> falling through <span class="math inline">\(0\)</span>: climb then fall). - <span class="math inline">\(f''(c) &gt; 0 \Rightarrow\)</span> local minimum at <span class="math inline">\(c\)</span> (<span class="math inline">\(f'\)</span> rising through <span class="math inline">\(0\)</span>: fall then climb). - <span class="math inline">\(f''(c) = 0 \Rightarrow\)</span> test inconclusive (could be max, min, or saddle).</p>
+<p>The <strong>first derivative test</strong> says the same thing via sign changes of <span class="math inline">\(f'\)</span>: <span class="math inline">\(+ \to -\)</span> across <span class="math inline">\(c\)</span> means local max; <span class="math inline">\(- \to +\)</span> means local min; no sign change means saddle.</p>
+<p><strong>eg 21 — max/min of a cubic (full steps).</strong> <span class="math inline">\(f(x) = x^3 - 12x\)</span>.</p>
+<ol type="i">
+<li><span class="math inline">\(f'(x) = 3x^2 - 12\)</span>. Set <span class="math inline">\(= 0\)</span>: <span class="math inline">\(3x^2 = 12\)</span>, <span class="math inline">\(x^2 = 4\)</span>, so critical points <span class="math inline">\(x = 2\)</span> and <span class="math inline">\(x = -2\)</span>. (<span class="math inline">\(f\)</span> is a polynomial, differentiable everywhere, so these are all.)</li>
+<li><span class="math inline">\(f''(x) = 6x\)</span>. At <span class="math inline">\(x = 2\)</span>: <span class="math inline">\(f''(2) = 12 &gt; 0 \Rightarrow\)</span> <strong>local minimum</strong>, value <span class="math inline">\(f(2) = 8 - 24 = -16\)</span>. At <span class="math inline">\(x = -2\)</span>: <span class="math inline">\(f''(-2) = -12 &lt; 0 \Rightarrow\)</span> <strong>local maximum</strong>, value <span class="math inline">\(f(-2) = -8 + 24 = 16\)</span>.</li>
+<li>Sanity via <span class="math inline">\(f'\)</span> signs: for <span class="math inline">\(x &lt; -2\)</span>, <span class="math inline">\(f' &gt; 0\)</span> (climbing); between <span class="math inline">\(-2\)</span> and <span class="math inline">\(2\)</span>, <span class="math inline">\(f' &lt; 0\)</span> (falling); after <span class="math inline">\(2\)</span>, <span class="math inline">\(f' &gt; 0\)</span> (climbing again). Climb–fall–climb: max at <span class="math inline">\(-2\)</span>, min at <span class="math inline">\(2\)</span>. Agrees.</li>
+</ol>
+</section>
+<section id="closed-intervals-and-global-extrema" class="level3">
+<h3 class="anchored" data-anchor-id="closed-intervals-and-global-extrema">8.7.3 Closed intervals and global extrema</h3>
+<p>On a closed interval <span class="math inline">\([a, b]\)</span>, the endpoints can be extrema too (there is no “other side” to turn from). The <strong>global</strong> (absolute) maximum/minimum of a continuous <span class="math inline">\(f\)</span> on a closed, bounded interval always exists. To find it: list all critical points <em>inside</em> the interval plus the two boundary points, evaluate <span class="math inline">\(f\)</span> at each, and take the largest/smallest values.</p>
+<p><strong>eg 22 — endpoints matter (full steps).</strong> <span class="math inline">\(f(x) = x^2\)</span> on <span class="math inline">\([-1, 1]\)</span>: <span class="math inline">\(f'(x) = 2x = 0\)</span> gives critical point <span class="math inline">\(x = 0\)</span>, with <span class="math inline">\(f''(0) = 2 &gt; 0\)</span>: local minimum, <span class="math inline">\(f(0) = 0\)</span>. Boundary values: <span class="math inline">\(f(-1) = 1\)</span>, <span class="math inline">\(f(1) = 1\)</span> — both are local (indeed global) maxima on this interval. The interior critical point is the min; the max lives at the boundary.</p>
+<p><strong>eg 23 — global max/min (full steps).</strong> <span class="math inline">\(f(x) = x^3 - 12x\)</span> on <span class="math inline">\([-3, 3]\)</span>. Critical points inside: <span class="math inline">\(\pm 2\)</span> (from eg 21). Evaluate everywhere relevant: <span class="math display">\[f(-3) = -27 + 36 = 9, \quad f(-2) = 16, \quad f(2) = -16, \quad f(3) = 27 - 36 = -9.\]</span> Global maximum <span class="math inline">\(16\)</span> at <span class="math inline">\(x = -2\)</span>; global minimum <span class="math inline">\(-16\)</span> at <span class="math inline">\(x = 2\)</span>.</p>
+<p><strong>A word on concavity.</strong> <span class="math inline">\(f'' &gt; 0\)</span> means the graph curves upward like a bowl (<span class="math inline">\(\cup\)</span>); <span class="math inline">\(f'' &lt; 0\)</span> means it curves downward (<span class="math inline">\(\cap\)</span>). A point where the curvature flips sign is an <strong>inflection point</strong> — the graph changes from bowl-up to bowl-down there (it may or may not be a saddle in the critical-point sense). That is the whole story at the level this chapter needs; the bowl picture returns with the Hessian in Chapter 10.</p>
+<p><strong>Basically, …</strong> To find the peaks and valleys: (1) solve <span class="math inline">\(f'(x) = 0\)</span> — those are your suspects; (2) check each suspect with <span class="math inline">\(f''\)</span> (or the sign change of <span class="math inline">\(f'\)</span>); (3) on a closed interval, also check the endpoints. Suspects, verdicts, boundaries — that is the complete procedure.</p>
+</section>
+</section>
+<section id="where-this-goes-next" class="level2">
+<h2 class="anchored" data-anchor-id="where-this-goes-next">8.8 Where this goes next</h2>
+<ul>
+<li><strong>Chapter 9 (multivariable calculus):</strong> everything here gains more variables. The derivative becomes the <em>gradient</em> (a vector of partial derivatives), the tangent line becomes the <em>tangent plane</em>, and the linear approximation becomes the first-order approximation of a surface.</li>
+<li><strong>Chapter 10 (optimization):</strong> the linear approximation iterated — step a little along the tangent, re-approximate, repeat — is <em>gradient descent</em>. The second-derivative test grows into the Hessian test for minima, maxima, and saddles in many dimensions.</li>
+<li><strong>Chapter 42 (backpropagation):</strong> the chain rule of §8.5, applied layer by layer through a computation graph. Every gradient in deep learning is §8.5 on an industrial scale.</li>
+</ul>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li>Prove with the <span class="math inline">\(\varepsilon\)</span>–<span class="math inline">\(\delta\)</span> definition that <span class="math inline">\(\displaystyle\lim_{x \to 2} (2x + 1) = 5\)</span>. (State your <span class="math inline">\(\delta\)</span> in terms of <span class="math inline">\(\varepsilon\)</span> and verify the implication.)</li>
+<li>Let <span class="math inline">\(f(x) = 1\)</span> for <span class="math inline">\(x &gt; 0\)</span>, <span class="math inline">\(f(0) = 0\)</span>, <span class="math inline">\(f(x) = -1\)</span> for <span class="math inline">\(x &lt; 0\)</span>. Find <span class="math inline">\(\lim_{x \to 0^+} f(x)\)</span> and <span class="math inline">\(\lim_{x \to 0^-} f(x)\)</span>. Does <span class="math inline">\(\lim_{x \to 0} f(x)\)</span> exist? Is <span class="math inline">\(f\)</span> continuous at <span class="math inline">\(0\)</span>?</li>
+<li>Evaluate <span class="math inline">\(\displaystyle\lim_{x \to \infty} \frac{3x^2 + 1}{2x^2 - x}\)</span>.</li>
+<li>Let <span class="math inline">\(f(x) = \dfrac{x^2 - 9}{x - 3}\)</span> for <span class="math inline">\(x \ne 3\)</span>, and <span class="math inline">\(f(3) = 6\)</span>. Is <span class="math inline">\(f\)</span> continuous at <span class="math inline">\(x = 3\)</span>? Justify with one-sided limits (they coincide here) and the value.</li>
+<li>Using only the continuity theorems of §8.2.1 (no <span class="math inline">\(\varepsilon\)</span>–<span class="math inline">\(\delta\)</span>), explain why <span class="math inline">\(g(x) = e^{x^2} \cos x\)</span> is continuous at every real <span class="math inline">\(x\)</span>.</li>
+<li>From the limit definition of the derivative, compute <span class="math inline">\(f'(x)\)</span> for <span class="math inline">\(f(x) = \frac{1}{x}\)</span> (<span class="math inline">\(x \ne 0\)</span>). Show every algebraic step.</li>
+<li>Differentiate: (a) <span class="math inline">\(x^2 e^x\)</span>; (b) <span class="math inline">\(\dfrac{x}{x^2 + 1}\)</span>. Name the rule used in each part.</li>
+<li>Use the chain rule to find <span class="math inline">\(h'(x)\)</span> for <span class="math inline">\(h(x) = (2x^3 - 1)^4\)</span>. Identify the outer and inner functions.</li>
+<li>Find the equation of the tangent line to <span class="math inline">\(f(x) = x^3 - 2x\)</span> at <span class="math inline">\(x = 2\)</span>.</li>
+<li>Use <span class="math inline">\((1 + x)^r \approx 1 + rx\)</span> to approximate <span class="math inline">\(\sqrt{1.02}\)</span>. Compute the true value to <span class="math inline">\(4\)</span> decimal places and give the absolute error of the approximation.</li>
+<li>Find the critical points of <span class="math inline">\(f(x) = x^3 + x^2 - x + 5\)</span> and classify each as a local maximum, local minimum, or neither, using the second derivative test.</li>
+<li>Find the global maximum and global minimum of <span class="math inline">\(f(x) = x^3 - 3x\)</span> on the closed interval <span class="math inline">\([-2, 2]\)</span>.</li>
+</ol>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — Claim: <span class="math inline">\(\lim_{x \to 2} (2x + 1) = 5\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Let <span class="math inline">\(\varepsilon &gt; 0\)</span> be given. We need <span class="math inline">\(\delta &gt; 0\)</span> such that <span class="math inline">\(0 &lt; |x - 2| &lt; \delta \Rightarrow |(2x+1) - 5| &lt; \varepsilon\)</span>.</p>
+<ol type="i">
+<li>Simplify the output distance: <span class="math inline">\(|(2x + 1) - 5| = |2x - 4| = 2|x - 2|\)</span>.</li>
+<li>We want <span class="math inline">\(2|x - 2| &lt; \varepsilon\)</span>, i.e.&nbsp;<span class="math inline">\(|x - 2| &lt; \varepsilon/2\)</span>.</li>
+<li>Choose <span class="math inline">\(\delta = \varepsilon/2 &gt; 0\)</span>. Then <span class="math inline">\(0 &lt; |x - 2| &lt; \delta\)</span> gives <span class="math inline">\(|(2x+1) - 5| = 2|x - 2| &lt; 2\delta = \varepsilon\)</span>. ∎</li>
+</ol>
+<p><strong>Basically, …</strong> The output distance is just twice the input distance, so the window is half the tolerance.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — This is the sign function.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li>For <span class="math inline">\(x &gt; 0\)</span> (however close to <span class="math inline">\(0\)</span>), <span class="math inline">\(f(x) = 1\)</span>: <span class="math inline">\(\lim_{x \to 0^+} f(x) = 1\)</span>.</li>
+<li>For <span class="math inline">\(x &lt; 0\)</span> (however close to <span class="math inline">\(0\)</span>), <span class="math inline">\(f(x) = -1\)</span>: <span class="math inline">\(\lim_{x \to 0^-} f(x) = -1\)</span>.</li>
+<li><span class="math inline">\(1 \ne -1\)</span>: the one-sided limits disagree, so <span class="math inline">\(\lim_{x \to 0} f(x)\)</span> does <strong>not</strong> exist.</li>
+<li>Continuity at <span class="math inline">\(0\)</span> requires the limit to equal <span class="math inline">\(f(0) = 0\)</span> — it fails already at existence. Verdict: <em>not continuous at <span class="math inline">\(0\)</span></em> (a jump discontinuity).</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — Divide numerator and denominator by the highest power, <span class="math inline">\(x^2\)</span>:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[\lim_{x \to \infty} \frac{3x^2 + 1}{2x^2 - x} = \lim_{x \to \infty} \frac{3 + \frac{1}{x^2}}{2 - \frac{1}{x}}.\]</span> As <span class="math inline">\(x \to \infty\)</span>, <span class="math inline">\(\frac{1}{x^2} \to 0\)</span> and <span class="math inline">\(\frac{1}{x} \to 0\)</span> (eg 3 of the chapter). The denominator tends to <span class="math inline">\(2 \ne 0\)</span>, so the quotient rule for limits applies: <span class="math display">\[= \frac{3 + 0}{2 - 0} = \frac{3}{2}.\]</span></p>
+<p><strong>Basically, …</strong> At infinity, only the leading terms survive: <span class="math inline">\(\frac{3x^2}{2x^2} = \frac{3}{2}\)</span>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — For <span class="math inline">\(x \ne 3\)</span>:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[\frac{x^2 - 9}{x - 3} = \frac{(x - 3)(x + 3)}{x - 3} = x + 3.\]</span> So <span class="math inline">\(\lim_{x \to 3^-} f(x) = \lim_{x \to 3^+} f(x) = 3 + 3 = 6\)</span> — the hole at <span class="math inline">\(x = 3\)</span> does not affect the limit. Since <span class="math inline">\(f(3) = 6\)</span> is defined to equal that limit, all three continuity conditions hold. Verdict: <em>continuous at <span class="math inline">\(x = 3\)</span></em> (the value was chosen precisely to “fill the hole”).</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — i) <span class="math inline">\(x^2\)</span> is a polynomial, hence continuous at every real <span class="math inline">\(x\)</span>; <span class="math inline">\(e^u\)</span> is continuous at every real <span class="math inline">\(u\)</span>, in particular at <span class="math inline">\(u = x^2\)</span>. By the composition part of the continuity theorems, <span class="math inline">\(e^{x^2}\)</span> is continuous at every <span class="math inline">\(x\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol start="2" type="i">
+<li><span class="math inline">\(\cos x\)</span> is continuous at every real <span class="math inline">\(x\)</span>.</li>
+<li>By the product part of the theorems, <span class="math inline">\(e^{x^2} \cdot \cos x\)</span> is continuous at every real <span class="math inline">\(x\)</span>. No <span class="math inline">\(\varepsilon\)</span>–<span class="math inline">\(\delta\)</span> argument needed — the theorems do the work.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — <span class="math display">\[f'(x) = \lim_{h \to 0} \frac{\frac{1}{x+h} - \frac{1}{x}}{h}.\]</span>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li>Combine the numerator: <span class="math inline">\(\frac{1}{x+h} - \frac{1}{x} = \frac{x - (x + h)}{x(x+h)} = \frac{-h}{x(x+h)}\)</span>.</li>
+<li>Divide by <span class="math inline">\(h\)</span>: <span class="math inline">\(\frac{-h}{x(x+h) \cdot h} = \frac{-1}{x(x+h)}\)</span> (valid for <span class="math inline">\(h \ne 0\)</span>).</li>
+<li>Take the limit: <span class="math inline">\(\lim_{h \to 0} \frac{-1}{x(x+h)} = \frac{-1}{x \cdot x} = -\frac{1}{x^2}\)</span>.</li>
+</ol>
+<p>So <span class="math inline">\(\left(\frac{1}{x}\right)' = -\frac{1}{x^2}\)</span> for <span class="math inline">\(x \ne 0\)</span> — consistent with the power rule for <span class="math inline">\(n = -1\)</span>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — (a) <span class="math inline">\(x^2 e^x\)</span> — <strong>product rule</strong>. With <span class="math inline">\(f = x^2\)</span>, <span class="math inline">\(g = e^x\)</span> (<span class="math inline">\(f' = 2x\)</span>, <span class="math inline">\(g' = e^x\)</span>):
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[\frac{d}{dx}\bigl(x^2 e^x\bigr) = 2x \cdot e^x + x^2 \cdot e^x = xe^x(x + 2).\]</span></p>
+<ol start="2" type="a">
+<li><span class="math inline">\(\dfrac{x}{x^2 + 1}\)</span> — <strong>quotient rule</strong>. With <span class="math inline">\(f = x\)</span>, <span class="math inline">\(g = x^2 + 1\)</span> (<span class="math inline">\(f' = 1\)</span>, <span class="math inline">\(g' = 2x\)</span>; note <span class="math inline">\(g(x) \ge 1 \ne 0\)</span> always): <span class="math display">\[\frac{d}{dx}\left(\frac{x}{x^2+1}\right) = \frac{1 \cdot (x^2 + 1) - x \cdot 2x}{(x^2+1)^2} = \frac{1 - x^2}{(x^2+1)^2}.\]</span></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 8 — <span class="math inline">\(h(x) = (2x^3 - 1)^4\)</span>: outer <span class="math inline">\(f(u) = u^4\)</span>, inner <span class="math inline">\(g(x) = 2x^3 - 1\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math inline">\(f'(u) = 4u^3\)</span>, <span class="math inline">\(g'(x) = 6x^2\)</span>. Chain rule: <span class="math display">\[h'(x) = f'(g(x)) \cdot g'(x) = 4(2x^3 - 1)^3 \cdot 6x^2 = 24x^2(2x^3 - 1)^3.\]</span></p>
+<p><strong>Basically, …</strong> Bring down the <span class="math inline">\(4\)</span>, keep the inside untouched, then multiply by the derivative of the inside.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 9 — <span class="math inline">\(f(x) = x^3 - 2x\)</span> at <span class="math inline">\(a = 2\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><span class="math inline">\(f(2) = 8 - 4 = 4\)</span> — the touch point is <span class="math inline">\((2, 4)\)</span>.</li>
+<li><span class="math inline">\(f'(x) = 3x^2 - 2\)</span>, so <span class="math inline">\(f'(2) = 12 - 2 = 10\)</span> — the slope.</li>
+<li>Tangent: <span class="math inline">\(y = f(2) + f'(2)(x - 2) = 4 + 10(x - 2) = 10x - 16\)</span>.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 10 — <span class="math inline">\(\sqrt{1.02} = (1 + 0.02)^{1/2}\)</span>: take <span class="math inline">\(r = \frac{1}{2}\)</span>, <span class="math inline">\(x = 0.02\)</span> (close to <span class="math inline">\(0\)</span>, so the linear approximation applies):
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[(1+x)^r \approx 1 + rx = 1 + \tfrac{1}{2}(0.02) = 1.01.\]</span> True value: <span class="math inline">\(\sqrt{1.02} \approx 1.00995049\ldots\)</span>, i.e.&nbsp;<span class="math inline">\(1.0100\)</span> to <span class="math inline">\(4\)</span> decimal places. Absolute error: <span class="math inline">\(|1.01 - 1.00995049\ldots| \approx 0.0000495 \approx 5 \times 10^{-5}\)</span> — tiny, because <span class="math inline">\(0.02\)</span> is close to the expansion point <span class="math inline">\(0\)</span>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 11 — <span class="math inline">\(f(x) = x^3 + x^2 - x + 5\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-11" class="callout-11-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><span class="math inline">\(f'(x) = 3x^2 + 2x - 1\)</span>. Set <span class="math inline">\(= 0\)</span>: <span class="math inline">\(3x^2 + 2x - 1 = 0\)</span>. Discriminant <span class="math inline">\(4 + 12 = 16\)</span>; roots <span class="math inline">\(x = \frac{-2 \pm 4}{6}\)</span>, i.e.&nbsp;<span class="math inline">\(x = -1\)</span> and <span class="math inline">\(x = \frac{1}{3}\)</span>. Both are critical points (<span class="math inline">\(f\)</span> is a polynomial, differentiable everywhere).</li>
+<li><span class="math inline">\(f''(x) = 6x + 2\)</span>. At <span class="math inline">\(x = -1\)</span>: <span class="math inline">\(f''(-1) = -4 &lt; 0 \Rightarrow\)</span> <strong>local maximum</strong>, value <span class="math inline">\(f(-1) = -1 + 1 + 1 + 5 = 6\)</span>. At <span class="math inline">\(x = \frac{1}{3}\)</span>: <span class="math inline">\(f''\!\left(\frac{1}{3}\right) = 4 &gt; 0 \Rightarrow\)</span> <strong>local minimum</strong>, value <span class="math inline">\(f\!\left(\frac{1}{3}\right) = \frac{1}{27} + \frac{1}{9} - \frac{1}{3} + 5 = \frac{130}{27} \approx 4.815\)</span>.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 12 — <span class="math inline">\(f(x) = x^3 - 3x\)</span> on <span class="math inline">\([-2, 2]\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-12" class="callout-12-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><span class="math inline">\(f'(x) = 3x^2 - 3 = 3(x^2 - 1) = 0\)</span> gives critical points <span class="math inline">\(x = 1\)</span> and <span class="math inline">\(x = -1\)</span>, both inside <span class="math inline">\([-2, 2]\)</span>.</li>
+<li>Evaluate <span class="math inline">\(f\)</span> at the critical points and the boundary points: <span class="math display">\[f(-2) = -8 + 6 = -2, \quad f(-1) = -1 + 3 = 2, \quad f(1) = 1 - 3 = -2, \quad f(2) = 8 - 6 = 2.\]</span></li>
+<li>Largest value <span class="math inline">\(2\)</span> (at <span class="math inline">\(x = -1\)</span> and <span class="math inline">\(x = 2\)</span>); smallest value <span class="math inline">\(-2\)</span> (at <span class="math inline">\(x = -2\)</span> and <span class="math inline">\(x = 1\)</span>). So: <strong>global maximum <span class="math inline">\(2\)</span></strong>, <strong>global minimum <span class="math inline">\(-2\)</span></strong> — each attained twice, once interior and once at the boundary.</li>
+</ol>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./07-svd-positive-definite.html" class="pagination-link" aria-label="7. SVD and positive definite matrices">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">7. SVD and positive definite matrices</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./09-multivariable-calculus.html" class="pagination-link" aria-label="9. Multivariable calculus: partial derivatives, gradients, Taylor series">
+        <span class="nav-page-text"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

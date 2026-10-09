@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>21. Inequalities and the central limit theorem – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./22-what-is-ml.html" rel="next">
+<link href="./20-estimation-mle-map.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./14-probability-basics.html">Part II — Probability and Statistics</a></li><li class="breadcrumb-item"><a href="./21-inequalities-clt.html"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#the-two-questions" id="toc-the-two-questions" class="nav-link active" data-scroll-target="#the-two-questions">21.1 The two questions</a></li>
+  <li><a href="#markovs-inequality" id="toc-markovs-inequality" class="nav-link" data-scroll-target="#markovs-inequality">21.2 Markov’s inequality</a></li>
+  <li><a href="#chebyshevs-inequality" id="toc-chebyshevs-inequality" class="nav-link" data-scroll-target="#chebyshevs-inequality">21.3 Chebyshev’s inequality</a></li>
+  <li><a href="#two-ways-a-sequence-of-random-variables-can-converge" id="toc-two-ways-a-sequence-of-random-variables-can-converge" class="nav-link" data-scroll-target="#two-ways-a-sequence-of-random-variables-can-converge">21.4 Two ways a sequence of random variables can converge</a></li>
+  <li><a href="#the-weak-law-of-large-numbers" id="toc-the-weak-law-of-large-numbers" class="nav-link" data-scroll-target="#the-weak-law-of-large-numbers">21.5 The weak law of large numbers</a></li>
+  <li><a href="#the-central-limit-theorem" id="toc-the-central-limit-theorem" class="nav-link" data-scroll-target="#the-central-limit-theorem">21.6 The central limit theorem</a></li>
+  <li><a href="#worked-the-decks-uniform-demo" id="toc-worked-the-decks-uniform-demo" class="nav-link" data-scroll-target="#worked-the-decks-uniform-demo">21.7 Worked: the deck’s uniform demo</a></li>
+  <li><a href="#worked-clt-approximation-for-a-binomial" id="toc-worked-clt-approximation-for-a-binomial" class="nav-link" data-scroll-target="#worked-clt-approximation-for-a-binomial">21.8 Worked: CLT approximation for a binomial</a></li>
+  <li><a href="#why-this-matters-the-normals-ubiquity-and-the-part-ii-closing-shot" id="toc-why-this-matters-the-normals-ubiquity-and-the-part-ii-closing-shot" class="nav-link" data-scroll-target="#why-this-matters-the-normals-ubiquity-and-the-part-ii-closing-shot">21.9 Why this matters: the normal’s ubiquity, and the Part II closing shot</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./14-probability-basics.html">Part II — Probability and Statistics</a></li><li class="breadcrumb-item"><a href="./21-inequalities-clt.html"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">21. Inequalities and the central limit theorem</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Chapter 19 defined the normal family and Chapter 20 showed how to estimate its parameters from data — and both chapters ended with a promise: Chapter 21 explains <em>why</em> the normal deserves all that attention. This chapter keeps it. It is also the finale of Part II, so it answers the last two questions probability owes us: <em>how far can a random variable stray from its mean?</em> (Markov’s and Chebyshev’s inequalities — tail bounds) and <em>what happens to averages when you have a lot of data?</em> (the weak law of large numbers and the central limit theorem — the two limit theorems of the course). All of it comes from the MLF Week 12 lecture on “Laws of large numbers: Markov, Chebyshev, Hoeffding, Central limit”.</p>
+<section id="the-two-questions" class="level2">
+<h2 class="anchored" data-anchor-id="the-two-questions">21.1 The two questions</h2>
+<ol type="i">
+<li><strong>Tail bounds.</strong> Given a random variable, how far can it be from its mean? The mean (§15.7) is the center of mass of the distribution — but a center of mass tells you nothing about how far out the mass can sit. Markov’s inequality (§21.2) and Chebyshev’s inequality (§21.3) bound the probability of large deviations using only the mean, or the mean and variance.</li>
+<li><strong>Limit theorems.</strong> Take <span class="math inline">\(n\)</span> i.i.d. draws (§20.1) and average them. The weak law of large numbers (§21.5) says the average converges to the true mean — in the <em>convergence in probability</em> sense of §21.4. The central limit theorem (§21.6) says something stronger and stranger: the <em>fluctuations</em> of that average around the mean, scaled up by <span class="math inline">\(\sqrt{n}\)</span>, look normal — no matter what distribution the draws came from.</li>
+</ol>
+<p><strong>Note.</strong> The lecture also names Hoeffding’s inequality — an exponential-rate bound for the sample mean that needs the extra assumption that the variables are bounded. It is stated, not proved, in the lecture, and this chapter treats it the same way: a pointer in §21.5’s note, not a theorem. The strong law of large numbers (convergence <em>almost surely</em>) is likewise outside this chapter’s scope — the lecture explicitly sets it aside.</p>
+</section>
+<section id="markovs-inequality" class="level2">
+<h2 class="anchored" data-anchor-id="markovs-inequality">21.2 Markov’s inequality</h2>
+<p><strong>Def.</strong> <span class="math inline">\(X\)</span> is a <strong>positive random variable</strong> if it takes no negative values: <span class="math inline">\(X \ge 0\)</span> (the lecture: “we cannot take negative values”).</p>
+<p><strong>Theorem (Markov’s inequality).</strong> Let <span class="math inline">\(X\)</span> be a positive random variable with <span class="math inline">\(E[X] = \mu\)</span> (finite). For any <span class="math inline">\(t &gt; 0\)</span>, <span class="math display">\[\boxed{P(X \ge t) \le \frac{E[X]}{t}}.\]</span></p>
+<p><em>Proof</em> (the lecture’s, for the continuous case — it holds for discrete <span class="math inline">\(X\)</span> too). Write the expectation as an integral and split it at <span class="math inline">\(t\)</span>: <span class="math display">\[E[X] = \int_{0}^{\infty} x\,f_X(x)\,dx = \int_{0}^{t} x\,f_X(x)\,dx + \int_{t}^{\infty} x\,f_X(x)\,dx.\]</span> The first integral is non-negative (<span class="math inline">\(x \ge 0\)</span>, <span class="math inline">\(f_X \ge 0\)</span>), so dropping it only makes the right side smaller: <span class="math display">\[E[X] \ge \int_{t}^{\infty} x\,f_X(x)\,dx.\]</span> On <span class="math inline">\([t, \infty)\)</span> we have <span class="math inline">\(x \ge t\)</span>, so replace <span class="math inline">\(x\)</span> by the smaller <span class="math inline">\(t\)</span> (again shrinking the right side): <span class="math display">\[E[X] \ge t\int_{t}^{\infty} f_X(x)\,dx = t\,P(X \ge t),\]</span> since <span class="math inline">\(\int_{t}^{\infty} f_X = P(X \ge t)\)</span>. Rearranging gives the inequality. ∎</p>
+<p><strong>Note (when it is vacuous).</strong> If <span class="math inline">\(t \le \mu = E[X]\)</span>, the bound is <span class="math inline">\(E[X]/t \ge 1\)</span> — and every probability is <span class="math inline">\(\le 1\)</span> anyway, so the inequality says nothing. It only bites for <span class="math inline">\(t &gt; \mu\)</span> (the lecture’s “meaningful only for <span class="math inline">\(t\)</span> greater than or equal to the mean”).</p>
+<p><strong>eg 1 (the lecture’s example).</strong> <span class="math inline">\(X\)</span> measures something in meters, <span class="math inline">\(E[X] = 10\)</span>. What is <span class="math inline">\(P(X \ge 50)\)</span>? Markov says immediately, with no other information: <span class="math display">\[\boxed{P(X \ge 50) \le \frac{10}{50} = \frac{1}{5} = 20\%}.\]</span> There is only a 20% chance of exceeding 50 meters — from the mean alone.</p>
+<p><strong>eg 2 (the bound is tight — the lecture’s discrete example).</strong> Let <span class="math inline">\(X\)</span> take only two values: <span class="math inline">\(P(X = 0) = 4/5\)</span>, <span class="math inline">\(P(X = 50) = 1/5\)</span>. Then <span class="math display">\[E[X] = 0\cdot\tfrac45 + 50\cdot\tfrac15 = \boxed{10}, \qquad P(X \ge 50) = \boxed{\tfrac15}.\]</span> Markov predicts <span class="math inline">\(P(X \ge 50) \le 10/50 = 1/5\)</span> — and the true probability is <em>exactly</em> <span class="math inline">\(1/5\)</span>. Given only the mean, you cannot do better than Markov: this distribution shows the bound is the best possible in general. (Problem 9 generalizes this construction.)</p>
+<p><strong>Basically, …</strong> Markov = “if the average is <span class="math inline">\(\mu\)</span>, then being <span class="math inline">\(k\)</span> times the average can happen at most <span class="math inline">\(1/k\)</span> of the time”. The proof’s whole idea: the expectation is an integral; throw away the part below <span class="math inline">\(t\)</span>; on the part above <span class="math inline">\(t\)</span>, every <span class="math inline">\(x\)</span> is at least <span class="math inline">\(t\)</span>, so the leftover integral is at least <span class="math inline">\(t \times\)</span> (probability of being above <span class="math inline">\(t\)</span>). And the two-point example shows you can’t sharpen it without more information — the mean alone only buys you this much.</p>
+</section>
+<section id="chebyshevs-inequality" class="level2">
+<h2 class="anchored" data-anchor-id="chebyshevs-inequality">21.3 Chebyshev’s inequality</h2>
+<p>Markov needs a positive <span class="math inline">\(X\)</span> and bounds a one-sided tail. Chebyshev drops the positivity requirement and bounds the two-sided deviation from the mean, using one more piece of information: the variance (§15.9).</p>
+<p><strong>Theorem (Chebyshev’s inequality).</strong> Let <span class="math inline">\(E[X] = \mu\)</span> and <span class="math inline">\(\mathrm{Var}(X) = \sigma^2\)</span> (finite). For any <span class="math inline">\(t &gt; 0\)</span>, <span class="math display">\[\boxed{P(|X - \mu| \ge t) \le \frac{\sigma^2}{t^2}}.\]</span></p>
+<p><em>Proof</em> (the lecture’s — one line, via Markov). The event <span class="math inline">\(\{|X-\mu| \ge t\}\)</span> is the same as <span class="math inline">\(\{(X-\mu)^2 \ge t^2\}\)</span>, and <span class="math inline">\((X-\mu)^2\)</span> is a positive random variable, so Markov applies to it: <span class="math display">\[P(|X - \mu| \ge t) = P\big((X-\mu)^2 \ge t^2\big) \le \frac{E[(X-\mu)^2]}{t^2} = \frac{\sigma^2}{t^2},\]</span> since <span class="math inline">\(E[(X-\mu)^2]\)</span> is exactly the variance. ∎</p>
+<ol type="i">
+<li><strong>No positivity needed.</strong> The lecture stresses this: <span class="math inline">\(X\)</span> may take negative values — squaring makes <span class="math inline">\((X-\mu)^2\)</span> positive, which is all Markov needs. Markov is the one-sided, mean-only bound; Chebyshev is the two-sided, mean-and-variance bound.</li>
+<li><strong>The <span class="math inline">\(k\sigma\)</span> form.</strong> Put <span class="math inline">\(t = k\sigma\)</span> (<span class="math inline">\(k &gt; 0\)</span>): then <span class="math inline">\(\sigma^2/t^2 = 1/k^2\)</span>, so <span class="math display">\[\boxed{P(|X - \mu| \ge k\sigma) \le \frac{1}{k^2}}.\]</span> The probability of being <span class="math inline">\(k\)</span> standard deviations from the mean is at most <span class="math inline">\(1/k^2\)</span> — for <em>any</em> distribution with a variance.</li>
+</ol>
+<p><strong>eg 3 (the practice assignment’s Q8).</strong> For any <span class="math inline">\(X\)</span> with mean <span class="math inline">\(\mu\)</span> and standard deviation <span class="math inline">\(\sigma\)</span>, <span class="math display">\[\boxed{P(|X - \mu| \ge 2\sigma) \le \frac{1}{4}} \quad \text{hence} \quad \boxed{P(|X - \mu| &lt; 2\sigma) \ge \frac{3}{4}}.\]</span> Three-quarters of <em>any</em> distribution’s mass lies within two standard deviations of its mean — no shape assumed.</p>
+<p><strong>Basically, …</strong> Chebyshev = “the variance controls the tails: straying <span class="math inline">\(k\)</span> standard deviations out happens at most <span class="math inline">\(1/k^2\)</span> of the time”. The proof is a trick worth memorizing: square the deviation so Markov applies, and the numerator becomes the variance by definition. Whenever a problem asks “how far from the mean”, and you know the variance, reach for Chebyshev.</p>
+</section>
+<section id="two-ways-a-sequence-of-random-variables-can-converge" class="level2">
+<h2 class="anchored" data-anchor-id="two-ways-a-sequence-of-random-variables-can-converge">21.4 Two ways a sequence of random variables can converge</h2>
+<p>Before the limit theorems, the lecture fixes the vocabulary — “random variables are not real numbers, they are functions from <span class="math inline">\(\Omega\)</span> to <span class="math inline">\(\mathbb{R}\)</span>, so can we have notions of convergence?” Two of them (a third, convergence <em>almost surely</em>, is stronger; the lecture names it and moves on).</p>
+<p><strong>Def (convergence in probability).</strong> <span class="math inline">\(X_n \xrightarrow{p} X\)</span> if, for every fixed <span class="math inline">\(\varepsilon &gt; 0\)</span>, <span class="math display">\[\boxed{\lim_{n\to\infty} P(|X_n - X| \ge \varepsilon) = 0}.\]</span> Fix any (nonzero) tolerance <span class="math inline">\(\varepsilon\)</span>; the probability of missing it by more than <span class="math inline">\(\varepsilon\)</span> dies out as <span class="math inline">\(n\)</span> grows.</p>
+<p><strong>Def (convergence in distribution).</strong> <span class="math inline">\(X_n \xrightarrow{d} X\)</span> if their CDFs (§15.5, §16.4) match in the limit: <span class="math display">\[\boxed{\lim_{n\to\infty} F_{X_n}(x) = F_X(x) \quad \text{for all } x}.\]</span> Only the <em>distributions</em> have to line up — the random variables themselves need not get close to each other.</p>
+<ol type="i">
+<li><strong>Hierarchy.</strong> Convergence in probability <em>implies</em> convergence in distribution, but not conversely (the lecture). In-distribution is the weaker claim: it is about histograms lining up, not about <span class="math inline">\(X_n\)</span> pinning down <span class="math inline">\(X\)</span>.</li>
+<li><strong>Why the distinction matters.</strong> The weak law (§21.5) ends at a <em>constant</em> <span class="math inline">\(\mu\)</span> — convergence in probability is the natural language. The CLT (§21.6) ends at a <em>distribution</em> <span class="math inline">\(N(0, \sigma^2)\)</span> — convergence in probability cannot even be stated there (a distribution is not a number to get close to), so the theorem uses convergence in distribution.</li>
+</ol>
+<p><strong>Basically, …</strong> Convergence in probability = “the random variable itself settles down onto a target”. Convergence in distribution = “only its <em>shape</em> settles down — the histogram freezes, even though each draw is still random”. The law of large numbers is the first kind; the central limit theorem is the second.</p>
+</section>
+<section id="the-weak-law-of-large-numbers" class="level2">
+<h2 class="anchored" data-anchor-id="the-weak-law-of-large-numbers">21.5 The weak law of large numbers</h2>
+<p><strong>Def (sample mean).</strong> For <span class="math inline">\(X_1, \ldots, X_n\)</span> i.i.d. (§20.1), <span class="math inline">\(\boxed{\bar{X}_n = \frac{1}{n}\sum_{i=1}^{n} X_i}\)</span> — the empirical average, itself a random variable.</p>
+<p>You already suspect <span class="math inline">\(\bar{X}_n\)</span> should sit near <span class="math inline">\(\mu = E[X_1]\)</span>. The weak law makes it precise.</p>
+<p><strong>Theorem (weak law of large numbers).</strong> Let <span class="math inline">\(X_1, X_2, \ldots\)</span> be i.i.d. with <span class="math inline">\(E[X_i] = \mu\)</span>. Then <span class="math display">\[\boxed{\bar{X}_n \xrightarrow{p} \mu} \qquad \text{i.e.} \qquad \lim_{n\to\infty} P(|\bar{X}_n - \mu| \ge \varepsilon) = 0 \;\; \forall\, \varepsilon &gt; 0.\]</span></p>
+<p><em>Proof</em> (the lecture’s, under one extra assumption: the variance is finite, <span class="math inline">\(\mathrm{Var}(X_i) = \sigma^2 &lt; \infty\)</span>). Two facts about <span class="math inline">\(\bar{X}_n\)</span>: - <span class="math inline">\(E[\bar{X}_n] = \frac{1}{n}\sum E[X_i] = \mu\)</span> (linearity of expectation, §15.8). - <span class="math inline">\(\mathrm{Var}(\bar{X}_n) = \frac{1}{n^2}\sum_{i=1}^n \mathrm{Var}(X_i) = \frac{\sigma^2}{n}\)</span> — independence makes the variance of the sum the sum of the variances (§17.11), and the <span class="math inline">\(1/n\)</span> factor squares (§15.9’s corollary).</p>
+<p>Apply Chebyshev (§21.3) to the random variable <span class="math inline">\(\bar{X}_n\)</span>: <span class="math display">\[P(|\bar{X}_n - \mu| \ge \varepsilon) \le \frac{\mathrm{Var}(\bar{X}_n)}{\varepsilon^2} = \frac{\sigma^2}{n\varepsilon^2} \xrightarrow[n\to\infty]{} 0. \quad ∎\]</span></p>
+<p><strong>Note (the assumptions, and Hoeffding).</strong> The lecture flags three things. First, the proof assumed finite variance — the theorem is true without it, but that proof is harder. Second, Chebyshev’s bound dies only as <span class="math inline">\(1/n\)</span>: doubling <span class="math inline">\(n\)</span> from <span class="math inline">\(10\)</span> to <span class="math inline">\(100\)</span> cuts the bound from <span class="math inline">\(\sim 1/10\)</span> to <span class="math inline">\(\sim 1/100\)</span>. The <em>true</em> concentration of <span class="math inline">\(\bar{X}_n\)</span> is far faster — exponential in <span class="math inline">\(n\)</span> — and Hoeffding’s inequality captures that, but it demands the stronger assumption that each <span class="math inline">\(X_i\)</span> is bounded in <span class="math inline">\([a,b]\)</span>: <span class="math display">\[\boxed{P(|\bar{X}_n - \mu| \ge \varepsilon) \le 2\exp\!\left(-\frac{2n\varepsilon^2}{(b-a)^2}\right)} \qquad \text{(Hoeffding — stated, not proved).}\]</span> The lecture does not prove it; neither does this chapter. Third, boundedness is strictly stronger than finite variance: a normal has <span class="math inline">\(\sigma^2 = 1\)</span> but is unbounded — Hoeffding cannot touch it, which is why the lecture proves the weak law with Chebyshev instead.</p>
+<p><strong>eg 4 (how slow is <span class="math inline">\(1/n\)</span>? — the lecture’s comparison, made numeric).</strong> Chebyshev says <span class="math inline">\(P(|\bar{X}_n - \mu| \ge \varepsilon) \le \sigma^2/(n\varepsilon^2)\)</span>. Suppose you want this <span class="math inline">\(\le 0.01\)</span> at tolerance <span class="math inline">\(\varepsilon = 0.1\sigma\)</span>: <span class="math display">\[\frac{\sigma^2}{n(0.1\sigma)^2} \le 0.01 \;\Rightarrow\; \frac{100}{n} \le 0.01 \;\Rightarrow\; \boxed{n \ge 10{,}000}.\]</span> Ten thousand samples for a 99%-confidence, tenth-of-a-standard-deviation guarantee — Chebyshev’s rate is honest but weak. (Problem 6.) The lecture’s point: the bound is valid, the reality (Hoeffding’s exponential rate) is much better.</p>
+<p><strong>Basically, …</strong> The weak law = “averages work”. Flip a coin <span class="math inline">\(n\)</span> times and the fraction of heads <em>will</em> get arbitrarily close to the true bias — not certainly for any fixed <span class="math inline">\(n\)</span>, but with probability tending to <span class="math inline">\(1\)</span> as <span class="math inline">\(n\)</span> grows. The proof is Chebyshev applied to the average itself, using the one miracle fact <span class="math inline">\(\mathrm{Var}(\bar{X}_n) = \sigma^2/n\)</span>: averaging <span class="math inline">\(n\)</span> independent copies shrinks the variance by <span class="math inline">\(n\)</span>. That <span class="math inline">\(1/n\)</span> shrinkage is the whole engine — and it is also why the lecture’s exponential-rate refinement (Hoeffding) needs bounded variables.</p>
+</section>
+<section id="the-central-limit-theorem" class="level2">
+<h2 class="anchored" data-anchor-id="the-central-limit-theorem">21.6 The central limit theorem</h2>
+<p>Same setup as the weak law — <span class="math inline">\(X_1, X_2, \ldots\)</span> i.i.d., <span class="math inline">\(E[X_i] = \mu\)</span>, <span class="math inline">\(\mathrm{Var}(X_i) = \sigma^2\)</span> — but a different question. The weak law asks <em>where</em> the average settles (<span class="math inline">\(\mu\)</span>). The CLT asks: <em>zoom in</em> on the fluctuations around <span class="math inline">\(\mu\)</span> — what do they look like?</p>
+<p><strong>Def.</strong> <span class="math inline">\(\boxed{Y_n = \frac{1}{\sqrt{n}}\sum_{i=1}^{n}(X_i - \mu)}\)</span> — a <em>scaled</em> sum. Compare with the sample mean <span class="math inline">\(\bar{X}_n = \frac{1}{n}\sum X_i\)</span>: the CLT’s <span class="math inline">\(Y_n\)</span> uses <span class="math inline">\(1/\sqrt{n}\)</span>, not <span class="math inline">\(1/n\)</span> (and centers each term at <span class="math inline">\(\mu\)</span>).</p>
+<p><strong>Theorem (central limit theorem — quoted, not proved).</strong> The lecture states it without proof: <span class="math display">\[\boxed{Y_n \xrightarrow{d} N(0, \sigma^2)}.\]</span> The scaled sum converges <em>in distribution</em> to a normal with mean <span class="math inline">\(0\)</span> and variance <span class="math inline">\(\sigma^2\)</span> — the variance of the original <span class="math inline">\(X_i\)</span>’s, whatever distribution they came from.</p>
+<p><strong>Corollary (the standardized form).</strong> Since <span class="math inline">\(Y_n = \sqrt{n}\,(\bar{X}_n - \mu)\)</span>, <span class="math display">\[\boxed{Z_n = \frac{\bar{X}_n - \mu}{\sigma/\sqrt{n}} = \frac{Y_n}{\sigma} \xrightarrow{d} N(0, 1)}.\]</span> Equivalently, for large <span class="math inline">\(n\)</span>: <span class="math inline">\(\boxed{\bar{X}_n \;\dot\sim\; N\!\left(\mu, \frac{\sigma^2}{n}\right)}\)</span> — the sample mean is approximately normal, centered at the true mean, with the <span class="math inline">\(1/n\)</span>-shrunk variance of §21.5.</p>
+<p><strong>Note (why <span class="math inline">\(\sqrt{n}\)</span>, not <span class="math inline">\(n\)</span>).</strong> Compute <span class="math inline">\(\mathrm{Var}(Y_n)\)</span>: by independence (§17.11), <span class="math inline">\(\mathrm{Var}\big(\sum (X_i-\mu)\big) = n\sigma^2\)</span>, and the <span class="math inline">\(1/\sqrt{n}\)</span> factor squares to <span class="math inline">\(1/n\)</span> (§15.9): <span class="math display">\[\mathrm{Var}(Y_n) = \frac{1}{n}\cdot n\sigma^2 = \boxed{\sigma^2} \quad \text{for every } n.\]</span> The <span class="math inline">\(\sqrt{n}\)</span> scaling is the <em>one</em> scaling that keeps the variance constant — the fluctuations neither collapse to a point (as with <span class="math inline">\(1/n\)</span>, the weak law’s scaling, where <span class="math inline">\(\mathrm{Var} \to 0\)</span>) nor blow up (as with no scaling). It is a microscope tuned exactly to the scale where the shape of the randomness stays visible. And that shape is always the bell curve.</p>
+<p><strong>Note (a limit theorem, but an early one).</strong> The CLT is a statement about <span class="math inline">\(n \to \infty\)</span>, yet the lecture stresses it “begins to hold even for <span class="math inline">\(n\)</span> in the range of <span class="math inline">\(10\)</span> to <span class="math inline">\(20\)</span>” — §21.7’s demo shows <span class="math inline">\(n = 10\)</span> already looking normal.</p>
+<p><strong>Basically, …</strong> WLLN = “the average converges to the mean” (the <em>location</em>). CLT = “blow up the wiggles around the mean by <span class="math inline">\(\sqrt{n}\)</span> and they look like a bell curve” (the <em>shape</em>). The <span class="math inline">\(\sqrt{n}\)</span> is a zoom level: zoom out (<span class="math inline">\(1/n\)</span>) and the wiggles vanish into the mean — that’s the weak law; don’t zoom at all and they explode; zoom by exactly <span class="math inline">\(\sqrt{n}\)</span> and the wiggles freeze into a normal distribution. Any starting distribution — uniform, Bernoulli, anything with a variance — ends up at the same bell curve. That is why the normal is everywhere (§21.9).</p>
+</section>
+<section id="worked-the-decks-uniform-demo" class="level2">
+<h2 class="anchored" data-anchor-id="worked-the-decks-uniform-demo">21.7 Worked: the deck’s uniform demo</h2>
+<p>The lecture’s own illustration. Take <span class="math inline">\(X_i\)</span> i.i.d. <span class="math inline">\(\mathrm{Uniform}[-0.5, 0.5]\)</span> — flat, about as non-normal as possible. Then <span class="math inline">\(\mu = E[X_i] = 0\)</span> and <span class="math inline">\(\sigma^2 = (1)^2/12 = 1/12\)</span> (§16.7), so the CLT predicts <span class="math inline">\(Y_n = \frac{1}{\sqrt{n}}\sum_{i=1}^n X_i \xrightarrow{d} N(0, 1/12)\)</span>.</p>
+<!-- Original matplotlib illustration drawn for this chapter (not reused from any URL): histograms of Y_n = (1/sqrt(n)) sum X_i for X_i iid Uniform[-0.5,0.5], n = 1,2,3,10 (200k trials), with the N(0,1/12) density overlaid — reproduces the MLF Week 12 deck's demo -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/21-inequalities-clt.png" class="img-fluid figure-img"></p>
+<figcaption>Histograms of Y_n = (1/√n)ΣX_i for X_i iid Uniform[-0.5, 0.5] at n = 1, 2, 3, 10, with the N(0, 1/12) density overlaid in red. At n = 1 the histogram is flat; at n = 2 it is triangular; at n = 3 it is rounded; at n = 10 it matches the normal curve.</figcaption>
+</figure>
+</div>
+<ol type="i">
+<li><strong><span class="math inline">\(n = 1\)</span>:</strong> <span class="math inline">\(Y_1 = X_1\)</span> — just the flat uniform histogram. No normality at all.</li>
+<li><strong><span class="math inline">\(n = 2\)</span>:</strong> <span class="math inline">\(Y_2 = (X_1 + X_2)/\sqrt{2}\)</span> — the histogram turns <em>triangular</em> (the sum of two uniforms is triangular; the <span class="math inline">\(1/\sqrt{2}\)</span> only rescales).</li>
+<li><strong><span class="math inline">\(n = 3\)</span>:</strong> a rounded, piecewise-quadratic hump — visibly bell-ish.</li>
+<li><strong><span class="math inline">\(n = 10\)</span>:</strong> the histogram sits almost exactly on the red <span class="math inline">\(N(0, 1/12)\)</span> curve. Ten uniforms in, bell curve out — the lecture’s “even <span class="math inline">\(n = 10\)</span> to <span class="math inline">\(20\)</span>” claim, verified.</li>
+</ol>
+<p><strong>eg 5 (reading the limit off the figure).</strong> The red curve is <span class="math inline">\(N(0, 1/12)\)</span>: standard deviation <span class="math inline">\(1/\sqrt{12} \approx 0.289\)</span>. At <span class="math inline">\(n = 10\)</span> the histogram’s peak height is <span class="math inline">\(\approx 1.38\)</span> — and the normal peak is <span class="math inline">\(1/(\sigma\sqrt{2\pi}) = 1/(0.289\cdot 2.507) \approx 1.38\)</span> ✓. The variance stayed <span class="math inline">\(\sigma^2 = 1/12\)</span> at every <span class="math inline">\(n\)</span> (the §21.6 calculation) — only the <em>shape</em> changed, from flat to bell.</p>
+</section>
+<section id="worked-clt-approximation-for-a-binomial" class="level2">
+<h2 class="anchored" data-anchor-id="worked-clt-approximation-for-a-binomial">21.8 Worked: CLT approximation for a binomial</h2>
+<p>The most-used CLT calculation in practice: a count is a sum of indicators (§15.12), so counts are approximately normal.</p>
+<p><strong>Setup.</strong> Flip a fair coin <span class="math inline">\(100\)</span> times; <span class="math inline">\(X\)</span> = number of heads. Write <span class="math inline">\(X = \sum_{i=1}^{100} X_i\)</span> with <span class="math inline">\(X_i \sim \mathrm{Bernoulli}(1/2)\)</span> i.i.d. (§15.11): <span class="math inline">\(E[X_i] = 1/2\)</span>, <span class="math inline">\(\mathrm{Var}(X_i) = 1/4\)</span>. Hence <span class="math inline">\(E[X] = 100\cdot\frac12 = 50\)</span>, <span class="math inline">\(\mathrm{Var}(X) = 100\cdot\frac14 = 25\)</span> (§17.11), <span class="math inline">\(\sigma_X = 5\)</span>.</p>
+<p><strong>CLT approximation.</strong> For <span class="math inline">\(n = 100\)</span> (large), <span class="math inline">\(X \;\dot\sim\; N(50, 25)\)</span>: <span class="math display">\[P(X \ge 60) \;\approx\; P\!\left(Z \ge \frac{60 - 50}{5}\right) = 1 - \Phi(2) \approx 1 - 0.97725 = \boxed{0.0228},\]</span> using the <span class="math inline">\(\Phi(2)\)</span> table value from §16.9. (No continuity correction — the sources don’t use one; see the review log.)</p>
+<p><strong>How good is it? Three ways to bound/estimate the same number.</strong></p>
+<ol type="i">
+<li><strong>Markov</strong> (§21.2): <span class="math inline">\(P(X \ge 60) \le E[X]/60 = 50/60 \approx \boxed{0.833}\)</span>. Valid — and useless.</li>
+<li><strong>Chebyshev</strong> (§21.3): <span class="math inline">\(P(X \ge 60) = P(X - 50 \ge 10) \le P(|X-50| \ge 10) \le 25/10^2 = \boxed{0.25}\)</span>. Better, still loose.</li>
+<li><strong>Exact</strong> (binomial sum, §15.12): <span class="math inline">\(P(X \ge 60) = \sum_{k=60}^{100}\binom{100}{k}/2^{100} \approx \boxed{0.0284}\)</span>.</li>
+</ol>
+<p>So: Markov 0.83, Chebyshev 0.25, CLT 0.0228, truth 0.0284. The inequalities are <em>guarantees</em> — always true, often loose. The CLT is an <em>approximation</em> — not guaranteed, but far tighter. That is the practical division of labor in this chapter: bounds when you must be certain, CLT when you want a number.</p>
+<p><strong>Note.</strong> The CLT approximation is one-sided here only for convenience — <span class="math inline">\(P(X \le 40) \approx \Phi(-2) = 0.0228\)</span> by symmetry, and two-sided versions work the same way (Problem 8).</p>
+<p><strong>Basically, …</strong> “100 fair flips, at least 60 heads” ≈ “a normal with mean 50 and sd 5 exceeds 60” = “a standard normal exceeds 2” ≈ 2.3%. The recipe never changes: mean = <span class="math inline">\(n\mu\)</span>, sd = <span class="math inline">\(\sigma\sqrt{n}\)</span>, standardize, look up <span class="math inline">\(\Phi\)</span>. Compare against Markov/Chebyshev to feel the trade: guarantees are loose, approximations are tight.</p>
+</section>
+<section id="why-this-matters-the-normals-ubiquity-and-the-part-ii-closing-shot" class="level2">
+<h2 class="anchored" data-anchor-id="why-this-matters-the-normals-ubiquity-and-the-part-ii-closing-shot">21.9 Why this matters: the normal’s ubiquity, and the Part II closing shot</h2>
+<ol type="i">
+<li><strong>The promise is kept.</strong> §19.9(iv), §20.12(iv), and §16.9’s note all pointed here: the CLT is <em>why</em> the normal family deserved two chapters. The lecture’s physical picture: measure a wire’s current with a sensitive ammeter and you get a normal — because the current is the sum of <em>many electrons</em> each moving left or right (a Bernoulli each, §15.11), and a sum of many small independent effects is normal by the CLT. Measurement noise, heights, test scores — whenever the observed quantity is an additive pile-up of small independent contributions, the bell curve appears. “Gaussian” is just the name the pile-up goes by.</li>
+<li><strong>The weak law underwrites all of estimation.</strong> Every estimator in Chapter 20 is built from sample averages — <span class="math inline">\(\hat\mu_{ML} = \bar{x}\)</span> (§20.6), the empirical covariance (§20.7). The weak law is the silent license: those averages converge to the true parameters as <span class="math inline">\(n\)</span> grows, so <em>more data means better estimates</em>. §20.10’s “lots of data washes the prior out” is the same phenomenon in Bayesian dress.</li>
+<li><strong>What comes next.</strong> Part III turns this machinery into machine learning: linear and polynomial regression (Ch 23) inherit §20.8’s “Gaussian noise ⇒ least squares”, and every generalization argument from here on leans on averages concentrating (§21.5) and fluctuations being normal (§21.6).</li>
+</ol>
+<p><strong>Part II, in one paragraph.</strong> Probability basics (Ch 14): experiments, sample spaces, conditional probability, Bayes. Discrete and continuous random variables (Ch 15–16): PMF/PDF/CDF, expectation, variance, the named distributions — Bernoulli, binomial, geometric, uniform, exponential, normal. Joint distributions (Ch 17–18): two variables at once, independence, covariance, “variances add for independent variables”. Random vectors (Ch 19): the multivariate normal and its parameters <span class="math inline">\(\boldsymbol{\mu}\)</span>, <span class="math inline">\(\boldsymbol{\Sigma}\)</span> — “everything linear stays normal”. Estimation (Ch 20): MLE picks the parameter that makes the data most likely; MAP adds a prior’s tug; Gaussian noise turns fitting into least squares. Inequalities and limits (this chapter): Markov and Chebyshev bound the tails from the mean and variance alone; the weak law says averages converge to the mean; the central limit theorem says the <span class="math inline">\(\sqrt{n}\)</span>-scaled fluctuations around it are always normal — which is why the bell curve ran this entire part. With this, Part II’s machinery is complete — Part III builds machine learning on top of it.</p>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li>(Practice assignment Q1.) A biased coin lands heads with probability <span class="math inline">\(1/10\)</span>; flipped <span class="math inline">\(200\)</span> times. Use Markov’s inequality to bound <span class="math inline">\(P(X \ge 120)\)</span>, where <span class="math inline">\(X\)</span> = number of heads. Give the bound as a reduced fraction.</li>
+<li>(Tutorial Q1.) <span class="math inline">\(X \sim \mathrm{Binomial}(n, p)\)</span>. Use Markov’s inequality to bound <span class="math inline">\(P(X \ge \alpha n)\)</span> where <span class="math inline">\(p &lt; \alpha &lt; 1\)</span>; show the bound is <span class="math inline">\(p/\alpha\)</span>. Evaluate for <span class="math inline">\(p = 1/2\)</span>, <span class="math inline">\(\alpha = 3/4\)</span>.</li>
+<li>(Practice assignment Q2.) <span class="math inline">\(X \sim \mathrm{Binomial}(n, p)\)</span>. Use Chebyshev’s inequality to bound <span class="math inline">\(P(X \ge \alpha n)\)</span>: show <span class="math inline">\(P(X \ge \alpha n) \le \dfrac{p(1-p)}{n(\alpha-p)^2}\)</span>. Evaluate for <span class="math inline">\(p = 1/2\)</span>, <span class="math inline">\(\alpha = 3/4\)</span>, <span class="math inline">\(n = 8\)</span>, and compare with Problem 2’s Markov bound — which is tighter here?</li>
+<li>(Tutorial Q4.) <span class="math inline">\(X\)</span> has the geometric distribution <span class="math inline">\(p(x) = 2^{-x}\)</span>, <span class="math inline">\(x = 1, 2, \ldots\)</span> (i) Use Chebyshev to show <span class="math inline">\(P(|X - 2| \le 2) \ge 1/2\)</span>. (ii) Compute the exact <span class="math inline">\(P(|X - 2| \le 2)\)</span> and compare with the bound.</li>
+<li>Prove the <span class="math inline">\(k\sigma\)</span> rule from Chebyshev: for <span class="math inline">\(E[X] = \mu\)</span>, <span class="math inline">\(\mathrm{Var}(X) = \sigma^2\)</span>, <span class="math inline">\(P(|X - \mu| \ge k\sigma) \le 1/k^2\)</span>. Then give the lower bound on <span class="math inline">\(P(|X - \mu| &lt; 3\sigma)\)</span> that holds for <em>every</em> distribution with finite variance.</li>
+<li><span class="math inline">\(X_1, \ldots, X_n\)</span> i.i.d. with variance <span class="math inline">\(\sigma^2\)</span>. How large must <span class="math inline">\(n\)</span> be for Chebyshev to guarantee <span class="math inline">\(P(|\bar{X}_n - \mu| \ge 0.1\sigma) \le 0.01\)</span>? What does the answer say about Chebyshev’s <span class="math inline">\(1/n\)</span> rate?</li>
+<li><span class="math inline">\(X_1, \ldots, X_{36}\)</span> i.i.d. with <span class="math inline">\(\mu = 10\)</span>, <span class="math inline">\(\sigma^2 = 4\)</span>. (i) State the CLT’s approximate distributions of <span class="math inline">\(Y_{36}\)</span> and of <span class="math inline">\(\bar{X}_{36}\)</span>. (ii) Approximate <span class="math inline">\(P(\bar{X}_{36} \ge 10.5)\)</span>.</li>
+<li><span class="math inline">\(100\)</span> fair coin flips, <span class="math inline">\(X\)</span> = number of heads. Use the CLT to approximate <span class="math inline">\(P(X \le 42)\)</span> (standardize and look up <span class="math inline">\(\Phi\)</span>; no continuity correction). The exact binomial value is <span class="math inline">\(0.0666\)</span> — how far off is the approximation?</li>
+<li>Fix <span class="math inline">\(\mu &gt; 0\)</span> and <span class="math inline">\(t &gt; \mu\)</span>. Construct a random variable attaining equality in Markov’s inequality: <span class="math inline">\(P(X = 0) = 1 - \mu/t\)</span>, <span class="math inline">\(P(X = t) = \mu/t\)</span>. Verify <span class="math inline">\(E[X] = \mu\)</span> and <span class="math inline">\(P(X \ge t) = \mu/t = E[X]/t\)</span>.</li>
+<li>Explain in words: the WLLN uses the <span class="math inline">\(1/n\)</span> scaling and ends at the constant <span class="math inline">\(\mu\)</span> (convergence in probability); the CLT uses the <span class="math inline">\(1/\sqrt{n}\)</span> scaling and ends at <span class="math inline">\(N(0, \sigma^2)\)</span> (convergence in distribution). Why can’t the CLT use <span class="math inline">\(1/n\)</span>? (Hint: what is <span class="math inline">\(\mathrm{Var}(\bar{X}_n)\)</span> as <span class="math inline">\(n \to \infty\)</span>, and what does a “distribution” limit with zero variance look like?)</li>
+</ol>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — <span class="math inline">\(X\)</span> = heads in <span class="math inline">\(200\)</span> flips, <span class="math inline">\(X \sim \mathrm{Binomial}(200, 1/10)\)</span> (§15.12). <span class="math inline">\(E[X] = np = 200\cdot\frac{1}{10} = 20\)</span>. <span class="math inline">\(X \ge 0\)</span>, so Markov (§21.2):
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>1.</strong> <span class="math inline">\(X\)</span> = heads in <span class="math inline">\(200\)</span> flips, <span class="math inline">\(X \sim \mathrm{Binomial}(200, 1/10)\)</span> (§15.12). <span class="math inline">\(E[X] = np = 200\cdot\frac{1}{10} = 20\)</span>. <span class="math inline">\(X \ge 0\)</span>, so Markov (§21.2): <span class="math display">\[P(X \ge 120) \le \frac{E[X]}{120} = \frac{20}{120} = \boxed{\frac{1}{6}}.\]</span> (The practice assignment’s answer: A = <span class="math inline">\(1/6\)</span>.)</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — <span class="math inline">\(X \sim \mathrm{Binomial}(n,p)\)</span> has <span class="math inline">\(E[X] = np\)</span> (§15.12). Markov (§21.2), with <span class="math inline">\(t = \alpha n &gt; 0\)</span>:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>2.</strong> <span class="math inline">\(X \sim \mathrm{Binomial}(n,p)\)</span> has <span class="math inline">\(E[X] = np\)</span> (§15.12). Markov (§21.2), with <span class="math inline">\(t = \alpha n &gt; 0\)</span>: <span class="math display">\[P(X \ge \alpha n) \le \frac{E[X]}{\alpha n} = \frac{np}{\alpha n} = \boxed{\frac{p}{\alpha}}.\]</span> The condition <span class="math inline">\(p &lt; \alpha &lt; 1\)</span> makes the bound <span class="math inline">\(&lt; 1\)</span> (non-vacuous) and <span class="math inline">\(\alpha n &gt; E[X]\)</span> (the §21.2 note). For <span class="math inline">\(p = 1/2\)</span>, <span class="math inline">\(\alpha = 3/4\)</span>: <span class="math display">\[P(X \ge 3n/4) \le \frac{1/2}{3/4} = \frac{2}{3} \approx \boxed{0.667}.\]</span> (The tutorial’s answer: A = <span class="math inline">\(2/3\)</span>.)</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — First shift to a deviation from the mean, then apply Chebyshev (§21.3):
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>3.</strong> First shift to a deviation from the mean, then apply Chebyshev (§21.3): <span class="math display">\[P(X \ge \alpha n) = P(X - np \ge n\alpha - np) \le P(|X - np| \ge n(\alpha - p)) \le \frac{\mathrm{Var}(X)}{[n(\alpha-p)]^2}.\]</span> The first inequality holds because <span class="math inline">\(\{X - np \ge t\} \subseteq \{|X-np| \ge t\}\)</span> for <span class="math inline">\(t = n(\alpha-p) &gt; 0\)</span>. With <span class="math inline">\(\mathrm{Var}(X) = np(1-p)\)</span> (§15.12): <span class="math display">\[P(X \ge \alpha n) \le \frac{np(1-p)}{n^2(\alpha-p)^2} = \boxed{\frac{p(1-p)}{n(\alpha-p)^2}}.\]</span> For <span class="math inline">\(p = 1/2\)</span>, <span class="math inline">\(\alpha = 3/4\)</span>, <span class="math inline">\(n = 8\)</span>: <span class="math inline">\(\alpha - p = 1/4\)</span>, <span class="math display">\[\frac{(1/2)(1/2)}{8\cdot(1/4)^2} = \frac{1/4}{8/16} = \frac{1/4}{1/2} = \boxed{0.5}.\]</span> (The practice assignment’s answer: <span class="math inline">\(0.5\)</span>, equivalently <span class="math inline">\(4/n\)</span>.) Comparison: Markov (Problem 2) gave <span class="math inline">\(2/3 \approx 0.667\)</span>; Chebyshev gives <span class="math inline">\(0.5\)</span> — <strong>Chebyshev is tighter here</strong>, because it exploits the variance, not just the mean.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — i) <span class="math inline">\(p(x) = 2^{-x}\)</span>, <span class="math inline">\(x = 1, 2, \ldots\)</span> is <span class="math inline">\(\mathrm{Geometric}(1/2)\)</span> (first success on trial <span class="math inline">\(x\)</span>). From §15.13 (eg 12): <span class="math inline">\(E[X] = 1/p = \boxed{2}\)</span>, <span class="math inline">\(\mathrm{Var}(X) = (1-p)/p^2 = (1/2)/(1/4) = \boxed{2}\)</span>. Chebyshev (§21.3) with <span class="math inline">\(t = 2\)</span>:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>4.</strong> (i) <span class="math inline">\(p(x) = 2^{-x}\)</span>, <span class="math inline">\(x = 1, 2, \ldots\)</span> is <span class="math inline">\(\mathrm{Geometric}(1/2)\)</span> (first success on trial <span class="math inline">\(x\)</span>). From §15.13 (eg 12): <span class="math inline">\(E[X] = 1/p = \boxed{2}\)</span>, <span class="math inline">\(\mathrm{Var}(X) = (1-p)/p^2 = (1/2)/(1/4) = \boxed{2}\)</span>. Chebyshev (§21.3) with <span class="math inline">\(t = 2\)</span>: <span class="math display">\[P(|X - 2| \ge 2) \le \frac{2}{2^2} = \frac{1}{2} \quad\Rightarrow\quad \boxed{P(|X - 2| \le 2) \ge 1 - \frac12 = \frac12}.\]</span> (ii) Exact: <span class="math inline">\(|X-2| \le 2 \iff 0 \le X \le 4\)</span>, and <span class="math inline">\(X \ge 1\)</span> always, so <span class="math display">\[P(|X-2| \le 2) = P(X \le 4) = \sum_{k=1}^{4} 2^{-k} = \frac12 + \frac14 + \frac18 + \frac{1}{16} = \boxed{\frac{15}{16} = 0.9375}.\]</span> Comparison: Chebyshev guarantees <span class="math inline">\(\ge 0.5\)</span>; the truth is <span class="math inline">\(0.9375\)</span>. The bound is valid but loose — Chebyshev knows only the mean and variance, and the geometric’s long right tail forces it to be pessimistic.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — Chebyshev (§21.3): <span class="math inline">\(P(|X-\mu| \ge t) \le \sigma^2/t^2\)</span>. Set <span class="math inline">\(t = k\sigma\)</span> (<span class="math inline">\(k &gt; 0\)</span>):
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>5.</strong> Chebyshev (§21.3): <span class="math inline">\(P(|X-\mu| \ge t) \le \sigma^2/t^2\)</span>. Set <span class="math inline">\(t = k\sigma\)</span> (<span class="math inline">\(k &gt; 0\)</span>): <span class="math display">\[P(|X - \mu| \ge k\sigma) \le \frac{\sigma^2}{k^2\sigma^2} = \boxed{\frac{1}{k^2}}.\]</span> For <span class="math inline">\(k = 3\)</span>: <span class="math inline">\(P(|X-\mu| \ge 3\sigma) \le 1/9\)</span>, so <span class="math inline">\(\boxed{P(|X-\mu| &lt; 3\sigma) \ge 1 - 1/9 = 8/9 \approx 0.889}\)</span> — for every distribution with finite variance. (For <span class="math inline">\(k = 2\)</span> this recovers eg 3’s <span class="math inline">\(1/4\)</span> / <span class="math inline">\(3/4\)</span>, the practice assignment’s Q8.)</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — Chebyshev on <span class="math inline">\(\bar{X}_n\)</span> (the §21.5 calculation): <span class="math inline">\(P(|\bar{X}_n - \mu| \ge 0.1\sigma) \le \dfrac{\sigma^2}{n(0.1\sigma)^2} = \dfrac{100}{n}\)</span>. Demand <span class="math inline">\(\le 0.01\)</span>:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>6.</strong> Chebyshev on <span class="math inline">\(\bar{X}_n\)</span> (the §21.5 calculation): <span class="math inline">\(P(|\bar{X}_n - \mu| \ge 0.1\sigma) \le \dfrac{\sigma^2}{n(0.1\sigma)^2} = \dfrac{100}{n}\)</span>. Demand <span class="math inline">\(\le 0.01\)</span>: <span class="math display">\[\frac{100}{n} \le 0.01 \;\Rightarrow\; n \ge \frac{100}{0.01} = \boxed{10{,}000}.\]</span> The answer says Chebyshev’s <span class="math inline">\(1/n\)</span> rate is <em>slow</em>: cutting the tolerance by <span class="math inline">\(10\)</span> costs <span class="math inline">\(100\times\)</span> the samples, and cutting the failure probability by <span class="math inline">\(10\)</span> costs <span class="math inline">\(10\times\)</span> the samples. The lecture’s point (§21.5 note): the bound is honest, but the true concentration (Hoeffding’s exponential rate, for bounded variables) needs far fewer samples.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — i) <span class="math inline">\(Y_{36} = \frac{1}{\sqrt{36}}\sum_{i=1}^{36}(X_i - 10) \xrightarrow{d} N(0, \sigma^2) = \boxed{N(0, 4)}\)</span> (§21.6). Equivalently (§21.6 corollary),
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>7.</strong> (i) <span class="math inline">\(Y_{36} = \frac{1}{\sqrt{36}}\sum_{i=1}^{36}(X_i - 10) \xrightarrow{d} N(0, \sigma^2) = \boxed{N(0, 4)}\)</span> (§21.6). Equivalently (§21.6 corollary), <span class="math display">\[\bar{X}_{36} \;\dot\sim\; \boxed{N\!\left(10,\ \frac{4}{36}\right) = N(10,\ 1/9)}, \qquad \text{sd} = \frac{2}{6} = \frac13.\]</span> (ii) Standardize: <span class="math display">\[P(\bar{X}_{36} \ge 10.5) \approx P\!\left(Z \ge \frac{10.5 - 10}{1/3}\right) = P(Z \ge 1.5) = 1 - \Phi(1.5) \approx 1 - 0.93319 = \boxed{0.0668}.\]</span></p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 8 — <span class="math inline">\(X = \sum_{i=1}^{100} X_i\)</span>, <span class="math inline">\(X_i \sim \mathrm{Bernoulli}(1/2)\)</span>: <span class="math inline">\(E[X] = 50\)</span>, <span class="math inline">\(\mathrm{Var}(X) = 25\)</span>, sd <span class="math inline">\(= 5\)</span> (§21.8 setup). CLT: <span class="math inline">\(X \;\dot\sim\; N(50, 25)\)</span>:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>8.</strong> <span class="math inline">\(X = \sum_{i=1}^{100} X_i\)</span>, <span class="math inline">\(X_i \sim \mathrm{Bernoulli}(1/2)\)</span>: <span class="math inline">\(E[X] = 50\)</span>, <span class="math inline">\(\mathrm{Var}(X) = 25\)</span>, sd <span class="math inline">\(= 5\)</span> (§21.8 setup). CLT: <span class="math inline">\(X \;\dot\sim\; N(50, 25)\)</span>: <span class="math display">\[P(X \le 42) \approx P\!\left(Z \le \frac{42-50}{5}\right) = \Phi(-1.6) = 1 - \Phi(1.6) \approx 1 - 0.94520 = \boxed{0.0548}.\]</span> Exact binomial value: <span class="math inline">\(0.0666\)</span>. Error: <span class="math inline">\(|0.0666 - 0.0548| = 0.0118\)</span> — about <span class="math inline">\(1.2\)</span> percentage points, i.e.&nbsp;the CLT is off by <span class="math inline">\(\approx 18\%\)</span> relative. Decent for <span class="math inline">\(n = 100\)</span> with no continuity correction; it improves as <span class="math inline">\(n\)</span> grows. (The CLT is an approximation, not a bound — §21.8.)</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 9 — <span class="math inline">\(E[X] = 0\cdot P(X=0) + t\cdot P(X=t) = 0\cdot(1-\mu/t) + t\cdot(\mu/t) = \boxed{\mu}\)</span>. And <span class="math inline">\(P(X \ge t) = P(X = t) = \boxed{\mu/t} = E[X]/t\)</span> — equality in Markov (§21.2). Conditions: <span class="math inline">\(\mu &gt; 0\)</span>, <span class="math inline">\(t &gt; \mu\)</span> ensure <span class="math inline">\(0 &lt; \mu/t &lt; 1\)</span>, so the probabilities are valid (<span class="math inline">\(1 - \mu/t &gt; 0\)</span>). This is the general form of eg 2’s <span class="math inline">\(\{0, 4/5;\ 50, 1/5\}\)</span> example (<span class="math inline">\(\mu = 10\)</span>, <span class="math inline">\(t = 50\)</span>): no bound using only the mean can beat Markov, because this distribution attains it.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>9.</strong> <span class="math inline">\(E[X] = 0\cdot P(X=0) + t\cdot P(X=t) = 0\cdot(1-\mu/t) + t\cdot(\mu/t) = \boxed{\mu}\)</span>. And <span class="math inline">\(P(X \ge t) = P(X = t) = \boxed{\mu/t} = E[X]/t\)</span> — equality in Markov (§21.2). Conditions: <span class="math inline">\(\mu &gt; 0\)</span>, <span class="math inline">\(t &gt; \mu\)</span> ensure <span class="math inline">\(0 &lt; \mu/t &lt; 1\)</span>, so the probabilities are valid (<span class="math inline">\(1 - \mu/t &gt; 0\)</span>). This is the general form of eg 2’s <span class="math inline">\(\{0, 4/5;\ 50, 1/5\}\)</span> example (<span class="math inline">\(\mu = 10\)</span>, <span class="math inline">\(t = 50\)</span>): no bound using only the mean can beat Markov, because this distribution attains it.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 10 — The <span class="math inline">\(1/n\)</span> scaling in <span class="math inline">\(\bar{X}_n\)</span> <em>averages</em>: <span class="math inline">\(\mathrm{Var}(\bar{X}_n) = \sigma^2/n \to 0\)</span>, so the distribution collapses onto the single point <span class="math inline">\(\mu\)</span> — the only possible limit of a “distribution” with vanishing variance is a constant, and “convergence to a constant” is convergence in probability (the WLLN). If you fed <span class="math inline">\(\bar{X}_n\)</span> to the CLT’s machinery instead, you’d get the degenerate claim “<span class="math inline">\(\bar{X}_n \xrightarrow{d} N(\mu, 0)\)</span>” — a normal with zero variance is just the point <span class="math inline">\(\mu\)</span> again; all shape information is lost. The CLT’s <span class="math inline">\(1/\sqrt{n}\)</span> scaling is the unique zoom where <span class="math inline">\(\mathrm{Var}(Y_n) = \sigma^2\)</span> stays fixed (§21.6 note): the center still converges (that part is the WLLN), but the <em>fluctuations</em> stay visible and converge in distribution to <span class="math inline">\(N(0,\sigma^2)\)</span>. In short: <span class="math inline">\(1/n\)</span> asks “where does it settle?” (answer: <span class="math inline">\(\mu\)</span>, in probability); <span class="math inline">\(1/\sqrt{n}\)</span> asks “what do the wiggles look like on the way there?” (answer: normal, in distribution).
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>10.</strong> The <span class="math inline">\(1/n\)</span> scaling in <span class="math inline">\(\bar{X}_n\)</span> <em>averages</em>: <span class="math inline">\(\mathrm{Var}(\bar{X}_n) = \sigma^2/n \to 0\)</span>, so the distribution collapses onto the single point <span class="math inline">\(\mu\)</span> — the only possible limit of a “distribution” with vanishing variance is a constant, and “convergence to a constant” is convergence in probability (the WLLN). If you fed <span class="math inline">\(\bar{X}_n\)</span> to the CLT’s machinery instead, you’d get the degenerate claim “<span class="math inline">\(\bar{X}_n \xrightarrow{d} N(\mu, 0)\)</span>” — a normal with zero variance is just the point <span class="math inline">\(\mu\)</span> again; all shape information is lost. The CLT’s <span class="math inline">\(1/\sqrt{n}\)</span> scaling is the unique zoom where <span class="math inline">\(\mathrm{Var}(Y_n) = \sigma^2\)</span> stays fixed (§21.6 note): the center still converges (that part is the WLLN), but the <em>fluctuations</em> stay visible and converge in distribution to <span class="math inline">\(N(0,\sigma^2)\)</span>. In short: <span class="math inline">\(1/n\)</span> asks “where does it settle?” (answer: <span class="math inline">\(\mu\)</span>, in probability); <span class="math inline">\(1/\sqrt{n}\)</span> asks “what do the wiggles look like on the way there?” (answer: normal, in distribution).</p>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./20-estimation-mle-map.html" class="pagination-link" aria-label="20. Estimation: MLE and Bayesian/MAP">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./22-what-is-ml.html" class="pagination-link" aria-label="22. What is ML: data, models, tasks; supervised vs unsupervised">
+        <span class="nav-page-text"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>22. What is ML: data, models, tasks; supervised vs unsupervised – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./23-linear-polynomial-regression.html" rel="next">
+<link href="./21-inequalities-clt.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./22-what-is-ml.html">Part III — Machine Learning Foundations</a></li><li class="breadcrumb-item"><a href="./22-what-is-ml.html"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#what-is-machine-learning" id="toc-what-is-machine-learning" class="nav-link active" data-scroll-target="#what-is-machine-learning">22.1 What is machine learning?</a></li>
+  <li><a href="#the-task-hierarchy-manual-labour-programming-machine-learning" id="toc-the-task-hierarchy-manual-labour-programming-machine-learning" class="nav-link" data-scroll-target="#the-task-hierarchy-manual-labour-programming-machine-learning">22.2 The task hierarchy: manual labour → programming → machine learning</a></li>
+  <li><a href="#data-a-collection-of-vectors" id="toc-data-a-collection-of-vectors" class="nav-link" data-scroll-target="#data-a-collection-of-vectors">22.3 Data: a collection of vectors</a></li>
+  <li><a href="#models-mathematical-simplifications-of-reality" id="toc-models-mathematical-simplifications-of-reality" class="nav-link" data-scroll-target="#models-mathematical-simplifications-of-reality">22.4 Models: mathematical simplifications of reality</a></li>
+  <li><a href="#learning-algorithms-and-the-ml-task-precisely" id="toc-learning-algorithms-and-the-ml-task-precisely" class="nav-link" data-scroll-target="#learning-algorithms-and-the-ml-task-precisely">22.5 Learning algorithms and the ML task, precisely</a></li>
+  <li><a href="#notation-for-the-rest-of-part-iii" id="toc-notation-for-the-rest-of-part-iii" class="nav-link" data-scroll-target="#notation-for-the-rest-of-part-iii">22.6 Notation for the rest of Part III</a></li>
+  <li><a href="#supervised-learning-curve-fitting-with-answers" id="toc-supervised-learning-curve-fitting-with-answers" class="nav-link" data-scroll-target="#supervised-learning-curve-fitting-with-answers">22.7 Supervised learning: curve-fitting with answers</a></li>
+  <li><a href="#regression-predicting-a-real-number" id="toc-regression-predicting-a-real-number" class="nav-link" data-scroll-target="#regression-predicting-a-real-number">22.8 Regression: predicting a real number</a></li>
+  <li><a href="#classification-predicting-a-discrete-label" id="toc-classification-predicting-a-discrete-label" class="nav-link" data-scroll-target="#classification-predicting-a-discrete-label">22.9 Classification: predicting a discrete label</a></li>
+  <li><a href="#training-loss-is-not-the-goal-test-data" id="toc-training-loss-is-not-the-goal-test-data" class="nav-link" data-scroll-target="#training-loss-is-not-the-goal-test-data">22.10 Training loss is not the goal: test data</a></li>
+  <li><a href="#unsupervised-learning-understanding-data-no-labels" id="toc-unsupervised-learning-understanding-data-no-labels" class="nav-link" data-scroll-target="#unsupervised-learning-understanding-data-no-labels">22.11 Unsupervised learning: understanding data, no labels</a></li>
+  <li><a href="#dimensionality-reduction-compress-then-reconstruct" id="toc-dimensionality-reduction-compress-then-reconstruct" class="nav-link" data-scroll-target="#dimensionality-reduction-compress-then-reconstruct">22.12 Dimensionality reduction: compress, then reconstruct</a></li>
+  <li><a href="#density-estimation-scoring-reality-with-probabilities" id="toc-density-estimation-scoring-reality-with-probabilities" class="nav-link" data-scroll-target="#density-estimation-scoring-reality-with-probabilities">22.13 Density estimation: scoring reality with probabilities</a></li>
+  <li><a href="#how-it-all-connects-and-what-comes-next" id="toc-how-it-all-connects-and-what-comes-next" class="nav-link" data-scroll-target="#how-it-all-connects-and-what-comes-next">22.14 How it all connects — and what comes next</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./22-what-is-ml.html">Part III — Machine Learning Foundations</a></li><li class="breadcrumb-item"><a href="./22-what-is-ml.html"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Chapter 21 closed Part II by explaining <em>why</em> averages concentrate and fluctuations look normal. This chapter opens Part III: it turns that machinery into machine learning. Everything here comes from the MLF Week 1 lectures — “Introduction, Terminology and Setup” by Harish Guruprasad Ramaswamy — whose job is to fix the vocabulary (data, model, learning algorithm, task) and sketch the four learning problems this part of the book is about: regression and classification (supervised), dimensionality reduction and density estimation (unsupervised). The algorithms themselves are Chapters 23–25’s job; this chapter frames.</p>
+<section id="what-is-machine-learning" class="level2">
+<h2 class="anchored" data-anchor-id="what-is-machine-learning">22.1 What is machine learning?</h2>
+<p><strong>Def.</strong> <strong>Machine learning (ML)</strong> = “the study of computer algorithms that improve automatically through experience and by the use of data” (the Wikipedia definition the lecture opens with).</p>
+<p>Three phrases do the work: <em>computer algorithms</em> (it is a computation problem, not philosophy), <em>improve automatically through experience</em> (the system gets better without a human rewriting it), and <em>by the use of data</em> (experience = data — past examples, not a textbook of rules).</p>
+<p><strong>Basically, …</strong> Ordinary software = a human writes the rules; the computer executes them. Machine learning = the computer <em>derives</em> the rules from examples. You don’t teach it face detection by describing a face in code — you show it a million faces and let it figure out the pattern.</p>
+<p><strong>Note (the ML vs everything-else test).</strong> The lecture’s rule of thumb: if you can solve a task with manual labour or plain programming, <em>do that</em> — don’t reach for ML. ML earns its keep only where both fail. That decision is made by a task analysis (§22.2).</p>
+</section>
+<section id="the-task-hierarchy-manual-labour-programming-machine-learning" class="level2">
+<h2 class="anchored" data-anchor-id="the-task-hierarchy-manual-labour-programming-machine-learning">22.2 The task hierarchy: manual labour → programming → machine learning</h2>
+<p><strong>Def (task).</strong> A <strong>task</strong> = a process converting an <strong>input</strong> into an <strong>output</strong>. The same task can be performed at increasing levels of abstraction:</p>
+<ol type="i">
+<li><strong>Manual labour.</strong> The human directly converts input to output. (Input → Human → Output.)</li>
+<li><strong>Programming / tool usage.</strong> The human builds a <em>tool</em> that converts input to output. (Input → Software → Output.)</li>
+<li><strong>Machine learning.</strong> The human doesn’t even build the tool. The human gives a broad blueprint to a <em>tool design</em>, which uses <strong>data</strong> plus the human’s blueprint to construct the tool. (Input → Model → Output, where the model was built by a learning algorithm from data.)</li>
+</ol>
+<!-- Original matplotlib illustration drawn for this chapter (not reused from any URL): the three-level task hierarchy — manual labour, programming, machine learning — as block diagrams -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/22-task-hierarchy.png" class="img-fluid figure-img"></p>
+<figcaption>Three rows of block diagrams: Manual labour (Input -&gt; Human -&gt; Output), Programming (Input -&gt; Software (tool) -&gt; Output), Machine learning (Input -&gt; Model (tool) -&gt; Output), with a note that the human gives a broad blueprint to tool design and the learning algorithm builds the model from data.</figcaption>
+</figure>
+</div>
+<p><strong>Why programming/human labour fail.</strong> Two failure modes, and one success condition for ML:</p>
+<ol type="i">
+<li><strong>Scale/speed/cost.</strong> Humans can verify passwords in principle — but not for billions of logins.</li>
+<li><strong>Can’t express the rules.</strong> You know a face when you see one (a baby learns it from a few examples), but you cannot write down “what pixel patterns constitute a face” in a programming language. Or you don’t even know the rules at all — nobody fully knows the function mapping today’s radar map to tomorrow’s rain.</li>
+<li><strong>Hope for ML.</strong> Lots of example data, plus <em>some</em> structural idea about the rule (you don’t know the exact rule, but you know what shape it might take).</li>
+</ol>
+<p><strong>eg 1 (task analysis: password verify — no ML needed).</strong> Input: password; output: authentication. Manual labour: conceivable but fails on scale (billions of humans needed). Programming: trivial — compare input against the password on file. Since programming works, ML is never considered.</p>
+<p><strong>eg 2 (task analysis: face detection — the ML case).</strong> Input: image (pixels); output: face / no face (+ location). Manual labour: conceivable (a human drawing boxes on every photo) but absurd on scale. Programming: fails — the idea of “face” cannot be conveyed to a computer that sees only pixels, even though such a function clearly exists. ML: succeeds — the human never writes the face rule; a learning algorithm builds the tool from lots of face/non-face images (practically unlimited on the internet).</p>
+<p><strong>eg 3 (task analysis: weather prediction — the ML case).</strong> Input: radar map (wind, moisture); output: rain/shine tomorrow. Manual labour fails — humans don’t know the rule themselves (physics implements it; nobody wrote it down). Programming fails for the same reason — you can’t code what you don’t know. ML works because a rule <em>exists</em> (nature runs it), and there is immense historical weather data to learn it from.</p>
+<p><strong>The wonders (the lecture’s tour).</strong> Once you see the hierarchy, you see ML everywhere: <strong>inbox</strong> (spam classifiers — “one of the biggest success cases of machine learning”), <strong>shopping cart</strong> (recommender systems: “customers who bought this also bought…”), <strong>smart assistant</strong> (sound waveform → text → command: “increase volume by 10%”), <strong>robots</strong> (a Mars rover can’t be remote-controlled with 10–15 minute radio delays — it must decide actions from its environment), <strong>games</strong> (chess, then Go: “impossibly complex” until an ML system beat the best human), <strong>marketing</strong> (who to advertise to on a fixed budget).</p>
+<p><strong>Basically, …</strong> Ask two questions about any task. (1) Can a human do it at scale? Can a programmer write the rule? If either is yes — stop, use that. (2) If both are no — is there lots of example data and some structural idea of the rule? If yes — that’s a machine learning task. Password verify stops at question 1; face detection and weather prediction pass both gates.</p>
+</section>
+<section id="data-a-collection-of-vectors" class="level2">
+<h2 class="anchored" data-anchor-id="data-a-collection-of-vectors">22.3 Data: a collection of vectors</h2>
+<p><strong>Def.</strong> In ML, <strong>data</strong> = a collection of vectors. Each data point is a vector in <span class="math inline">\(\mathbb{R}^d\)</span> (the lecture: “data will almost always mean a collection of vectors”).</p>
+<p>The lecture’s running example: six houses, each a <span class="math inline">\(4\)</span>-dimensional vector:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th># rooms</th>
+<th>Area (100 sq.ft)</th>
+<th>Distance to metro (km)</th>
+<th>Price (10 lakhs)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>House 1</td>
+<td>3</td>
+<td>9</td>
+<td>1.9</td>
+<td>5.0</td>
+</tr>
+<tr class="even">
+<td>House 2</td>
+<td>2</td>
+<td>7</td>
+<td>2.1</td>
+<td>3.2</td>
+</tr>
+<tr class="odd">
+<td>House 3</td>
+<td>4</td>
+<td>12</td>
+<td>2.8</td>
+<td>6.6</td>
+</tr>
+<tr class="even">
+<td>House 4</td>
+<td>5</td>
+<td>16</td>
+<td>0.9</td>
+<td>9.8</td>
+</tr>
+<tr class="odd">
+<td>House 5</td>
+<td>5</td>
+<td>15</td>
+<td>3.1</td>
+<td>8.5</td>
+</tr>
+<tr class="even">
+<td>House 6</td>
+<td>4</td>
+<td>11</td>
+<td>1.6</td>
+<td>6.9</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Def (metadata).</strong> <strong>Metadata</strong> = information <em>on</em> the data — what each number means. Here: coordinate 1 = number of rooms, coordinate 2 = area in hundreds of square feet, coordinate 3 = distance to metro in km, coordinate 4 = price in tens of lakhs.</p>
+<ol type="i">
+<li><strong>Metadata is for humans.</strong> “House 1 is a three-bedroom house with 900 sq.ft, 1.9 km from the metro, priced at 50 lakhs” — that story is human-readable; the computer only needs the numbers.</li>
+<li><strong>Consistency is for the computer.</strong> The computer doesn’t need to know what “rooms” means — but coordinate 1 must mean rooms for <em>every</em> house. As long as the meaning is consistent across rows, the data is usable.</li>
+</ol>
+<p><strong>eg 4 (reading the table with metadata).</strong> House 4 = <span class="math inline">\((5, 16, 0.9, 9.8)\)</span> reads as: 5 rooms, <span class="math inline">\(1600\)</span> sq.ft, <span class="math inline">\(0.9\)</span> km from the metro, price <span class="math inline">\(98\)</span> lakhs (9.8 tens of lakhs). The vector <span class="math inline">\((5, 16, 0.9, 9.8)\)</span> is the data; the sentence is the metadata’s work.</p>
+<p><strong>Note (the data assumption).</strong> Learning algorithms treat the data points as independent draws of the same kind — the examples are generated “independently”, in the lecture’s phrasing for the tweet stream (§22.13) — and expect <em>future</em> data to look like the training data (that’s what “predict on unseen data” in §22.10 means). The formal i.i.d. machinery is §20.1’s; here it is just the standing bet every ML task makes: tomorrow’s data resembles today’s.</p>
+<p><strong>Basically, …</strong> Data = a table of numbers (vectors). Metadata = the column headers that tell <em>you</em> what the numbers mean; the computer doesn’t care about headers, it only cares that column 2 means the same thing in every row. Every ML chapter from here on starts from such a table.</p>
+</section>
+<section id="models-mathematical-simplifications-of-reality" class="level2">
+<h2 class="anchored" data-anchor-id="models-mathematical-simplifications-of-reality">22.4 Models: mathematical simplifications of reality</h2>
+<p><strong>Def.</strong> A <strong>model</strong> = a mathematical simplification of reality. It represents reality but is simpler and more compact than reality — never exact, sometimes useful.</p>
+<p>The lecture’s scientific examples: the <strong>ideal gas model</strong> (<span class="math inline">\(PV = nRT\)</span> — no gas is truly ideal, but it captures the important behaviour); the <strong>inverse-square law</strong> for gravity (force <span class="math inline">\(\propto 1/R^2\)</span> — ignores relativity, still runs spaceflight); <strong>Moore’s law</strong> (transistor counts doubling — not a physical law, but a trend that held for decades); the <strong>Cobb–Douglas model</strong> in economics.</p>
+<blockquote class="blockquote">
+<p>“All models are wrong, but some are useful.” — George Box</p>
+</blockquote>
+<p>ML models are the same idea, aimed at a narrower job. Two kinds:</p>
+<ol type="i">
+<li><strong>Predictive models</strong> — predict the future from the present. Two subtypes:
+<ul>
+<li><strong>Regression model.</strong> Predicts a <em>real-valued</em> quantity. The lecture’s example good model: <span class="math display">\[\text{Price} = 0.5 \times \text{Area} - \text{Distance}.\]</span> Price rises with area, falls with distance from the metro — a trend with exceptions, but useful: on a fixed budget you can now reason “big house far away, or small house close in”.</li>
+<li><strong>Classification model.</strong> Predicts a <em>discrete</em> quantity. The lecture’s example good model: for whether a house is closer than 2 km to a metro, <span class="math display">\[\text{Close if } 2\times\text{ROOMS} - \text{PRICE} &lt; 1, \quad \text{Far otherwise}.\]</span> Reading: a small expensive house (few rooms, high price) is probably close to the city; the rule encodes that hunch as arithmetic.</li>
+</ul></li>
+<li><strong>Probabilistic models</strong> — don’t predict; they <em>score reality</em>. Give them any configuration and they say how likely it is. Two of the lecture’s examples: “what is the probability that a randomly chosen person is at lat-long (25°N, 30°E)?” (high in Bombay, low in the Sahara desert); “what is the probability that a given tweet was generated by Mr.&nbsp;Chopra?” (Chopra-like tweets score high; random digit strings score low).</li>
+</ol>
+<p><strong>Note (predictive vs probabilistic).</strong> A regression model answers “what will this new house cost?”. A probabilistic model answers “how likely is this configuration?”. Both are functions; they differ in what the output <em>means</em>. Density estimation (§22.13) builds the second kind; regression and classification build the first.</p>
+<p><strong>eg 5 (using the deck’s models on new data).</strong> Take the regression model <span class="math inline">\(\text{Price} = 0.5\times\text{Area} - \text{Distance}\)</span> (area in 100 sq.ft, distance in km, price in 10 lakhs). A new house: <span class="math inline">\(700\)</span> sq.ft at <span class="math inline">\(3\)</span> km from the metro → area coordinate <span class="math inline">\(7\)</span>: <span class="math display">\[\text{Price} = 0.5 \times 7 - 3 = 3.5 - 3 = \boxed{0.5} \;\text{(in 10 lakhs)} = \text{5 lakhs}.\]</span> You’ve never seen this house, but the model predicts its price anyway — that is what makes it <em>predictive</em>.</p>
+<p><strong>eg 6 (using the deck’s classification model).</strong> Rule: Close if <span class="math inline">\(2\times\text{ROOMS} - \text{PRICE} &lt; 1\)</span>. House A: 2 rooms, price 8 (in 10 lakhs) → <span class="math inline">\(2(2) - 8 = -4 &lt; 1\)</span> → <strong>Close</strong>. House B: 4 rooms, price 3 → <span class="math inline">\(2(4) - 3 = 5 \not&lt; 1\)</span> → <strong>Far</strong>. Small-expensive lands near the metro; big-cheap lands far out — exactly the hunch the arithmetic encodes.</p>
+<p><strong>Basically, …</strong> A model = a compact equation that captures a trend (price rises with area, falls with distance) while ignoring the exceptions. Predictive models answer “what’s the value for this new input?”; probabilistic models answer “how likely is this configuration?”. ML’s job is to <em>find</em> such equations from data instead of a human writing them by hand.</p>
+</section>
+<section id="learning-algorithms-and-the-ml-task-precisely" class="level2">
+<h2 class="anchored" data-anchor-id="learning-algorithms-and-the-ml-task-precisely">22.5 Learning algorithms and the ML task, precisely</h2>
+<p><strong>Def.</strong> A <strong>learning algorithm</strong> = Data → Models. It does not invent a model from nothing; it <strong>chooses from a collection of models with the same structure but different parameters</strong>, using the data to pick the “best” one.</p>
+<p>The lecture’s example. Fix the structure <em>before</em> seeing any data: <span class="math display">\[\text{Price} = a \times (\text{area}) + b \times (\text{\# rooms}) + c \times (\text{distance to metro}).\]</span> The numbers <span class="math inline">\(a, b, c\)</span> are the <strong>parameters</strong> — every choice of <span class="math inline">\((a,b,c)\)</span> is a different model in the collection, all sharing the same structure. The learning algorithm looks at the data and decides the values of <span class="math inline">\(a, b, c\)</span>.</p>
+<p><strong>The ML task, revisited (§22.2’s diagram, now with names).</strong> The <em>tool</em> is the <strong>model</strong> (e.g.&nbsp;the price-prediction equation). The <em>tool design</em> is the <strong>learning algorithm</strong>: the human supplies only the broad blueprint (the structure, e.g.&nbsp;“price is linear in area, rooms, distance”), and the algorithm combines it with past data to construct the actual model. At prediction time, the model converts a new input into an output.</p>
+<ol type="i">
+<li><strong>Structure is the human’s job.</strong> “Price depends linearly on area, rooms, distance” — chosen by human intuition <em>before</em> any data is seen.</li>
+<li><strong>Parameters are the data’s job.</strong> The exact <span class="math inline">\(a, b, c\)</span> — chosen by the learning algorithm <em>from</em> the data.</li>
+<li><strong>The collection is the hypothesis space.</strong> The set of all models the algorithm is allowed to pick from (all linear models, all sign-of-linear models, …). The algorithm never leaves this collection; if the truth isn’t in it, the best it can do is the closest member. (Choosing <em>which</em> collection — model selection — is §22.10’s validation data.)</li>
+</ol>
+<p><strong>Basically, …</strong> The learning algorithm is a very disciplined shopper: the human decides the shop (“all straight-line price rules”), the data decides which item to buy (the specific <span class="math inline">\(a, b, c\)</span> that best explains the houses seen so far). Everything in Chapters 23–25 is this pattern with the details filled in: what collection, what “best” means, and how to find it.</p>
+</section>
+<section id="notation-for-the-rest-of-part-iii" class="level2">
+<h2 class="anchored" data-anchor-id="notation-for-the-rest-of-part-iii">22.6 Notation for the rest of Part III</h2>
+<p>The regression lecture fixes notation once, used through Chapters 23–25:</p>
+<ol type="i">
+<li><span class="math inline">\(\mathbb{R}\)</span> = real numbers; <span class="math inline">\(\mathbb{R}_+\)</span> = positive reals; <span class="math inline">\(\mathbb{R}^d\)</span> = <span class="math inline">\(d\)</span>-dimensional vectors of reals.</li>
+<li><span class="math inline">\(\mathbf{x}\)</span> (the lecture writes <span class="math inline">\(x\)</span>) = a vector; <span class="math inline">\(x_j\)</span> = its <span class="math inline">\(j\)</span>-th coordinate; <span class="math inline">\(\|\mathbf{x}\|\)</span> = Euclidean length, <span class="math inline">\(\|\mathbf{x}\|^2 = x_1^2 + x_2^2 + \cdots + x_d^2\)</span>.</li>
+<li><span class="math inline">\(\mathbf{x}^1, \mathbf{x}^2, \ldots, \mathbf{x}^n\)</span> = a collection of <span class="math inline">\(n\)</span> vectors — <strong>superscript</strong> indexes the data point, <strong>subscript</strong> the coordinate. So <span class="math inline">\(x^i_j\)</span> = the <span class="math inline">\(j\)</span>-th coordinate of the <span class="math inline">\(i\)</span>-th vector (eg: if <span class="math inline">\(\mathbf{x}^3 = (7,7,8)\)</span> then <span class="math inline">\(x^3_2 = 7\)</span>). The lecture warns this collides with powers — it writes <span class="math inline">\((x^1)_2\)</span> (parenthesized) for the <em>square of the first coordinate</em> of the vector <span class="math inline">\(x\)</span>, versus <span class="math inline">\(x^2_1\)</span> for the <em>first coordinate of the second vector</em>; read from context.</li>
+<li><span class="math inline">\(\mathbf{1}(\cdot)\)</span> = the <strong>indicator</strong>: <span class="math inline">\(\mathbf{1}(\text{predicate}) = 1\)</span> if true, <span class="math inline">\(0\)</span> if false. Eg: <span class="math inline">\(\mathbf{1}(2 \text{ is even}) = 1\)</span>, <span class="math inline">\(\mathbf{1}(2 \text{ is odd}) = 0\)</span> — the standard device for turning English (“was it classified correctly?”) into math.</li>
+</ol>
+</section>
+<section id="supervised-learning-curve-fitting-with-answers" class="level2">
+<h2 class="anchored" data-anchor-id="supervised-learning-curve-fitting-with-answers">22.7 Supervised learning: curve-fitting with answers</h2>
+<p><strong>Def.</strong> <strong>Supervised learning</strong> = learning from <strong>labelled</strong> data. You are given <span class="math display">\[\{(\mathbf{x}^1, y^1), (\mathbf{x}^2, y^2), \ldots, (\mathbf{x}^n, y^n)\},\]</span> each <span class="math inline">\(\mathbf{x}^i \in \mathbb{R}^d\)</span> an <strong>instance</strong> (the input vector), each <span class="math inline">\(y^i\)</span> its <strong>label</strong> (the answer). Find a model <span class="math inline">\(f\)</span> such that <span class="math inline">\(f(\mathbf{x}^i)\)</span> is “close” to <span class="math inline">\(y^i\)</span>.</p>
+<p><strong>The extreme simplification (the lecture’s).</strong> Supervised learning = <strong>curve-fitting</strong>. You have points; you fit a curve through them so the curve passes as close to the points as possible. Everything that makes it harder than school curve-fitting — high dimensions, the choice of “close”, generalizing to new points — is detail on this picture.</p>
+<p>The two supervised tasks differ only in what the labels <span class="math inline">\(y^i\)</span> can be:</p>
+<ol type="i">
+<li><strong>Regression</strong> (§22.8): <span class="math inline">\(y^i \in \mathbb{R}\)</span> — labels are real numbers (prices, temperatures). Model: <span class="math inline">\(f: \mathbb{R}^d \to \mathbb{R}\)</span>.</li>
+<li><strong>Classification</strong> (§22.9): <span class="math inline">\(y^i \in \{+1, -1\}\)</span> — labels are discrete classes (spam/not-spam, close/far). Model: <span class="math inline">\(f: \mathbb{R}^d \to \{+1, -1\}\)</span>.</li>
+</ol>
+<p><strong>Note (“supervised” because…).</strong> The labels supervise: they tell the algorithm what the right answer was for each training instance, so it can measure how wrong its curve is. Unsupervised learning (§22.11) has no labels — no answers to check against.</p>
+</section>
+<section id="regression-predicting-a-real-number" class="level2">
+<h2 class="anchored" data-anchor-id="regression-predicting-a-real-number">22.8 Regression: predicting a real number</h2>
+<p><strong>Setup.</strong> Training data <span class="math inline">\(\{(\mathbf{x}^i, y^i)\}\)</span> with <span class="math inline">\(\mathbf{x}^i \in \mathbb{R}^d\)</span>, <span class="math inline">\(y^i \in \mathbb{R}\)</span> (eg: <span class="math inline">\(\mathbf{x}^i\)</span> = (rooms, area, distance), <span class="math inline">\(y^i\)</span> = price). The algorithm outputs <span class="math inline">\(f: \mathbb{R}^d \to \mathbb{R}\)</span>.</p>
+<p><strong>Def (squared loss).</strong> How good is a candidate <span class="math inline">\(f\)</span>? Measure the deviation at each point and square it: <span class="math display">\[\boxed{L(f) = \frac{1}{n}\sum_{i=1}^{n}\big(f(\mathbf{x}^i) - y^i\big)^2}.\]</span> Squaring keeps the loss non-negative and punishes overshoot and undershoot equally. <span class="math inline">\(L(f) = 0\)</span> iff <span class="math inline">\(f(\mathbf{x}^i) = y^i\)</span> for all <span class="math inline">\(i\)</span> — the smallest possible loss. The learning algorithm’s job: find an <span class="math inline">\(f\)</span> with small <span class="math inline">\(L(f)\)</span>.</p>
+<p><strong>The linear parameterization.</strong> The most common structure: <span class="math inline">\(f\)</span> is linear in its input, <span class="math display">\[\boxed{f(\mathbf{x}) = \mathbf{w}^T\mathbf{x} + b = \sum_{j=1}^{d} w_j x_j + b},\]</span> with <strong>parameters</strong> <span class="math inline">\(w_1, \ldots, w_d, b\)</span>. For houses: <span class="math inline">\(f = w_1(\text{rooms}) + w_2(\text{area}) + w_3(\text{distance}) + b\)</span>. Every choice of <span class="math inline">\((w_1, w_2, w_3, b)\)</span> is one model in the collection; the algorithm picks the best one (§22.5). <em>Finding</em> it from an infinite collection is Chapter 23’s job — here we just <em>evaluate</em> candidates.</p>
+<!-- Original matplotlib illustration drawn for this chapter (not reused from any URL): scatter of the deck's 1-D regression data with f(x)=2x and g(x)=x+3 overlaid -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/22-regression-illustration.png" class="img-fluid figure-img"></p>
+<figcaption>Scatter plot of the five points (1,2.1),(2,3.9),(3,6.2),(6,11.5),(7,13.9). A green line f(x)=2x passes close to all points; a dashed red line g(x)=x+3 misses them badly.</figcaption>
+</figure>
+</div>
+<p><strong>eg 7 (the lecture’s 1-D illustration, worked fully).</strong> Data (<span class="math inline">\(d = 1\)</span>, written as vectors for form’s sake): <span class="math inline">\((x^1,y^1) = (1, 2.1)\)</span>, <span class="math inline">\((2, 3.9)\)</span>, <span class="math inline">\((3, 6.2)\)</span>, <span class="math inline">\((6, 11.5)\)</span>, <span class="math inline">\((7, 13.9)\)</span>. Two candidate models: <span class="math inline">\(f(x) = 2x_1\)</span> and <span class="math inline">\(g(x) = x_1 + 3\)</span>. Evaluate: <span class="math display">\[f: \; 2, 4, 6, 12, 14 \qquad g: \; 4, 5, 6, 9, 10.\]</span> Loss of <span class="math inline">\(f\)</span>: <span class="math display">\[L(f) = \tfrac15\big[(2-2.1)^2 + (4-3.9)^2 + (6-6.2)^2 + (12-11.5)^2 + (14-13.9)^2\big]\]</span> <span class="math display">\[= \tfrac15\big[0.01 + 0.01 + 0.04 + 0.25 + 0.01\big] = \tfrac{0.32}{5} = \boxed{0.064}.\]</span> Loss of <span class="math inline">\(g\)</span>: <span class="math display">\[L(g) = \tfrac15\big[(4-2.1)^2 + (5-3.9)^2 + (6-6.2)^2 + (9-11.5)^2 + (10-13.9)^2\big]\]</span> <span class="math display">\[= \tfrac15\big[3.61 + 1.21 + 0.04 + 6.25 + 15.21\big] = \tfrac{26.32}{5} = \boxed{5.264}.\]</span> <span class="math inline">\(L(f) \ll L(g)\)</span> — the algorithm prefers <span class="math inline">\(f\)</span>. The picture says why: <span class="math inline">\(f\)</span> threads through the points; <span class="math inline">\(g\)</span> sits far below most of them. (A real algorithm wouldn’t choose between two models but among an infinite collection — the principle is identical.)</p>
+<p><strong>eg 8 (the lecture’s house-price illustration, worked fully).</strong> Same house table as §22.3. Candidates: <span class="math inline">\(f(\mathbf{x}) = 2(\text{rooms}) - 0.5(\text{distance})\)</span> and <span class="math inline">\(g(\mathbf{x}) = (\text{rooms}) + 2(\text{distance})\)</span>. Predictions of <span class="math inline">\(f\)</span>: <span class="math inline">\(6-0.95 = 5.05\)</span>; <span class="math inline">\(4-1.05 = 2.95\)</span>; <span class="math inline">\(8-1.4 = 6.6\)</span>; <span class="math inline">\(10-0.45 = 9.55\)</span>; <span class="math inline">\(10-1.55 = 8.45\)</span>; <span class="math inline">\(8-0.8 = 7.2\)</span>. Against true prices <span class="math inline">\((5.0, 3.2, 6.6, 9.8, 8.5, 6.9)\)</span>: <span class="math display">\[L(f) = \tfrac16\big[0.05^2 + (-0.25)^2 + 0^2 + (-0.25)^2 + (-0.05)^2 + 0.3^2\big] = \tfrac{0.22}{6} \approx \boxed{0.0367}.\]</span> Predictions of <span class="math inline">\(g\)</span>: <span class="math inline">\(3+3.8 = 6.8\)</span>; <span class="math inline">\(2+4.2 = 6.2\)</span>; <span class="math inline">\(4+5.6 = 9.6\)</span>; <span class="math inline">\(5+1.8 = 6.8\)</span>; <span class="math inline">\(5+6.2 = 11.2\)</span>; <span class="math inline">\(4+3.2 = 7.2\)</span>: <span class="math display">\[L(g) = \tfrac16\big[1.8^2 + 3.0^2 + 3.0^2 + (-3.0)^2 + 2.7^2 + 0.3^2\big] = \tfrac{37.62}{6} = \boxed{6.27}.\]</span> <span class="math inline">\(f\)</span> wins decisively — and notice what <span class="math inline">\(f\)</span> <em>says</em>: price rises with rooms and falls with distance to the metro, the sensible trend from §22.4. The loss picked the model a human would also call reasonable.</p>
+<p><strong>Basically, …</strong> Regression = “draw the best curve through the points, where ‘best’ = smallest average squared miss”. The lecture’s two demos are the whole idea in miniature: compute each candidate’s misses, square, average, pick the smaller number. Chapter 23 automates the picking over all straight lines (and curves) at once.</p>
+</section>
+<section id="classification-predicting-a-discrete-label" class="level2">
+<h2 class="anchored" data-anchor-id="classification-predicting-a-discrete-label">22.9 Classification: predicting a discrete label</h2>
+<p><strong>Setup.</strong> Same instances <span class="math inline">\(\mathbf{x}^i \in \mathbb{R}^d\)</span>, but now the labels are just two values: <span class="math inline">\(\boxed{y^i \in \{+1, -1\}}\)</span>. The algorithm outputs <span class="math inline">\(f: \mathbb{R}^d \to \{+1, -1\}\)</span>. (The lecture’s example: from a house’s area and price, predict whether its room count is <span class="math inline">\(&gt; 3\)</span> or <span class="math inline">\(\le 3\)</span>.)</p>
+<p><strong>Def (0–1 / misclassification loss).</strong> The natural loss: the <strong>fraction of misclassified instances</strong>, <span class="math display">\[\boxed{L(f) = \frac{1}{n}\sum_{i=1}^{n}\mathbf{1}\big(f(\mathbf{x}^i) \ne y^i\big)},\]</span> using the indicator from §22.6. Each point contributes <span class="math inline">\(1\)</span> if wrong, <span class="math inline">\(0\)</span> if right; divide by <span class="math inline">\(n\)</span>. Perfect classification ⇔ <span class="math inline">\(L(f) = 0\)</span>.</p>
+<p><strong>The linear separator.</strong> A linear <span class="math inline">\(\mathbf{w}^T\mathbf{x} + b\)</span> outputs reals, not <span class="math inline">\(\pm 1\)</span> — so put a sign on top: <span class="math display">\[\boxed{f(\mathbf{x}) = \mathrm{sign}(\mathbf{w}^T\mathbf{x} + b)} \qquad \text{(a \textbf{linear separator})}.\]</span> Not the only possible classifier, but the canonical one: it carves the input space into a <span class="math inline">\(+1\)</span> region and a <span class="math inline">\(-1\)</span> region with a straight boundary (<span class="math inline">\(\mathbf{w}^T\mathbf{x} + b = 0\)</span>).</p>
+<!-- Original matplotlib illustration drawn for this chapter (not reused from any URL): the deck's 2-D classification data with f's vertical boundary x1=2 and g's slanted boundary x1=2x2 -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/22-classification-illustration.png" class="img-fluid figure-img"></p>
+<figcaption>Six points in the plane: three blue circles (+1) at (0,0),(1,0),(0,1) and three red squares (-1) at (4,4),(3,4),(4,3). A vertical blue line at x1=2 separates them perfectly (f’s boundary, regions shaded); a dashed purple line x1=2x2 through the origin misclassifies one point (g’s boundary).</figcaption>
+</figure>
+</div>
+<p><strong>eg 9 (the lecture’s 2-D illustration, worked fully).</strong> Points: <span class="math inline">\(\mathbf{x}^1=(0,0), \mathbf{x}^2=(1,0), \mathbf{x}^3=(0,1)\)</span> labelled <span class="math inline">\(+1\)</span>; <span class="math inline">\(\mathbf{x}^4=(4,4), \mathbf{x}^5=(3,4), \mathbf{x}^6=(4,3)\)</span> labelled <span class="math inline">\(-1\)</span>. Candidates: <span class="math inline">\(f(\mathbf{x}) = \mathrm{sign}(2 - x_1)\)</span> and <span class="math inline">\(g(\mathbf{x}) = \mathrm{sign}(x_1 - 2x_2)\)</span> (convention: <span class="math inline">\(\mathrm{sign}(0) = +1\)</span>). <span class="math display">\[f: \; \mathrm{sign}(2), \mathrm{sign}(1), \mathrm{sign}(2), \mathrm{sign}(-2), \mathrm{sign}(-1), \mathrm{sign}(-2) = (+1,+1,+1,-1,-1,-1).\]</span> Matches every label → <span class="math inline">\(\boxed{L(f) = 0}\)</span>. Geometrically: <span class="math inline">\(f\)</span> predicts <span class="math inline">\(+1\)</span> left of the line <span class="math inline">\(x_1 = 2\)</span> and <span class="math inline">\(-1\)</span> right of it — all <span class="math inline">\(+1\)</span> points lie left, all <span class="math inline">\(-1\)</span> points right. <span class="math display">\[g: \; \mathrm{sign}(0), \mathrm{sign}(1), \mathrm{sign}(-2), \mathrm{sign}(-4), \mathrm{sign}(-5), \mathrm{sign}(-2) = (+1,+1,-1,-1,-1,-1).\]</span> The third point <span class="math inline">\(\mathbf{x}^3 = (0,1)\)</span> is truly <span class="math inline">\(+1\)</span> but <span class="math inline">\(g\)</span> says <span class="math inline">\(-1\)</span> — one mistake → <span class="math inline">\(\boxed{L(g) = 1/6}\)</span>. The algorithm prefers <span class="math inline">\(f\)</span>. (A real algorithm searches all separators, not just two.)</p>
+<p><strong>eg 10 (the lecture’s house-rooms illustration, worked fully).</strong> Encode rooms <span class="math inline">\(\le 3\)</span> as <span class="math inline">\(-1\)</span>, rooms <span class="math inline">\(&gt; 3\)</span> as <span class="math inline">\(+1\)</span>. From §22.3’s table the true labels are <span class="math inline">\((-1,-1,+1,+1,+1,+1)\)</span>. Three candidates: <span class="math display">\[f(\mathbf{x}) = \mathrm{sign}(\text{area} - 10), \quad g(\mathbf{x}) = \mathrm{sign}(\text{price} - 6), \quad h(\mathbf{x}) = \mathrm{sign}(\text{price} - 9).\]</span> <span class="math inline">\(f\)</span> says “area above 10 (hundred sq.ft) ⇒ more than 3 rooms”; <span class="math inline">\(g\)</span>, <span class="math inline">\(h\)</span> threshold the price instead. Predictions: <span class="math display">\[f: \; (-1,-1,+1,+1,+1,+1) \quad (\text{areas } 9,7,12,16,15,11),\]</span> <span class="math display">\[g: \; (-1,-1,+1,+1,+1,+1) \quad (\text{prices } 5.0,3.2,6.6,9.8,8.5,6.9),\]</span> <span class="math display">\[h: \; (-1,-1,-1,+1,-1,-1) \quad (\text{only house 4 clears price } 9).\]</span> <span class="math inline">\(\boxed{L(f) = 0}\)</span>, <span class="math inline">\(\boxed{L(g) = 0}\)</span>, <span class="math inline">\(\boxed{L(h) = 3/6 = 1/2}\)</span> (<span class="math inline">\(h\)</span> misses houses 3, 5, 6). The algorithm rejects <span class="math inline">\(h\)</span> — but <span class="math inline">\(f\)</span> and <span class="math inline">\(g\)</span> tie at zero loss, and on training data alone it cannot choose between them. That tie is a first hint that training loss isn’t the whole story.</p>
+<p><strong>Basically, …</strong> Classification = regression’s discrete twin: labels are <span class="math inline">\(\pm 1\)</span>, “close” becomes “exactly right”, and the loss is just the fraction you got wrong. The linear separator is one straight cut through the data — sign of a linear function. Compare candidates by counting mistakes; fewest mistakes wins.</p>
+</section>
+<section id="training-loss-is-not-the-goal-test-data" class="level2">
+<h2 class="anchored" data-anchor-id="training-loss-is-not-the-goal-test-data">22.10 Training loss is not the goal: test data</h2>
+<p><strong>The trap.</strong> A model can score <span class="math inline">\(L(f) = 0\)</span> on the training data and still be useless. The lecture’s counterexample, on eg 9’s data: <span class="math display">\[f(\mathbf{x}) = \begin{cases} +1 &amp; \mathbf{x} \in \{(0,0), (1,0), (0,1)\}, \\ -1 &amp; \text{otherwise}. \end{cases}\]</span> It memorizes the three positive points and says <span class="math inline">\(-1\)</span> everywhere else — zero training loss. But a new point near the origin, say <span class="math inline">\((0.1, 0.1)\)</span>, is clearly <span class="math inline">\(+1\)</span>-ish by any sane logic, and this <span class="math inline">\(f\)</span> calls it <span class="math inline">\(-1\)</span>. It learned the <em>data</em>, not the <em>principle</em>.</p>
+<p><strong>Def.</strong> Evaluate on <strong>test data</strong> — data <em>not</em> used in training. Training picks the model; testing judges it. Judging on the training set gives an overoptimistic estimate, because the model has already seen those points.</p>
+<p><strong>The three-way split.</strong> i) <strong>Training data</strong> — pick the best model <em>within</em> a collection (eg: the best <span class="math inline">\(a, b, c\)</span> among all linear models). ii) <strong>Validation data</strong> — pick the best <em>collection</em> (eg: linear in area/rooms/distance vs.&nbsp;a fancier formula like <span class="math inline">\(a\cdot\text{area}/\text{rooms} + b\cdot\text{distance}^2\)</span>). Choosing the collection is <strong>model selection</strong>, done by humans, guided by held-out validation data. iii) <strong>Test data</strong> — final evaluation of the learned model, on data it never saw during training <em>or</em> selection. (Eg: learn on 1990–2020 house prices; judge on 2021 houses — predicting a 1990 price you already saw proves nothing.)</p>
+<p><strong>Note.</strong> This chapter’s worked examples all picked among a few hand-given candidates on the training data — the lecture is explicit that this is a <em>simplified</em> learning algorithm. Real algorithms search the whole infinite collection (§22.5), and real evaluation always holds out test data. Every chapter from here on inherits this discipline: fit on train, select on validation, report on test.</p>
+<p><strong>Basically, …</strong> “Zero mistakes on the practice exam” ≠ “knows the subject”. The memorizer aces the practice set by rote and fails every new question. ML’s report card is always the <em>unseen</em> test set — that’s the number that counts.</p>
+</section>
+<section id="unsupervised-learning-understanding-data-no-labels" class="level2">
+<h2 class="anchored" data-anchor-id="unsupervised-learning-understanding-data-no-labels">22.11 Unsupervised learning: understanding data, no labels</h2>
+<p><strong>Def.</strong> <strong>Unsupervised learning</strong> works on <strong>unlabelled</strong> data — just <span class="math inline">\(\{\mathbf{x}^1, \ldots, \mathbf{x}^n\}\)</span>, no <span class="math inline">\(y^i\)</span>. Goal, vaguely: build models that <strong>compress, explain and group</strong> the data. The lecture’s one-liner: unsupervised learning is “understanding data”.</p>
+<ol type="i">
+<li><strong>No answers to check.</strong> Supervised learning measures <span class="math inline">\(f(\mathbf{x}^i)\)</span> against the known <span class="math inline">\(y^i\)</span>; unsupervised has no <span class="math inline">\(y^i\)</span>, so “loss” has to be redefined per task (§§22.12–22.13 each invent their own).</li>
+<li><strong>Usually a preprocessing step, not the end goal.</strong> Its outputs become valuable after human interpretation or inside another pipeline. The lecture’s example: a Coca-Cola marketing manager faces a million tweets a week — unreadable. Group them into 10 clusters (selfies-with-Coke, co-branding, paid promotions, …); <em>then</em> a human reads the 10 groups and briefs the boss. The grouping is the algorithm’s job; giving the groups meaning is the human’s.</li>
+<li><strong>The two unsupervised tasks of this course:</strong> <strong>dimensionality reduction</strong> (§22.12 — compress) and <strong>density estimation</strong> (§22.13 — score/explain).</li>
+</ol>
+<p><strong>Basically, …</strong> Supervised = “here are questions with answers; learn the pattern”. Unsupervised = “here is a mountain of data with no answers; find its structure”. Nobody grades unsupervised output directly — its value shows up downstream, when the compressed or grouped data makes the real task easy.</p>
+</section>
+<section id="dimensionality-reduction-compress-then-reconstruct" class="level2">
+<h2 class="anchored" data-anchor-id="dimensionality-reduction-compress-then-reconstruct">22.12 Dimensionality reduction: compress, then reconstruct</h2>
+<p><strong>The problem.</strong> Data lives in <span class="math inline">\(\mathbb{R}^D\)</span> with <span class="math inline">\(D\)</span> huge. The lecture’s example: a million people × a million gene-expression levels — a <span class="math inline">\(10^6 \times 10^6\)</span> matrix nobody can transmit or store. Goal: represent each person with just (say) 100 numbers.</p>
+<p><strong>Def (encoder, decoder).</strong> Unlike every task so far, the algorithm learns <strong>two</strong> models: - <strong>Encoder</strong> <span class="math inline">\(f: \mathbb{R}^D \to \mathbb{R}^{d'}\)</span> — compresses (<span class="math inline">\(d' \ll D\)</span> typically); - <strong>Decoder</strong> <span class="math inline">\(g: \mathbb{R}^{d'} \to \mathbb{R}^D\)</span> — tries to undo the encoder. Goal: <span class="math inline">\(\boxed{g(f(\mathbf{x}^i)) \approx \mathbf{x}^i}\)</span> — encode, decode, get (almost) the original back.</p>
+<p><strong>Def (reconstruction loss).</strong> Measure the failure with the squared norm, averaged: <span class="math display">\[\boxed{L(f, g) = \frac{1}{n}\sum_{i=1}^{n}\big\|g(f(\mathbf{x}^i)) - \mathbf{x}^i\big\|^2}.\]</span> Zero loss = perfect round-trip; the algorithm hunts for the encoder–decoder pair minimizing it. <em>How</em> to search the infinite space of pairs is Chapter 24’s job (PCA).</p>
+<!-- Original matplotlib illustration drawn for this chapter (not reused from any URL): the deck's 4-point dimensionality-reduction example — data points, bad-pair reconstructions, good-pair reconstructions -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/22-dimred-illustration.png" class="img-fluid figure-img"></p>
+<figcaption>Four dark data points near the diagonal from (1,0.8) to (4,3.8). Red squares (bad pair reconstructions at (0.2,0.2) and (-0.2,-0.2)) sit far from the data with long dotted connectors; green triangles (good pair reconstructions at (0.9,0.9),(2.1,2.1),(3.1,3.1),(3.9,3.9)) sit almost on top of the data.</figcaption>
+</figure>
+</div>
+<p><strong>eg 11 (the lecture’s illustration, worked fully).</strong> <span class="math inline">\(D = 2\)</span>, <span class="math inline">\(d' = 1\)</span>, <span class="math inline">\(n = 4\)</span>: <span class="math inline">\(\mathbf{x}^1=(1,0.8), \mathbf{x}^2=(2,2.2), \mathbf{x}^3=(3,3.2), \mathbf{x}^4=(4,3.8)\)</span>. Two encoder–decoder pairs: - Bad pair: <span class="math inline">\(f(\mathbf{x}) = x_1 - x_2\)</span>, <span class="math inline">\(g(u) = (u,u)\)</span>. Encodings: <span class="math inline">\(0.2, -0.2, -0.2, 0.2\)</span>. Reconstructions: <span class="math inline">\((0.2,0.2), (-0.2,-0.2), (-0.2,-0.2), (0.2,0.2)\)</span> — two <em>different</em> inputs collapse to the same output; nothing is recovered. <span class="math display">\[L = \tfrac14\big[0.8^2+0.6^2 \;+\; 2.2^2+2.4^2 \;+\; 3.2^2+3.4^2 \;+\; 3.8^2+3.6^2\big] = \tfrac{60.8}{4} = \boxed{15.2}.\]</span> - Good pair: <span class="math inline">\(\tilde f(\mathbf{x}) = (x_1+x_2)/2\)</span>, <span class="math inline">\(\tilde g(u) = (u,u)\)</span>. Encodings: <span class="math inline">\(0.9, 2.1, 3.1, 3.9\)</span>. Reconstructions: <span class="math inline">\((0.9,0.9), (2.1,2.1), (3.1,3.1), (3.9,3.9)\)</span> — each hugs its original. <span class="math display">\[L = \tfrac14\big[0.1^2+0.1^2\big]\times 4 = \tfrac{0.08}{4} = \boxed{0.02}.\]</span> <span class="math inline">\(15.2\)</span> vs <span class="math inline">\(0.02\)</span>: the loss sees what the picture shows. The points lie near the diagonal <span class="math inline">\(x_1 \approx x_2\)</span>, so averaging the coordinates keeps almost all the information — the encoder discovered the data’s one-dimensional shape.</p>
+<p><strong>Note.</strong> The lecture presents this as “choose the better of two pairs” — again the simplified-algorithm trick. The real algorithm searches all encoders/decoders; Chapter 24 does it optimally for the linear case.</p>
+<p><strong>Basically, …</strong> Dimensionality reduction = “squeeze each data point through a narrow pipe, then try to rebuild it; the best pipe loses the least”. The loss is just reconstruction error — how far the round-trip lands from where it started.</p>
+</section>
+<section id="density-estimation-scoring-reality-with-probabilities" class="level2">
+<h2 class="anchored" data-anchor-id="density-estimation-scoring-reality-with-probabilities">22.13 Density estimation: scoring reality with probabilities</h2>
+<p><strong>The problem.</strong> Output a <strong>probabilistic model</strong> (§22.4) — a function scoring <em>every</em> possible configuration. The lecture’s example: build a robot that tweets like Mr.&nbsp;Chopra (wisdomofchopra.com — “profound sounding words put together in a random order”). A tweet is a 128-character string over 27 symbols (26 lowercase + space), so the model must score all <span class="math inline">\(27^{128}\)</span> possibilities — high for Chopra-like tweets, low for random digit strings.</p>
+<p><strong>Def.</strong> Data <span class="math inline">\(\{\mathbf{x}^1, \ldots, \mathbf{x}^n\}\)</span>, <span class="math inline">\(\mathbf{x}^i \in \mathbb{R}^d\)</span>. Learn a <strong>probability mapping</strong> <span class="math display">\[\boxed{P: \mathbb{R}^d \to \mathbb{R}_+},\]</span> non-negative everywhere and <strong>summing (or integrating) to 1</strong> over all configurations. Goal: <span class="math inline">\(P(\mathbf{x})\)</span> large if <span class="math inline">\(\mathbf{x}\)</span> looks like the data, low otherwise. The “sums to 1” is the catch — you can’t give everything a high score; probability mass spent in one place is mass denied elsewhere.</p>
+<p><strong>Def (negative log-likelihood loss).</strong> Same object as §20.2’s risk, now as a loss: <span class="math display">\[\boxed{L(P) = -\sum_{i=1}^{n}\log P(\mathbf{x}^i)}.\]</span> Each data point wants <span class="math inline">\(P(\mathbf{x}^i)\)</span> as large as possible (so <span class="math inline">\(-\log P(\mathbf{x}^i)\)</span> is as small as possible); sum over the data. Small loss = the model assigns high probability to what was actually observed.</p>
+<p><strong>eg 12 (the lecture’s uniform-model illustration, worked fully).</strong> <span class="math inline">\(d = 1\)</span>, data <span class="math inline">\(\{2.3, 2.7, 4.6, 4.9\}\)</span> (the transcript once misprints <span class="math inline">\(2.7\)</span> as <span class="math inline">\(2.6\)</span> — the deck’s figure shows <span class="math inline">\(2.7\)</span>). Three candidate probability models (all integrate to 1): <span class="math display">\[P_1(x) = \tfrac{1}{10}\mathbf{1}(0 \le x \le 10), \quad P_2(x) = \tfrac15\mathbf{1}(0 \le x \le 5), \quad P_3(x) = \tfrac15\mathbf{1}(3 \le x \le 8).\]</span> Scores on the four points: <span class="math inline">\(P_1\)</span>: <span class="math inline">\(\tfrac1{10}\)</span> each; <span class="math inline">\(P_2\)</span>: <span class="math inline">\(\tfrac15\)</span> each; <span class="math inline">\(P_3\)</span>: <span class="math inline">\(0, 0, \tfrac15, \tfrac15\)</span>. <span class="math display">\[L(P_1) = -4\log\tfrac1{10} = 4\ln 10 \approx \boxed{9.21}, \qquad L(P_2) = -4\log\tfrac15 = 4\ln 5 \approx \boxed{6.44},\]</span> <span class="math display">\[L(P_3) = -\log 0 - \cdots = \boxed{\infty}.\]</span> <span class="math inline">\(P_3\)</span> assigns zero probability to observed data — infinitely bad, instantly disqualified. Between the survivors, <span class="math inline">\(P_2\)</span> beats <span class="math inline">\(P_1\)</span>: “the data came from Uniform<span class="math inline">\([0,5]\)</span>” concentrates its unit mass where the data actually is, instead of spreading it over <span class="math inline">\([0,10]\)</span>. The loss rewards putting mass on the data — the whole game of density estimation in one line.</p>
+<p><strong>Note (Gaussian mixtures — a pointer, not a lesson).</strong> The lecture’s second illustration compares two Gaussian mixture models on 9 planar points — one with centers <span class="math inline">\((0,0), (4,1), (7,3)\)</span>, another with centers <span class="math inline">\((5,5), (8,9), (-1,-2)\)</span> — and asks which explains the data better (the first, by inspection: its centers sit on the visible clumps). The lecture deliberately skips the numerics (“I am not going to explain what the Gaussian mixture model is right now”). So does this chapter: GMMs and how to fit them (EM) are Chapter 25. The takeaway here is only the <em>framing</em>: density estimation = pick the probability model with the smallest negative log-likelihood.</p>
+<p><strong>Basically, …</strong> Density estimation = “learn a scoring function over all possible inputs, with total score fixed at 1, so the observed data scores as high as possible”. The Chopra-tweet generator is the mascot: feed it real tweets, get back a machine that scores (and can generate) Chopra-like text. The loss is negative log-likelihood — the same object §20.2 minimized for estimation.</p>
+</section>
+<section id="how-it-all-connects-and-what-comes-next" class="level2">
+<h2 class="anchored" data-anchor-id="how-it-all-connects-and-what-comes-next">22.14 How it all connects — and what comes next</h2>
+<!-- Original matplotlib illustration drawn for this chapter (not reused from any URL): taxonomy of the four ML tasks with forward pointers to Chapters 23–25 -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/22-ml-taxonomy.png" class="img-fluid figure-img"></p>
+<figcaption>Taxonomy diagram: ML task splits into Supervised (x^i, y^i labels) and Unsupervised (x^i only). Supervised splits into Regression (y in R, Ch 23) and Classification (y in {+1,-1}). Unsupervised splits into Dimensionality reduction (encoder+decoder, Ch 24) and Density estimation (P: R^d -&gt; R_+, Ch 25).</figcaption>
+</figure>
+</div>
+<ol type="i">
+<li><strong>The map.</strong> Every ML task in this course is one of four things: supervised + real labels (regression), supervised + discrete labels (classification), unsupervised + compression (dimensionality reduction), unsupervised + scoring (density estimation). Regression and classification build <em>predictive</em> models; dimensionality reduction compresses; density estimation builds <em>probabilistic</em> models.</li>
+<li><strong>The shared skeleton.</strong> All four follow §22.5’s pattern: fix a collection of models (structure), use data to pick parameters, judge candidates with a loss — squared loss (§22.8), misclassification fraction (§22.9), reconstruction error (§22.12), negative log-likelihood (§22.13). Only the model family and the loss change.</li>
+<li><strong>The shared discipline.</strong> Fit on training data, choose the model family on validation data, report on test data (§22.10). Zero training loss can be pure memorization.</li>
+<li><strong>What Part III fills in.</strong> This chapter framed; the next three chapters compute: Chapter 23 finds the best regression model over <em>all</em> linear (and polynomial) models — and §20.8 will explain why squared loss is the right choice when the noise is Gaussian. Chapter 24 finds the optimal linear encoder–decoder (PCA: the directions of maximum variance). Chapter 25 fits Gaussian mixtures with the EM algorithm — the “entire parametric family” version of eg 12’s multiple choice.</li>
+</ol>
+<p><strong>Part III, in one paragraph (the opener’s version).</strong> Part II built the probability toolkit — distributions, expectation, estimation, and the limit theorems that say averages concentrate (§21.5) and fluctuations go normal (§21.6). Part III spends it: machine learning is what happens when a learning algorithm, armed with data and a loss function, searches a model collection for the member that best explains the data — then proves itself on data it never saw. Regression first.</p>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li>State the lecture’s definition of machine learning. Draw the three-level task hierarchy (manual labour → programming → machine learning) and say, for each level, who builds the tool that converts input to output.</li>
+<li>Task analysis. For each of (a) password verification, (b) face detection, (c) weather prediction: say which level of the hierarchy the task belongs at, and give the lecture’s reason (scale/speed/cost, inability to express rules, unknown rules, or “programming already works”).</li>
+<li>From the house table in §22.3 and its metadata: (i) write House 2 as a vector in <span class="math inline">\(\mathbb{R}^4\)</span>; (ii) translate it into a sentence like eg 4; (iii) explain why the computer needs the coordinates to be consistent across houses but does not need the metadata.</li>
+<li><ol type="i">
+<li>Is “Price <span class="math inline">\(= 0.5 \times\)</span> Area <span class="math inline">\(-\)</span> Distance” a predictive or a probabilistic model? Why? (ii) Is “the probability that a random tweet was generated by Mr.&nbsp;Chopra” a predictive or a probabilistic model? Why? (iii) Give one use of each.</li>
+</ol></li>
+<li>The 1-D regression data of eg 7: <span class="math inline">\((1,2.1), (2,3.9), (3,6.2), (6,11.5), (7,13.9)\)</span>. A third candidate <span class="math inline">\(k(x) = 1.5x_1 + 1\)</span>. Compute <span class="math inline">\(L(k)\)</span> fully and say whether the learning algorithm prefers <span class="math inline">\(f(x) = 2x_1\)</span>, <span class="math inline">\(g(x) = x_1 + 3\)</span>, or <span class="math inline">\(k\)</span>.</li>
+<li>On eg 9’s classification data, evaluate the new separator <span class="math inline">\(m(\mathbf{x}) = \mathrm{sign}(x_2 - 1)\)</span> (use <span class="math inline">\(\mathrm{sign}(0) = +1\)</span>). Compute <span class="math inline">\(L(m)\)</span> and rank <span class="math inline">\(f, g, m\)</span> by loss.</li>
+<li>Explain in words why the memorizer of §22.10 (<span class="math inline">\(+1\)</span> on the three training points, <span class="math inline">\(-1\)</span> elsewhere) is a bad model despite <span class="math inline">\(L(f) = 0\)</span>, and say exactly what data should be used to expose it.</li>
+<li>On eg 11’s dimensionality-reduction data, consider a third pair: <span class="math inline">\(f(\mathbf{x}) = x_1 + x_2\)</span>, <span class="math inline">\(g(u) = (u/2, u/2)\)</span>. Compute its reconstruction loss fully and compare with the two pairs of eg 11. What do you notice?</li>
+<li>Density estimation on new data <span class="math inline">\(\{1.0, 2.0\}\)</span>: compare <span class="math inline">\(P_2(x) = \frac15\mathbf{1}(0 \le x \le 5)\)</span> with <span class="math inline">\(P_4(x) = \frac12\mathbf{1}(0 \le x \le 2)\)</span> via the negative log-likelihood. Which wins, and why does the reasoning match eg 12?</li>
+<li>Classify each as regression, classification, dimensionality reduction, or density estimation, and name the model type (predictive/probabilistic) and the loss the lecture would use: (a) predicting tomorrow’s maximum temperature from today’s readings; (b) spam vs not-spam for incoming email; (c) compressing <span class="math inline">\(1000\)</span>-dimensional sensor readings to <span class="math inline">\(10\)</span> numbers per reading; (d) scoring how likely a tweet was written by a given author.</li>
+</ol>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — Machine learning = “the study of computer algorithms that improve automatically through experience and by the use of data” (Wikipedia definition, MLF Week 1 lecture 1).
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Level</th>
+<th>Who builds the tool?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Manual labour</td>
+<td>No tool — the human directly converts input to output.</td>
+</tr>
+<tr class="even">
+<td>Programming</td>
+<td>The human builds the tool (software) that converts input to output.</td>
+</tr>
+<tr class="odd">
+<td>Machine learning</td>
+<td>The human gives only a broad blueprint to a <em>tool design</em> (the learning algorithm); the tool design uses data to construct the tool (the model).</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — (a) <strong>Password verification → programming.</strong> Manual labour fails on scale/speed/cost (billions of logins); but a program comparing the input against the password on file is trivial. Since programming works, ML is never considered.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol start="2" type="a">
+<li><p><strong>Face detection → machine learning.</strong> Manual labour fails on scale (a human drawing boxes on every photo). Programming fails because the rule “which pixel patterns are a face” cannot be expressed in code — humans know faces (a baby learns from examples) but cannot convey the idea to a pixel-seeing computer. ML works: lots of face/non-face images exist, and the algorithm builds the tool from them.</p></li>
+<li><p><strong>Weather prediction → machine learning.</strong> Manual labour fails — humans don’t know the rule mapping today’s radar map to tomorrow’s rain (physics implements it; nobody wrote it down). Programming fails for the same reason: you can’t code a rule you don’t know. ML works because the rule exists and there is immense historical weather data.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — (i) House 2 as a vector: <span class="math inline">\(\boxed{(2,\ 7,\ 2.1,\ 3.2)} \in \mathbb{R}^4\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol start="2" type="i">
+<li><p>In words: a two-bedroom house with <span class="math inline">\(700\)</span> sq.ft of area, <span class="math inline">\(2.1\)</span> km from the metro, priced at <span class="math inline">\(32\)</span> lakhs (<span class="math inline">\(3.2\)</span> tens of lakhs).</p></li>
+<li><p>The computer never reads the metadata — it only manipulates numbers. What it needs is <em>consistency</em>: coordinate 2 must mean “area in 100 sq.ft” for house 2 <em>and</em> every other house, otherwise arithmetic across rows is meaningless. The metadata (the sentence) is for the human, to make the data interpretable.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — (i) <strong>Predictive</strong> (regression): given a new house’s area and distance, it outputs a predicted price — a real-valued prediction about the future/unseen.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol start="2" type="i">
+<li><p><strong>Probabilistic</strong>: it doesn’t predict a value for a new input; it <em>scores</em> configurations — how likely is this tweet under Chopra’s tweet distribution.</p></li>
+<li><p>Uses: the regression model prices houses you’ve never seen (eg 5: <span class="math inline">\(700\)</span> sq.ft at <span class="math inline">\(3\)</span> km → <span class="math inline">\(5\)</span> lakhs). The probabilistic model powers the Chopra-tweet generator (§22.13): score candidate tweets, keep/generate the high-scoring ones.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — Predictions of <span class="math inline">\(k(x) = 1.5x_1 + 1\)</span>: <span class="math inline">\(2.5,\ 4,\ 5.5,\ 10,\ 11.5\)</span>. Against <span class="math inline">\((2.1, 3.9, 6.2, 11.5, 13.9)\)</span>:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[L(k) = \tfrac15\big[(2.5-2.1)^2 + (4-3.9)^2 + (5.5-6.2)^2 + (10-11.5)^2 + (11.5-13.9)^2\big]\]</span> <span class="math display">\[= \tfrac15\big[0.16 + 0.01 + 0.49 + 2.25 + 5.76\big] = \tfrac{8.67}{5} = \boxed{1.734}.\]</span> Ranking: <span class="math inline">\(L(f) = 0.064 &lt; L(k) = 1.734 &lt; L(g) = 5.264\)</span>. The algorithm still prefers <span class="math inline">\(f(x) = 2x_1\)</span>; <span class="math inline">\(k\)</span> is better than <span class="math inline">\(g\)</span> but worse than <span class="math inline">\(f\)</span>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — <span class="math inline">\(m(\mathbf{x}) = \mathrm{sign}(x_2 - 1)\)</span>, true labels <span class="math inline">\((+1,+1,+1,-1,-1,-1)\)</span>:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[\begin{array}{c|c|c|c}
+&amp; x_2-1 &amp; m &amp; \text{truth} \\ \hline
+(0,0) &amp; -1 &amp; -1 &amp; +1 \;\; \text{wrong} \\
+(1,0) &amp; -1 &amp; -1 &amp; +1 \;\; \text{wrong} \\
+(0,1) &amp; 0 &amp; +1 &amp; +1 \;\; \text{right} \\
+(4,4) &amp; 3 &amp; +1 &amp; -1 \;\; \text{wrong} \\
+(3,4) &amp; 3 &amp; +1 &amp; -1 \;\; \text{wrong} \\
+(4,3) &amp; 2 &amp; +1 &amp; -1 \;\; \text{wrong}
+\end{array}\]</span> Five mistakes out of six: <span class="math inline">\(\boxed{L(m) = 5/6}\)</span>. Ranking: <span class="math inline">\(f\ (0) &lt; g\ (1/6) &lt; m\ (5/6)\)</span>. (<span class="math inline">\(m\)</span> draws a horizontal cut at <span class="math inline">\(x_2 = 1\)</span>; it keeps only <span class="math inline">\((0,1)\)</span> on the right side.)</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — Zero training loss means the model is perfect <em>on points it has already seen</em> — and this <span class="math inline">\(f\)</span> achieves it by pure memorization: it hard-codes <span class="math inline">\(+1\)</span> exactly at the three positive training points and defaults to <span class="math inline">\(-1\)</span> everywhere else. It learned no principle (e.g.&nbsp;“positives live near the origin”), so on a <em>new</em> point like <span class="math inline">\((0.1, 0.1)\)</span> — which any reasonable rule calls <span class="math inline">\(+1\)</span> — it predicts <span class="math inline">\(-1\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>To expose it, evaluate on <strong>test data</strong>: fresh points drawn the same way but never shown during training. The memorizer will fail there while a genuine separator (like eg 9’s <span class="math inline">\(f\)</span>) succeeds. Training loss measures fit; test loss measures learning.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 8 — Encodings <span class="math inline">\(f(\mathbf{x}) = x_1 + x_2\)</span>: <span class="math inline">\(1.8,\ 4.2,\ 6.2,\ 7.8\)</span>. Reconstructions <span class="math inline">\(g(u) = (u/2, u/2)\)</span>: <span class="math inline">\((0.9,0.9),\ (2.1,2.1),\ (3.1,3.1),\ (3.9,3.9)\)</span> — identical to the good pair’s reconstructions in eg 11.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[L = \tfrac14\big[(0.1^2+0.1^2)\times 4\big] = \tfrac{0.08}{4} = \boxed{0.02},\]</span> exactly tying eg 11’s good pair, and far below the bad pair’s <span class="math inline">\(15.2\)</span>.</p>
+<p>What you notice: the loss only sees the <em>round trip</em> <span class="math inline">\(g \circ f\)</span>. Here <span class="math inline">\(g(f(\mathbf{x})) = \tilde g(\tilde f(\mathbf{x})) = \big(\tfrac{x_1+x_2}{2}, \tfrac{x_1+x_2}{2}\big)\)</span> — the factor of 2 moved from the encoder into the decoder, but the composition (and hence the loss) is unchanged. Different encoder–decoder pairs can be equivalent.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 9 — <span class="math inline">\(P_2\)</span>: scores <span class="math inline">\(\frac15, \frac15\)</span> on <span class="math inline">\(\{1.0, 2.0\}\)</span>:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[L(P_2) = -\log\tfrac15 - \log\tfrac15 = 2\ln 5 \approx \boxed{3.219}.\]</span> <span class="math inline">\(P_4\)</span>: scores <span class="math inline">\(\frac12, \frac12\)</span>: <span class="math display">\[L(P_4) = -\log\tfrac12 - \log\tfrac12 = 2\ln 2 \approx \boxed{1.386}.\]</span> <span class="math inline">\(P_4\)</span> wins. Same reasoning as eg 12: both integrate to 1, but <span class="math inline">\(P_4\)</span> concentrates its unit mass on <span class="math inline">\([0,2]\)</span> where the data actually sits, instead of spreading it thinly over <span class="math inline">\([0,5]\)</span>. Negative log-likelihood rewards putting probability mass on observed data.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 10 — (a) <strong>Regression</strong> — predictive model; squared loss <span class="math inline">\(L(f) = \frac1n\sum (f(\mathbf{x}^i)-y^i)^2\)</span>. Labels are real numbers (temperatures).
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol start="2" type="a">
+<li><p><strong>Classification</strong> — predictive model; misclassification fraction <span class="math inline">\(L(f) = \frac1n\sum \mathbf{1}(f(\mathbf{x}^i) \ne y^i)\)</span>. Labels are discrete (spam/not-spam).</p></li>
+<li><p><strong>Dimensionality reduction</strong> — compression (neither predictive nor probabilistic in the lecture’s taxonomy); reconstruction loss <span class="math inline">\(L(f,g) = \frac1n\sum \|g(f(\mathbf{x}^i))-\mathbf{x}^i\|^2\)</span>. No labels at all.</p></li>
+<li><p><strong>Density estimation</strong> — probabilistic model <span class="math inline">\(P\)</span>; negative log-likelihood <span class="math inline">\(L(P) = -\sum \log P(\mathbf{x}^i)\)</span>. No labels; the goal is scoring configurations, not predicting values.</p></li>
+</ol>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./21-inequalities-clt.html" class="pagination-link" aria-label="21. Inequalities and the central limit theorem">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">21. Inequalities and the central limit theorem</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./23-linear-polynomial-regression.html" class="pagination-link" aria-label="23. Linear and polynomial regression">
+        <span class="nav-page-text"><span class="chapter-title">23. Linear and polynomial regression</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

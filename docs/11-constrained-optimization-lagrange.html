@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>11. Constrained optimization: Lagrange multipliers, projected gradient descent – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./12-convex-sets-functions.html" rel="next">
+<link href="./10-unconstrained-optimization-gradient-descent.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./01-sets-functions-preliminaries.html">Part I — Mathematical Foundations</a></li><li class="breadcrumb-item"><a href="./11-constrained-optimization-lagrange.html"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#the-problem-minimize-with-strings-attached" id="toc-the-problem-minimize-with-strings-attached" class="nav-link active" data-scroll-target="#the-problem-minimize-with-strings-attached">11.1 The problem: minimize, with strings attached</a></li>
+  <li><a href="#the-optimality-check-no-descent-direction-is-feasible" id="toc-the-optimality-check-no-descent-direction-is-feasible" class="nav-link" data-scroll-target="#the-optimality-check-no-descent-direction-is-feasible">11.2 The optimality check: no descent direction is feasible</a></li>
+  <li><a href="#the-lagrangian-and-the-first-order-conditions-equality-constraints" id="toc-the-lagrangian-and-the-first-order-conditions-equality-constraints" class="nav-link" data-scroll-target="#the-lagrangian-and-the-first-order-conditions-equality-constraints">11.3 The Lagrangian and the first-order conditions (equality constraints)</a></li>
+  <li><a href="#eg-2-warm-up-closest-point-on-a-line-full-steps" id="toc-eg-2-warm-up-closest-point-on-a-line-full-steps" class="nav-link" data-scroll-target="#eg-2-warm-up-closest-point-on-a-line-full-steps">11.4 eg 2 — warm-up: closest point on a line (full steps)</a></li>
+  <li><a href="#eg-3-the-lectures-example-on-the-unit-circle-full-steps" id="toc-eg-3-the-lectures-example-on-the-unit-circle-full-steps" class="nav-link" data-scroll-target="#eg-3-the-lectures-example-on-the-unit-circle-full-steps">11.5 eg 3 — the lecture’s example: on the unit circle (full steps)</a></li>
+  <li><a href="#the-geometry-level-sets-tangent-gradients-parallel" id="toc-the-geometry-level-sets-tangent-gradients-parallel" class="nav-link" data-scroll-target="#the-geometry-level-sets-tangent-gradients-parallel">11.6 The geometry: level sets tangent, gradients parallel</a></li>
+  <li><a href="#inequality-constraints-active-or-not-and-complementary-slackness" id="toc-inequality-constraints-active-or-not-and-complementary-slackness" class="nav-link" data-scroll-target="#inequality-constraints-active-or-not-and-complementary-slackness">11.7 Inequality constraints: active or not, and complementary slackness</a></li>
+  <li><a href="#projected-gradient-descent-step-then-snap-back" id="toc-projected-gradient-descent-step-then-snap-back" class="nav-link" data-scroll-target="#projected-gradient-descent-step-then-snap-back">11.8 Projected gradient descent: step, then snap back</a></li>
+  <li><a href="#why-ml-cares" id="toc-why-ml-cares" class="nav-link" data-scroll-target="#why-ml-cares">11.9 Why ML cares</a></li>
+  <li><a href="#where-this-goes-next" id="toc-where-this-goes-next" class="nav-link" data-scroll-target="#where-this-goes-next">11.10 Where this goes next</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./01-sets-functions-preliminaries.html">Part I — Mathematical Foundations</a></li><li class="breadcrumb-item"><a href="./11-constrained-optimization-lagrange.html"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="the-problem-minimize-with-strings-attached" class="level2">
+<h2 class="anchored" data-anchor-id="the-problem-minimize-with-strings-attached">11.1 The problem: minimize, with strings attached</h2>
+<p>Chapter 10 solved <span class="math inline">\(\min_{\mathbf{x} \in \mathbb{R}^d} f(\mathbf{x})\)</span> with no restrictions. Now the constraints return — the cow and the grass from the lectures (§10.1):</p>
+<p><strong>eg 1 — the cow and the grass (the setup).</strong> A cow stands at <span class="math inline">\(\mathbf{x} = (x_1, x_2)\)</span> and wants the grass patch at <span class="math inline">\((40, 40)\)</span>: <span class="math display">\[f(\mathbf{x}) = (x_1 - 40)^2 + (x_2 - 40)^2.\]</span> The cow is tied by a rope of length <span class="math inline">\(R\)</span> to a peg at the origin — it cannot roam further than <span class="math inline">\(R\)</span> from the peg: <span class="math display">\[g(\mathbf{x}) = x_1^2 + x_2^2 - R^2 \le 0.\]</span> The full problem is <span class="math display">\[\min_{\mathbf{x} \in \mathbb{R}^2} f(\mathbf{x}) \quad \text{subject to} \quad g(\mathbf{x}) \le 0.\]</span></p>
+<p><strong>Def.</strong> The <strong>constrained</strong> optimization problem = <span class="math display">\[\min_{\mathbf{x} \in \mathbb{R}^d} f(\mathbf{x}) \quad \text{subject to} \quad \begin{cases} h_i(\mathbf{x}) = 0, &amp; i = 1, \dots, m, \\ g_j(\mathbf{x}) \le 0, &amp; j = 1, \dots, p, \end{cases}\]</span> where the <span class="math inline">\(h_i\)</span> are <strong>equality constraints</strong> and the <span class="math inline">\(g_j\)</span> are <strong>inequality constraints</strong>. The <strong>feasible set</strong> is <span class="math display">\[S = \{\mathbf{x} : h_i(\mathbf{x}) = 0 \text{ all } i,\; g_j(\mathbf{x}) \le 0 \text{ all } j\}\]</span> — the points the cow is allowed to stand on. An inequality <span class="math inline">\(g_j(\mathbf{x}) \le 0\)</span> is <strong>active</strong> (binding) at <span class="math inline">\(\mathbf{x}\)</span> if <span class="math inline">\(g_j(\mathbf{x}) = 0\)</span> (the rope is taut), and <strong>inactive</strong> if <span class="math inline">\(g_j(\mathbf{x}) &lt; 0\)</span> (there is slack).</p>
+<ol type="i">
+<li>If the unconstrained best point lies inside <span class="math inline">\(S\)</span>, the constraint changes nothing: minimize as in Chapter 10.</li>
+<li>If it lies outside <span class="math inline">\(S\)</span>, the optimum sits on the boundary of <span class="math inline">\(S\)</span> — the cow pulls the rope taut.</li>
+</ol>
+<p><strong>Basically, …</strong> Same hill as before, but now there is a fence. You still want the lowest point, except you are only allowed to stand inside the fence. If the valley bottom happens to be inside the fence, great — nothing changes. If it is outside, you end up pressed against the fence at the closest reachable spot.</p>
+</section>
+<section id="the-optimality-check-no-descent-direction-is-feasible" class="level2">
+<h2 class="anchored" data-anchor-id="the-optimality-check-no-descent-direction-is-feasible">11.2 The optimality check: no descent direction is feasible</h2>
+<p>Before computing anything, the lectures ask a sharper question: if someone <em>claims</em> a point <span class="math inline">\(\mathbf{x}^\star\)</span> is optimal, how do you catch them lying?</p>
+<ol type="i">
+<li>First check: is <span class="math inline">\(\mathbf{x}^\star\)</span> even feasible? If <span class="math inline">\(g(\mathbf{x}^\star) &gt; 0\)</span>, the claim is bogus.</li>
+<li>Second check: could you improve? A <strong>descent direction</strong> is a direction that lowers <span class="math inline">\(f\)</span> — from the Taylor series (§10.6), any <span class="math inline">\(\mathbf{d}\)</span> with <span class="math inline">\(\mathbf{d}^T \nabla f(\mathbf{x}^\star) &lt; 0\)</span> is a descent direction for small enough steps. A <strong>feasible direction</strong> is a direction in which a small step keeps the constraint satisfied.</li>
+</ol>
+<p><strong>Key condition.</strong> If <span class="math inline">\(\mathbf{x}^\star\)</span> is optimal, then <em>no descent direction is feasible</em>: if some direction both reduced <span class="math inline">\(f\)</span> and stayed inside <span class="math inline">\(S\)</span>, you could move there and beat <span class="math inline">\(\mathbf{x}^\star\)</span> — contradicting optimality.</p>
+<p>Now apply this at <span class="math inline">\(\mathbf{x}^\star\)</span> with one inequality constraint <span class="math inline">\(g(\mathbf{x}) \le 0\)</span>. The descent directions for <span class="math inline">\(f\)</span> are the half-space <span class="math inline">\(\mathbf{d}^T \nabla f(\mathbf{x}^\star) &lt; 0\)</span>. What about feasible directions? If <span class="math inline">\(g\)</span> decreases along <span class="math inline">\(\mathbf{d}\)</span> (<span class="math inline">\(\mathbf{d}^T \nabla g(\mathbf{x}^\star) &lt; 0\)</span>), the step stays feasible — so the half-space <span class="math inline">\(\mathbf{d}^T \nabla g(\mathbf{x}^\star) &lt; 0\)</span> is certainly feasible.</p>
+<p>So: when do these two half-spaces overlap? If <span class="math inline">\(\nabla f(\mathbf{x}^\star)\)</span> and <span class="math inline">\(\nabla g(\mathbf{x}^\star)\)</span> point in unrelated directions, the two half-spaces intersect — there <em>is</em> a direction that is both descent and feasible, and <span class="math inline">\(\mathbf{x}^\star\)</span> cannot be optimal. If they point in the <em>same</em> direction, it is even worse: <em>every</em> descent direction is feasible. The only configuration with no overlap is when the two gradients point in <strong>opposite</strong> directions:</p>
+<p><span class="math display">\[\boxed{\nabla f(\mathbf{x}^\star) = -\lambda\, \nabla g(\mathbf{x}^\star), \quad \lambda &gt; 0}\]</span></p>
+<p>for some positive scalar <span class="math inline">\(\lambda\)</span>. This is a <strong>necessary condition</strong> for optimality (not sufficient — it also holds at maxima, as we will see). The scalar <span class="math inline">\(\lambda\)</span> is the <strong>Lagrange multiplier</strong>.</p>
+<p><strong>Note:</strong> <span class="math inline">\(\lambda &gt; 0\)</span> here, not just any scalar — the gradients must be <em>anti-parallel</em>. The sign matters for inequalities, and §11.7 explains why.</p>
+</section>
+<section id="the-lagrangian-and-the-first-order-conditions-equality-constraints" class="level2">
+<h2 class="anchored" data-anchor-id="the-lagrangian-and-the-first-order-conditions-equality-constraints">11.3 The Lagrangian and the first-order conditions (equality constraints)</h2>
+<p>For an equality constraint <span class="math inline">\(h(\mathbf{x}) = 0\)</span>, the same argument runs, with one difference: feasibility to first order means <span class="math inline">\(\mathbf{d}^T \nabla h(\mathbf{x}^\star) = 0\)</span> — the feasible directions form a <em>line</em>, not a half-space. Both the parallel <em>and</em> the anti-parallel configurations avoid overlap with the descent half-space. So <span class="math inline">\(\lambda\)</span> gets no sign restriction:</p>
+<p><span class="math display">\[\boxed{\nabla f(\mathbf{x}^\star) = -\lambda\, \nabla h(\mathbf{x}^\star), \quad h(\mathbf{x}^\star) = 0, \quad \lambda \text{ any real number.}}\]</span></p>
+<p><strong>Def.</strong> For <span class="math inline">\(\min f(\mathbf{x})\)</span> subject to <span class="math inline">\(h(\mathbf{x}) = 0\)</span>, the <strong>Lagrangian</strong> is <span class="math display">\[\boxed{L(\mathbf{x}, \lambda) = f(\mathbf{x}) - \lambda\, h(\mathbf{x})}.\]</span> Setting its <span class="math inline">\(\mathbf{x}\)</span>-derivative to zero gives <span class="math inline">\(\nabla f(\mathbf{x}) - \lambda \nabla h(\mathbf{x}) = \mathbf{0}\)</span>, i.e.&nbsp;<span class="math inline">\(\nabla f(\mathbf{x}^\star) = \lambda\, \nabla h(\mathbf{x}^\star)\)</span> — the same condition as above, since <span class="math inline">\(\lambda\)</span> ranges over all of <span class="math inline">\(\mathbb{R}\)</span> in both forms.</p>
+<p><strong>Note (sign convention):</strong> The lectures write the condition as <span class="math inline">\(\nabla f(\mathbf{x}^\star) = -\lambda\, \nabla g(\mathbf{x}^\star)\)</span>. The Lagrangian form <span class="math inline">\(L = f - \lambda h\)</span> gives <span class="math inline">\(\nabla f = \lambda \nabla h\)</span>. These are the <em>same</em> condition: rename <span class="math inline">\(\lambda \to -\lambda\)</span> (an unrestricted multiplier absorbs the sign). Other textbooks write <span class="math inline">\(L = f + \lambda h\)</span>; only consistency matters, not the sign.</p>
+<p>The recipe — the <strong>method of Lagrange multipliers</strong>:</p>
+<ol type="i">
+<li>Write <span class="math inline">\(L(\mathbf{x}, \lambda) = f(\mathbf{x}) - \lambda h(\mathbf{x})\)</span>.</li>
+<li>Solve the system <span class="math inline">\(\nabla_{\mathbf{x}} L = \mathbf{0}\)</span> and <span class="math inline">\(h(\mathbf{x}) = 0\)</span> — that is, <span class="math inline">\(\nabla f = \lambda \nabla h\)</span> together with the constraint.</li>
+<li>The solutions are <em>candidates</em>: plug each into <span class="math inline">\(f\)</span> and pick the smallest (the conditions are necessary, not sufficient — a candidate can be a maximizer, as eg 3 will show).</li>
+</ol>
+<p><strong>Basically, …</strong> At the optimum, the hill’s steepest-ascent arrow and the constraint’s steepest-ascent arrow must point along the same line (parallel or anti-parallel). Why: if they pointed in different directions, you could slide along the constraint in a direction that also goes downhill on the objective — and then you wouldn’t be at the optimum. The multiplier <span class="math inline">\(\lambda\)</span> just measures the ratio of the two arrows’ lengths.</p>
+</section>
+<section id="eg-2-warm-up-closest-point-on-a-line-full-steps" class="level2">
+<h2 class="anchored" data-anchor-id="eg-2-warm-up-closest-point-on-a-line-full-steps">11.4 eg 2 — warm-up: closest point on a line (full steps)</h2>
+<p>Minimize <span class="math inline">\(f(x, y) = x^2 + y^2\)</span> subject to <span class="math inline">\(x + y = 1\)</span>.</p>
+<ol type="i">
+<li>Constraint: <span class="math inline">\(h(x, y) = x + y - 1 = 0\)</span>. Lagrangian: <span class="math display">\[L(x, y, \lambda) = x^2 + y^2 - \lambda(x + y - 1).\]</span></li>
+<li>Stationarity: <span class="math inline">\(\frac{\partial L}{\partial x} = 2x - \lambda = 0\)</span>, <span class="math inline">\(\frac{\partial L}{\partial y} = 2y - \lambda = 0\)</span> — so <span class="math inline">\(x = y = \lambda/2\)</span>.</li>
+<li>Feasibility: <span class="math inline">\(x + y = 1\)</span> gives <span class="math inline">\(\lambda/2 + \lambda/2 = 1\)</span>, so <span class="math inline">\(\lambda = 1\)</span>, <span class="math inline">\(x = y = \tfrac{1}{2}\)</span>.</li>
+<li>Value: <span class="math inline">\(f(\tfrac{1}{2}, \tfrac{1}{2}) = \tfrac{1}{4} + \tfrac{1}{4} = \tfrac{1}{2}\)</span>. Check: <span class="math inline">\(\nabla f = (1, 1) = 1 \cdot (1, 1) = \lambda \nabla h\)</span>. ✓</li>
+</ol>
+<p>Only one candidate, and <span class="math inline">\(f \to \infty\)</span> at infinity along the line, so this is the global minimum: the point on the line <span class="math inline">\(x + y = 1\)</span> closest to the origin.</p>
+</section>
+<section id="eg-3-the-lectures-example-on-the-unit-circle-full-steps" class="level2">
+<h2 class="anchored" data-anchor-id="eg-3-the-lectures-example-on-the-unit-circle-full-steps">11.5 eg 3 — the lecture’s example: on the unit circle (full steps)</h2>
+<p>Minimize <span class="math inline">\(f(x_1, x_2) = x_1^2 + 2x_2 + 4x_2^2\)</span> subject to <span class="math inline">\(g(x_1, x_2) = x_1^2 + x_2^2 - 1 = 0\)</span>.</p>
+<ol type="i">
+<li>Lagrangian: <span class="math inline">\(L(x_1, x_2, \lambda) = x_1^2 + 2x_2 + 4x_2^2 - \lambda(x_1^2 + x_2^2 - 1)\)</span>.</li>
+<li>Lagrange equations (<span class="math inline">\(\nabla f = \lambda \nabla g\)</span>): <span class="math display">\[\begin{cases} 2x_1 = \lambda \cdot 2x_1, \\ 2 + 8x_2 = \lambda \cdot 2x_2, \end{cases} \qquad x_1^2 + x_2^2 = 1.\]</span></li>
+<li>First equation: <span class="math inline">\(2x_1(1 - \lambda) = 0\)</span> — so either <span class="math inline">\(x_1 = 0\)</span> or <span class="math inline">\(\lambda = 1\)</span>.</li>
+<li><strong>Case <span class="math inline">\(\lambda = 1\)</span>.</strong> Second equation: <span class="math inline">\(2 + 8x_2 = 2x_2\)</span>, so <span class="math inline">\(6x_2 = -2\)</span>, <span class="math inline">\(x_2 = -\tfrac{1}{3}\)</span>. From the circle: <span class="math inline">\(x_1^2 = 1 - \tfrac{1}{9} = \tfrac{8}{9}\)</span>, <span class="math inline">\(x_1 = \pm \tfrac{\sqrt{8}}{3}\)</span>. Two candidates: <span class="math inline">\((\tfrac{\sqrt{8}}{3}, -\tfrac{1}{3})\)</span> and <span class="math inline">\((-\tfrac{\sqrt{8}}{3}, -\tfrac{1}{3})\)</span>.</li>
+<li><strong>Case <span class="math inline">\(x_1 = 0\)</span>.</strong> From the circle: <span class="math inline">\(x_2 = \pm 1\)</span>. Two candidates: <span class="math inline">\((0, 1)\)</span> and <span class="math inline">\((0, -1)\)</span>.</li>
+<li>Plug all four into <span class="math inline">\(f\)</span>: <span class="math display">\[\begin{aligned}
+f(0, 1) &amp;= 0 + 2 + 4 = 6, \\
+f(0, -1) &amp;= 0 - 2 + 4 = 2, \\
+f(\pm \tfrac{\sqrt{8}}{3}, -\tfrac{1}{3}) &amp;= \tfrac{8}{9} - \tfrac{2}{3} + \tfrac{4}{9} = \tfrac{12}{9} - \tfrac{6}{9} = \tfrac{2}{3}.
+\end{aligned}\]</span></li>
+<li>The minimum <span class="math inline">\(\tfrac{2}{3}\)</span> is attained at the two points <span class="math inline">\((\pm \tfrac{\sqrt{8}}{3}, -\tfrac{1}{3})\)</span> — the <strong>minimizers</strong>. <span class="math inline">\((0, 1)\)</span> with value <span class="math inline">\(6\)</span> is the <strong>global maximizer</strong>, and <span class="math inline">\((0, -1)\)</span> with value <span class="math inline">\(2\)</span> is a <strong>local maximizer</strong> along the circle: moving either way round the circle from <span class="math inline">\((0,-1)\)</span> decreases <span class="math inline">\(f\)</span> toward <span class="math inline">\(\tfrac{2}{3}\)</span> (check: with <span class="math inline">\(x_1 = \cos\theta\)</span>, <span class="math inline">\(x_2 = \sin\theta\)</span>, <span class="math inline">\(\frac{d^2f}{d\theta^2} = -4 &lt; 0\)</span> at <span class="math inline">\(\theta = -\pi/2\)</span>).</li>
+</ol>
+<p><strong>Note:</strong> This is why step iii) of the recipe says <em>candidates</em>: the Lagrange equations alone found the maximum and the saddle too. The equations are necessary, not sufficient — the final plug-in decides.</p>
+</section>
+<section id="the-geometry-level-sets-tangent-gradients-parallel" class="level2">
+<h2 class="anchored" data-anchor-id="the-geometry-level-sets-tangent-gradients-parallel">11.6 The geometry: level sets tangent, gradients parallel</h2>
+<p>Here is the picture behind everything above, and it comes straight from Chapter 9. From §9.5: the gradient is <strong>perpendicular to the level sets</strong>. Now:</p>
+<ol type="i">
+<li>The constraint <span class="math inline">\(h(\mathbf{x}) = 0\)</span> is itself a level set — of <span class="math inline">\(h\)</span>. So <span class="math inline">\(\nabla h(\mathbf{x}^\star)\)</span> is perpendicular to the constraint curve at <span class="math inline">\(\mathbf{x}^\star\)</span>.</li>
+<li>At the optimum, the level set of <span class="math inline">\(f\)</span> through <span class="math inline">\(\mathbf{x}^\star\)</span> must be <strong>tangent</strong> to the constraint curve: if it crossed the constraint transversally, moving along the constraint would change <span class="math inline">\(f\)</span> — and one direction would decrease it, contradicting optimality.</li>
+<li>Two tangent curves share a tangent line, hence share a perpendicular direction — so <span class="math inline">\(\nabla f(\mathbf{x}^\star)\)</span> and <span class="math inline">\(\nabla h(\mathbf{x}^\star)\)</span> are parallel. That is exactly <span class="math inline">\(\nabla f = \lambda \nabla h\)</span>.</li>
+</ol>
+<!-- Original matplotlib illustration by the author: level sets of the eg-3 objective tangent to the unit circle at the minimizer, with the two gradients drawn parallel. -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/ch11-lagrange-levelsets.png" class="img-fluid figure-img"></p>
+<figcaption>Level sets of f(x1,x2) = x1^2 + 2x2 + 4x2^2 (thin grey contours) with the constraint circle x1^2 + x2^2 = 1 (red). The minimizer (sqrt(8)/3, -1/3) is marked; the blue arrow is grad f and the green arrow is grad g, parallel to each other, perpendicular to both the circle and the tangent level set.</figcaption>
+</figure>
+</div>
+<p><strong>Basically, …</strong> Draw the contour lines of the objective and the constraint curve on the same map. At the best feasible point, the contour line just <em>kisses</em> the constraint curve (tangent) — it can’t cut through it, because cutting through would mean you could slide along the constraint to a lower contour. Tangent curves have parallel normal arrows, and those arrows are the gradients. That’s the whole method in one picture.</p>
+</section>
+<section id="inequality-constraints-active-or-not-and-complementary-slackness" class="level2">
+<h2 class="anchored" data-anchor-id="inequality-constraints-active-or-not-and-complementary-slackness">11.7 Inequality constraints: active or not, and complementary slackness</h2>
+<p>Now <span class="math inline">\(g(\mathbf{x}) \le 0\)</span>. The lectures’ treatment stays at one key idea: at the optimum, each inequality constraint is either doing something or nothing.</p>
+<ol type="i">
+<li><strong>Inactive:</strong> <span class="math inline">\(g(\mathbf{x}^\star) &lt; 0\)</span>. The constraint is slack — locally you can move freely — so the problem behaves like the unconstrained one: <span class="math inline">\(\nabla f(\mathbf{x}^\star) = \mathbf{0}\)</span>.</li>
+<li><strong>Active:</strong> <span class="math inline">\(g(\mathbf{x}^\star) = 0\)</span>. The rope is taut; treat it as an equality: <span class="math inline">\(\nabla f(\mathbf{x}^\star) = -\lambda\, \nabla g(\mathbf{x}^\star)\)</span> with <strong><span class="math inline">\(\lambda \ge 0\)</span></strong> (anti-parallel — the §11.2 picture: only the anti-parallel configuration leaves no descent direction feasible).</li>
+</ol>
+<p>One line captures both cases — <strong>complementary slackness</strong>: <span class="math display">\[\boxed{\lambda \cdot g(\mathbf{x}^\star) = 0, \qquad \lambda \ge 0}\]</span> either the constraint binds (<span class="math inline">\(g(\mathbf{x}^\star) = 0\)</span>) or the multiplier vanishes (<span class="math inline">\(\lambda = 0\)</span>; the constraint might as well not exist).</p>
+<p><strong>eg 4 — inactive constraint (full steps).</strong> Minimize <span class="math inline">\(f(x, y) = x^2 + y^2\)</span> subject to <span class="math inline">\(x + y \le 1\)</span>.</p>
+<ol type="i">
+<li>The unconstrained minimum is <span class="math inline">\((0, 0)\)</span>, and <span class="math inline">\(g(0, 0) = 0 + 0 - 1 = -1 &lt; 0\)</span> — feasible with slack.</li>
+<li>Nothing to do: <span class="math inline">\(\mathbf{x}^\star = (0, 0)\)</span>, <span class="math inline">\(f = 0\)</span> (and <span class="math inline">\(f \ge 0\)</span> everywhere). <span class="math inline">\(\lambda = 0\)</span>, and <span class="math inline">\(\lambda \cdot g = 0 \cdot (-1) = 0\)</span>. ✓</li>
+</ol>
+<p><strong>eg 5 — active constraint (full steps).</strong> Minimize <span class="math inline">\(f(x, y) = x^2 + y^2\)</span> subject to <span class="math inline">\(x + y \le -1\)</span>.</p>
+<ol type="i">
+<li>The unconstrained minimum <span class="math inline">\((0, 0)\)</span> gives <span class="math inline">\(g(0, 0) = 1 &gt; 0\)</span> — infeasible. The constraint must be active.</li>
+<li>Solve as equality, <span class="math inline">\(h(x, y) = x + y + 1 = 0\)</span>: <span class="math inline">\(\nabla f = (2x, 2y) = -\lambda(1, 1) = -\lambda \nabla g\)</span>.</li>
+<li>So <span class="math inline">\(2x = -\lambda\)</span>, <span class="math inline">\(2y = -\lambda\)</span> — <span class="math inline">\(x = y = -\lambda/2\)</span>. With <span class="math inline">\(x + y = -1\)</span>: <span class="math inline">\(-\lambda = -1\)</span>, <span class="math inline">\(\lambda = 1 \ge 0\)</span> ✓ (anti-parallel, as required).</li>
+<li><span class="math inline">\(\mathbf{x}^\star = (-\tfrac{1}{2}, -\tfrac{1}{2})\)</span>, <span class="math inline">\(f = \tfrac{1}{2}\)</span>. Check anti-parallelism: <span class="math inline">\(\nabla f = (-1, -1)\)</span>, <span class="math inline">\(\nabla g = (1, 1)\)</span> — opposite directions. ✓</li>
+</ol>
+<p><strong>Note:</strong> For equalities <span class="math inline">\(\lambda\)</span> could be anything; for inequalities <span class="math inline">\(\lambda \ge 0\)</span> is load-bearing: it filters maximizers out of the candidate list. Problem 7 shows this directly — the equality problem there has two stationary points, and the sign condition rejects the one with <span class="math inline">\(\lambda &lt; 0\)</span>. The full version of these conditions (with several constraints and the Lagrangian) is the Karush–Kuhn–Tucker theory — Chapter 13.</p>
+<p><strong>Basically, …</strong> An inequality constraint is a rope, not a rail: it only pushes back when taut. At the optimum, either the rope is slack (then ignore it — you’re at an ordinary unconstrained minimum) or it’s taut (then solve it like an equality, with the extra rule that the multiplier can’t be negative). “Complementary slackness” is just this sentence in algebra: <span class="math inline">\(\lambda \cdot g = 0\)</span> means at least one of the two is zero.</p>
+</section>
+<section id="projected-gradient-descent-step-then-snap-back" class="level2">
+<h2 class="anchored" data-anchor-id="projected-gradient-descent-step-then-snap-back">11.8 Projected gradient descent: step, then snap back</h2>
+<p>Lagrange multipliers solve the equations <em>analytically</em> — but in general those equations are unsolvable (eg 2 of §10.2’s warning applies here too). What we want is an <em>iterative</em> method, in the spirit of Chapter 10. The problem with plain gradient descent: the step <span class="math display">\[\mathbf{x}_{t+1} = \mathbf{x}_t - \eta_t \nabla f(\mathbf{x}_t)\]</span> can land <strong>outside</strong> the feasible set <span class="math inline">\(S\)</span>, and tuning <span class="math inline">\(\eta_t\)</span> to always stay inside is hopeless in general.</p>
+<p>The fix is almost embarrassingly simple: take the gradient step anyway, then <strong>project</strong> back onto <span class="math inline">\(S\)</span> — move to the closest feasible point.</p>
+<p><strong>Def.</strong> The <strong>projection</strong> of <span class="math inline">\(\mathbf{z}\)</span> onto a set <span class="math inline">\(S\)</span> is the closest point of <span class="math inline">\(S\)</span>: <span class="math display">\[\boxed{\Pi_S(\mathbf{z}) = \arg\min_{\mathbf{y} \in S} \lVert \mathbf{z} - \mathbf{y} \rVert^2.}\]</span> For simple sets it has a closed form: <span class="math inline">\(\Pi_{(-\infty, a]}(z) = \min(z, a)\)</span> (snap down to <span class="math inline">\(a\)</span>), <span class="math inline">\(\Pi_{[0, \infty)}(z) = \max(z, 0)\)</span> (snap up to <span class="math inline">\(0\)</span>), <span class="math inline">\(\Pi_{\text{unit ball}}(\mathbf{z}) = \mathbf{z} / \max(1, \lVert\mathbf{z}\rVert)\)</span> (shrink to the ball).</p>
+<p><strong>Def.</strong> <strong>Projected gradient descent</strong> = <span class="math display">\[\boxed{\mathbf{x}_{t+1} = \Pi_S\big(\mathbf{x}_t - \eta_t \nabla f(\mathbf{x}_t)\big)} \qquad \text{(gradient step, then projection step).}\]</span> Every iterate stays in <span class="math inline">\(S\)</span> by construction — the projection guarantees it.</p>
+<p><strong>eg 6 — projected GD by hand (full steps).</strong> Minimize <span class="math inline">\(f(x) = (x - 5)^2\)</span> subject to <span class="math inline">\(x \le 2\)</span>. (The unconstrained minimum <span class="math inline">\(x = 5\)</span> is infeasible; the constrained optimum is <span class="math inline">\(x^\star = 2\)</span>, the closest feasible point to <span class="math inline">\(5\)</span>.)</p>
+<p>Take <span class="math inline">\(\eta = 0.1\)</span>, <span class="math inline">\(x_0 = 0\)</span>. Projection: <span class="math inline">\(\Pi_S(z) = \min(z, 2)\)</span>.</p>
+<ol type="i">
+<li>Gradient step: <span class="math inline">\(x_t - 0.1 \cdot 2(x_t - 5) = 0.8 x_t + 1\)</span>. Then snap: <span class="math inline">\(x_{t+1} = \min(0.8 x_t + 1,\, 2)\)</span>.</li>
+<li><span class="math inline">\(x_1 = \min(0.8 \cdot 0 + 1,\, 2) = 1\)</span>. <span class="math inline">\(f\)</span>: <span class="math inline">\(25 \to 16\)</span>.</li>
+<li><span class="math inline">\(x_2 = \min(0.8 \cdot 1 + 1,\, 2) = 1.8\)</span>. <span class="math inline">\(f\)</span>: <span class="math inline">\(16 \to 10.24\)</span>.</li>
+<li><span class="math inline">\(x_3 = \min(0.8 \cdot 1.8 + 1,\, 2) = \min(2.44,\, 2) = 2\)</span>. <span class="math inline">\(f = 9\)</span>.</li>
+<li><span class="math inline">\(x_4 = \min(0.8 \cdot 2 + 1,\, 2) = \min(2.6,\, 2) = 2\)</span>. Frozen at the optimum.</li>
+</ol>
+<p><strong>Note:</strong> Without the projection, step iv) would have gone to <span class="math inline">\(2.44\)</span> — infeasible — and kept marching toward <span class="math inline">\(5\)</span>. The projection is what holds the iterates inside the fence.</p>
+<p><strong>The catch (from the lectures).</strong> The method is only as good as the projection:</p>
+<ol type="i">
+<li>You must be able to compute <span class="math inline">\(\Pi_S\)</span> efficiently — for messy sets, the projection itself can be as hard as the original problem.</li>
+<li>Convergence to the true optimum is guaranteed when the constraint set is <em>nice</em> — specifically, when <span class="math inline">\(S\)</span> is <strong>convex</strong> (Chapter 12 defines this). If <span class="math inline">\(f\)</span> is also nice (convex), the method even converges fast.</li>
+</ol>
+<p><strong>Basically, …</strong> Projected gradient descent is gradient descent with a bouncer. You take your usual downhill step; if you stepped outside the allowed region, the bouncer (the projection) drags you back to the nearest allowed point. It works great when the allowed region is a “nice” shape (convex — next chapter) and the projection is cheap to compute.</p>
+</section>
+<section id="why-ml-cares" class="level2">
+<h2 class="anchored" data-anchor-id="why-ml-cares">11.9 Why ML cares</h2>
+<p>Constrained problems are everywhere once you look:</p>
+<ol type="i">
+<li><strong>Regularization as a constraint.</strong> Training with a weight budget, <span class="math inline">\(\min L(\mathbf{w})\)</span> subject to <span class="math inline">\(\lVert\mathbf{w}\rVert \le R\)</span>, is the constrained form of penalized training — the penalty version of Chapter 28 is its close cousin. Projected gradient descent on the norm ball is literally “take a step, then shrink the weights back into the ball”.</li>
+<li><strong>SVMs (Chapters 32–33).</strong> The support vector machine is posed as a constrained optimization problem (maximize the margin subject to classification constraints) — and it is solved through the Lagrangian machinery of this chapter, pushed all the way to duality in Chapter 13.</li>
+<li>Any time parameters must live somewhere specific — probabilities summing to <span class="math inline">\(1\)</span>, non-negative weights, bounded weights — this chapter’s tools apply.</li>
+</ol>
+</section>
+<section id="where-this-goes-next" class="level2">
+<h2 class="anchored" data-anchor-id="where-this-goes-next">11.10 Where this goes next</h2>
+<ul>
+<li><strong>Chapter 12 (convexity):</strong> the “nice” sets and functions this chapter kept gesturing at — convex sets make projected gradient descent converge; convex functions make every local minimum global.</li>
+<li><strong>Chapter 13 (duality and KKT):</strong> the full Karush–Kuhn–Tucker conditions for many constraints, and the dual problem — the machinery that actually solves SVMs.</li>
+<li><strong>Chapter 28 (regularization):</strong> the penalty view of the weight-budget constraint of §11.9.</li>
+<li><strong>Chapters 32–33 (SVMs):</strong> the payoff — a real ML model built on Lagrange multipliers.</li>
+</ul>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li>Starting from <span class="math inline">\(L(\mathbf{x}, \lambda) = f(\mathbf{x}) - \lambda h(\mathbf{x})\)</span>, derive the two first-order conditions for <span class="math inline">\(\min f(\mathbf{x})\)</span> s.t. <span class="math inline">\(h(\mathbf{x}) = 0\)</span>. Explain in one line why this is the same condition as the lectures’ <span class="math inline">\(\nabla f(\mathbf{x}^\star) = -\lambda \nabla h(\mathbf{x}^\star)\)</span>.</li>
+<li>Minimize <span class="math inline">\(f(x, y) = (x - 3)^2 + (y - 4)^2\)</span> subject to <span class="math inline">\(x + y = 3\)</span> by Lagrange multipliers. (Hint: geometrically this is the closest point on the line to <span class="math inline">\((3, 4)\)</span> — use that to check your answer and its value.)</li>
+<li>A rectangular box without a lid is to be made from <span class="math inline">\(12\,\text{m}^2\)</span> of cardboard. Maximize the volume <span class="math inline">\(f(x, y, z) = xyz\)</span> subject to <span class="math inline">\(2xz + 2yz + xy = 12\)</span>, <span class="math inline">\(x, y, z &gt; 0\)</span>. (Hint: multiply the three Lagrange equations by <span class="math inline">\(x\)</span>, <span class="math inline">\(y\)</span>, <span class="math inline">\(z\)</span> respectively and compare.)</li>
+<li>Minimize <span class="math inline">\(f(x, y) = x^2 + xy + y^2\)</span> subject to <span class="math inline">\(x^2 + y^2 = 1\)</span>. Find all stationary points from the Lagrange system, evaluate <span class="math inline">\(f\)</span> at each, and identify the minimizers and maximizers.</li>
+<li>Minimize <span class="math inline">\(f(x, y) = x^2 + y^2\)</span> subject to <span class="math inline">\(x + y \le 1\)</span>. Is the constraint active or inactive at the optimum? Verify complementary slackness.</li>
+<li>Minimize <span class="math inline">\(f(x, y) = x^2 + y^2\)</span> subject to <span class="math inline">\(x + y \le -1\)</span>. Solve with the constraint active, find <span class="math inline">\(\lambda\)</span>, and verify <span class="math inline">\(\lambda \ge 0\)</span> and that <span class="math inline">\(\nabla f\)</span> and <span class="math inline">\(\nabla g\)</span> are anti-parallel at the optimum.</li>
+<li>Minimize <span class="math inline">\(f(x, y) = (x - 2)^2 + (y - 2)^2\)</span> subject to <span class="math inline">\(x^2 + y^2 \le 1\)</span>. (a) Show the unconstrained minimum is infeasible, so the constraint is active. (b) Find both stationary points of the equality problem and their multipliers; use the sign condition <span class="math inline">\(\lambda \ge 0\)</span> to pick the minimizer.</li>
+<li>Run three projected-gradient-descent iterations for <span class="math inline">\(\min f(x) = (x - 4)^2\)</span> subject to <span class="math inline">\(x \le 1\)</span>, from <span class="math inline">\(x_0 = 0\)</span> with constant <span class="math inline">\(\eta = 0.25\)</span>. What is the constrained optimum, and do the iterates reach it?</li>
+<li>For <span class="math inline">\(\min f(x) = (x - 5)^2\)</span> subject to <span class="math inline">\(x \le 2\)</span> with <span class="math inline">\(\eta = 0.1\)</span>, <span class="math inline">\(x_0 = 0\)</span>: (a) compute <span class="math inline">\(x_1, x_2, x_3\)</span> of <em>plain</em> gradient descent (no projection) and show <span class="math inline">\(x_3\)</span> is infeasible; (b) apply one projection step to <span class="math inline">\(x_2\)</span>’s successor and compare with eg 6.</li>
+<li>Minimize <span class="math inline">\(x^2 + y^2 + z^2\)</span> subject to the two constraints <span class="math inline">\(x + y + z = 1\)</span> and <span class="math inline">\(x - y = 0\)</span>, using one multiplier per constraint. Interpret the optimum geometrically.</li>
+<li>Explain, with the §11.2 half-space picture, why an equality constraint allows <span class="math inline">\(\lambda\)</span> of either sign while an inequality constraint <span class="math inline">\(g(\mathbf{x}) \le 0\)</span> forces <span class="math inline">\(\lambda \ge 0\)</span>. (Hint: for the equality, the feasible directions form the line <span class="math inline">\(\mathbf{d}^T \nabla h = 0\)</span>; for the inequality, the half-space <span class="math inline">\(\mathbf{d}^T \nabla g &lt; 0\)</span>.)</li>
+</ol>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — <span class="math inline">\(L(\mathbf{x}, \lambda) = f(\mathbf{x}) - \lambda h(\mathbf{x})\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><span class="math inline">\(\nabla_{\mathbf{x}} L = \nabla f(\mathbf{x}) - \lambda \nabla h(\mathbf{x}) = \mathbf{0}\)</span>, i.e.&nbsp;<span class="math inline">\(\nabla f(\mathbf{x}^\star) = \lambda\, \nabla h(\mathbf{x}^\star)\)</span>.</li>
+<li><span class="math inline">\(\frac{\partial L}{\partial \lambda} = -h(\mathbf{x}) = 0\)</span>, i.e.&nbsp;<span class="math inline">\(h(\mathbf{x}^\star) = 0\)</span>.</li>
+</ol>
+<p>One line: the lectures write <span class="math inline">\(\nabla f = -\lambda \nabla h\)</span> with <span class="math inline">\(\lambda\)</span> unrestricted, and since <span class="math inline">\(\lambda\)</span> ranges over all of <span class="math inline">\(\mathbb{R}\)</span>, renaming <span class="math inline">\(\lambda \to -\lambda\)</span> turns one form into the other — they are the same condition.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — <span class="math inline">\(f(x, y) = (x-3)^2 + (y-4)^2\)</span>, constraint <span class="math inline">\(x + y = 3\)</span>. <span class="math inline">\(L = (x-3)^2 + (y-4)^2 - \lambda(x + y - 3)\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><span class="math inline">\(2(x - 3) - \lambda = 0\)</span>, <span class="math inline">\(2(y - 4) - \lambda = 0\)</span> — so <span class="math inline">\(2(x-3) = 2(y-4)\)</span>, i.e.&nbsp;<span class="math inline">\(y = x + 1\)</span>.</li>
+<li>Constraint: <span class="math inline">\(x + (x + 1) = 3\)</span> — <span class="math inline">\(x = 1\)</span>, <span class="math inline">\(y = 2\)</span>, <span class="math inline">\(\lambda = 2(1-3) = -4\)</span>.</li>
+<li>Value: <span class="math inline">\(f(1, 2) = 4 + 4 = 8\)</span>. Single candidate; <span class="math inline">\(f \to \infty\)</span> at infinity along the line — the global minimum.</li>
+</ol>
+<p>Check: distance from <span class="math inline">\((3,4)\)</span> to the line <span class="math inline">\(x + y - 3 = 0\)</span> is <span class="math inline">\(\frac{|3 + 4 - 3|}{\sqrt{2}} = \frac{4}{\sqrt{2}} = 2\sqrt{2}\)</span>; squared distance <span class="math inline">\(= 8\)</span>. ✓ Also <span class="math inline">\(\nabla f(1,2) = (-4, -4) = -4(1,1) = \lambda \nabla h\)</span>. ✓</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — Maximize <span class="math inline">\(f = xyz\)</span> subject to <span class="math inline">\(g(x,y,z) = 2xz + 2yz + xy - 12 = 0\)</span>, <span class="math inline">\(x,y,z &gt; 0\)</span> (lectures’ sign form <span class="math inline">\(\nabla f = -\lambda \nabla g\)</span>).
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><span class="math inline">\(\nabla f = (yz, xz, xy)\)</span>, <span class="math inline">\(\nabla g = (2z + y, 2z + x, 2x + 2y)\)</span>. Equations: <span class="math display">\[yz = -\lambda(2z + y), \qquad xz = -\lambda(2z + x), \qquad xy = -\lambda(2x + 2y).\]</span> (The sign of <span class="math inline">\(\lambda\)</span> is free for an equality; <span class="math inline">\(-\lambda\)</span> versus <span class="math inline">\(\lambda\)</span> makes no difference.)</li>
+<li>Multiply by <span class="math inline">\(x\)</span>, <span class="math inline">\(y\)</span>, <span class="math inline">\(z\)</span> respectively: <span class="math display">\[xyz = -\lambda(2xz + xy) = -\lambda(2yz + xy) = -\lambda(2xz + 2yz).\]</span></li>
+<li>Since <span class="math inline">\(xyz &gt; 0\)</span> (nonzero volume, positive sides): from the first two, <span class="math inline">\(2xz + xy = 2yz + xy\)</span> — <span class="math inline">\(2xz = 2yz\)</span> — <span class="math inline">\(x = y\)</span>. From the second and third, <span class="math inline">\(2yz + xy = 2xz + 2yz\)</span> — <span class="math inline">\(xy = 2xz\)</span> — <span class="math inline">\(y = 2z\)</span>. So <span class="math inline">\(x = y = 2z\)</span>.</li>
+<li>Constraint: <span class="math inline">\(2xz + 2yz + xy = 2(2z)(z) + 2(2z)(z) + (2z)(2z) = 12z^2 = 12\)</span> — <span class="math inline">\(z = 1\)</span> (positive root), <span class="math inline">\((x, y, z) = (2, 2, 1)\)</span>.</li>
+<li>Volume: <span class="math inline">\(f = 2 \cdot 2 \cdot 1 = 4\,\text{m}^3\)</span>, the maximum (boundary cases with a zero side give volume <span class="math inline">\(0\)</span>).</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — <span class="math inline">\(f(x,y) = x^2 + xy + y^2\)</span>, <span class="math inline">\(x^2 + y^2 = 1\)</span>. <span class="math inline">\(L = x^2 + xy + y^2 - \lambda(x^2 + y^2 - 1)\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><span class="math inline">\((2 - 2\lambda)x + y = 0\)</span>, <span class="math inline">\(x + (2 - 2\lambda)y = 0\)</span>. Put <span class="math inline">\(\mu = 2 - 2\lambda\)</span>: <span class="math inline">\(\mu x + y = 0\)</span>, <span class="math inline">\(x + \mu y = 0\)</span>.</li>
+<li><span class="math inline">\(y = -\mu x\)</span> into the second: <span class="math inline">\(x - \mu^2 x = x(1 - \mu^2) = 0\)</span>. <span class="math inline">\(x = 0\)</span> forces <span class="math inline">\(y = 0\)</span> (infeasible), so <span class="math inline">\(\mu = \pm 1\)</span>.</li>
+<li><span class="math inline">\(\mu = 1\)</span>: <span class="math inline">\(y = -x\)</span>; circle gives <span class="math inline">\(2x^2 = 1\)</span> — <span class="math inline">\((\tfrac{1}{\sqrt{2}}, -\tfrac{1}{\sqrt{2}})\)</span>, <span class="math inline">\((-\tfrac{1}{\sqrt{2}}, \tfrac{1}{\sqrt{2}})\)</span>. <span class="math inline">\(f = \tfrac{1}{2} - \tfrac{1}{2} + \tfrac{1}{2} = \tfrac{1}{2}\)</span> at both — the <strong>minimizers</strong>.</li>
+<li><span class="math inline">\(\mu = -1\)</span>: <span class="math inline">\(y = x\)</span>; <span class="math inline">\(x = \pm \tfrac{1}{\sqrt{2}}\)</span> — <span class="math inline">\((\tfrac{1}{\sqrt{2}}, \tfrac{1}{\sqrt{2}})\)</span>, <span class="math inline">\((-\tfrac{1}{\sqrt{2}}, -\tfrac{1}{\sqrt{2}})\)</span>. <span class="math inline">\(f = \tfrac{1}{2} + \tfrac{1}{2} + \tfrac{1}{2} = \tfrac{3}{2}\)</span> at both — the <strong>maximizers</strong>.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-empty-content callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — <span class="math inline">\(f(x,y) = x^2 + y^2\)</span>, <span class="math inline">\(g(x,y) = x + y - 1 \le 0\)</span>. The unconstrained minimum <span class="math inline">\((0,0)\)</span> has <span class="math inline">\(g(0,0) = -1 &lt; 0\)</span> — feasible with slack. So the constraint is <strong>inactive</strong> at the optimum: <span class="math inline">\(\mathbf{x}^\star = (0,0)\)</span>, <span class="math inline">\(f = 0\)</span> (global, since <span class="math inline">\(f \ge 0\)</span> everywhere). Multiplier <span class="math inline">\(\lambda = 0\)</span>; complementary slackness: <span class="math inline">\(\lambda \cdot g(\mathbf{x}^\star) = 0 \cdot (-1) = 0\)</span>. ✓
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — <span class="math inline">\(f(x,y) = x^2 + y^2\)</span>, <span class="math inline">\(g(x,y) = x + y + 1 \le 0\)</span>. Unconstrained minimum <span class="math inline">\((0,0)\)</span> has <span class="math inline">\(g(0,0) = 1 &gt; 0\)</span> — infeasible, so the constraint is <strong>active</strong>: solve <span class="math inline">\(x + y + 1 = 0\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><span class="math inline">\(\nabla f = (2x, 2y) = -\lambda(1,1) = -\lambda \nabla g\)</span> — so <span class="math inline">\(2x = -\lambda\)</span>, <span class="math inline">\(2y = -\lambda\)</span>, <span class="math inline">\(x = y = -\lambda/2\)</span>.</li>
+<li><span class="math inline">\(x + y = -1\)</span> gives <span class="math inline">\(-\lambda = -1\)</span> — <span class="math inline">\(\lambda = 1 \ge 0\)</span>. ✓</li>
+<li><span class="math inline">\(\mathbf{x}^\star = (-\tfrac{1}{2}, -\tfrac{1}{2})\)</span>, <span class="math inline">\(f = \tfrac{1}{2}\)</span>. Anti-parallel check: <span class="math inline">\(\nabla f(-\tfrac{1}{2},-\tfrac{1}{2}) = (-1,-1)\)</span>, <span class="math inline">\(\nabla g = (1,1)\)</span> — opposite directions. ✓ Complementary slackness: <span class="math inline">\(g(\mathbf{x}^\star) = 0\)</span>. ✓</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — <span class="math inline">\(f(x,y) = (x-2)^2 + (y-2)^2\)</span>, <span class="math inline">\(g(x,y) = x^2 + y^2 - 1 \le 0\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="a">
+<li><p>Unconstrained minimum: <span class="math inline">\(\nabla f = (2(x-2), 2(y-2)) = \mathbf{0}\)</span> — <span class="math inline">\((2,2)\)</span>. <span class="math inline">\(g(2,2) = 8 - 1 = 7 &gt; 0\)</span> — infeasible. So the constraint is active.</p></li>
+<li><p>Equality problem <span class="math inline">\(x^2 + y^2 = 1\)</span>, lecture form <span class="math inline">\(\nabla f = -\lambda \nabla g\)</span>: <span class="math display">\[2(x - 2) = -\lambda \cdot 2x, \qquad 2(y - 2) = -\lambda \cdot 2y.\]</span> So <span class="math inline">\(x(1 + \lambda) = 2\)</span>, <span class="math inline">\(y(1 + \lambda) = 2\)</span> — <span class="math inline">\(x = y = \tfrac{2}{1+\lambda}\)</span>. Circle: <span class="math inline">\(2x^2 = 1\)</span> — <span class="math inline">\(x = \pm \tfrac{1}{\sqrt{2}}\)</span>.</p></li>
+</ol>
+<ul>
+<li><span class="math inline">\(x = y = \tfrac{1}{\sqrt{2}}\)</span>: <span class="math inline">\(\tfrac{1}{\sqrt{2}}(1 + \lambda) = 2\)</span> — <span class="math inline">\(\lambda = 2\sqrt{2} - 1 \approx 1.83 \ge 0\)</span>. ✓ Minimizer. Value: <span class="math inline">\(f = 2(\tfrac{1}{\sqrt{2}} - 2)^2 = 2(\tfrac{9}{2} - 2\sqrt{2}) = 9 - 4\sqrt{2} \approx 3.34\)</span>.</li>
+<li><span class="math inline">\(x = y = -\tfrac{1}{\sqrt{2}}\)</span>: <span class="math inline">\(\lambda = 1 - 2\sqrt{2} \approx -1.83 &lt; 0\)</span> — fails the sign condition: the maximizer. Value: <span class="math inline">\(9 + 4\sqrt{2} \approx 14.66\)</span>.</li>
+</ul>
+<p>The <span class="math inline">\(\lambda \ge 0\)</span> rule picks the minimizer and rejects the maximizer.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 8 — <span class="math inline">\(f(x) = (x-4)^2\)</span>, <span class="math inline">\(x \le 1\)</span>, <span class="math inline">\(\eta = 0.25\)</span>, <span class="math inline">\(x_0 = 0\)</span>. Update: <span class="math inline">\(x_{t+1} = \min(x_t - 0.25 \cdot 2(x_t - 4),\, 1) = \min(0.5x_t + 2,\, 1)\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><span class="math inline">\(x_1 = \min(0.5 \cdot 0 + 2,\, 1) = \min(2, 1) = 1\)</span>.</li>
+<li><span class="math inline">\(x_2 = \min(0.5 \cdot 1 + 2,\, 1) = \min(2.5, 1) = 1\)</span>.</li>
+<li><span class="math inline">\(x_3 = 1\)</span>.</li>
+</ol>
+<p>Constrained optimum: the closest point of <span class="math inline">\((-\infty, 1]\)</span> to <span class="math inline">\(4\)</span> is <span class="math inline">\(x^\star = 1\)</span>, <span class="math inline">\(f = 9\)</span> — the iterates reach it in one step and stay.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 9 — <span class="math inline">\(f(x) = (x-5)^2\)</span>, <span class="math inline">\(x \le 2\)</span>, <span class="math inline">\(\eta = 0.1\)</span>, <span class="math inline">\(x_0 = 0\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="a">
+<li><p>Plain GD: <span class="math inline">\(x_{t+1} = x_t - 0.2(x_t - 5) = 0.8x_t + 1\)</span>. <span class="math inline">\(x_1 = 1\)</span>, <span class="math inline">\(x_2 = 0.8 + 1 = 1.8\)</span>, <span class="math inline">\(x_3 = 1.44 + 1 = 2.44\)</span>. <span class="math inline">\(2.44 &gt; 2\)</span> — infeasible; plain GD leaves the feasible set on the third step (and would keep marching to <span class="math inline">\(5\)</span>).</p></li>
+<li><p>Projecting <span class="math inline">\(x_3\)</span>: <span class="math inline">\(\min(2.44, 2) = 2\)</span> — exactly eg 6’s <span class="math inline">\(x_3\)</span>. With projection every step, the iterates are <span class="math inline">\(0 \to 1 \to 1.8 \to 2 \to 2\)</span>, frozen at the constrained optimum <span class="math inline">\(x^\star = 2\)</span>.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 10 — <span class="math inline">\(L = x^2 + y^2 + z^2 - \lambda_1(x + y + z - 1) - \lambda_2(x - y)\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><span class="math inline">\(2x = \lambda_1 + \lambda_2\)</span>, <span class="math inline">\(2y = \lambda_1 - \lambda_2\)</span>, <span class="math inline">\(2z = \lambda_1\)</span>.</li>
+<li>Constraint <span class="math inline">\(x - y = 0\)</span> gives <span class="math inline">\(x = y\)</span>, so <span class="math inline">\(\lambda_2 = 0\)</span> and <span class="math inline">\(x = z = \lambda_1/2\)</span>.</li>
+<li><span class="math inline">\(x + y + z = 1\)</span> gives <span class="math inline">\(\tfrac{3\lambda_1}{2} = 1\)</span> — <span class="math inline">\(\lambda_1 = \tfrac{2}{3}\)</span>, <span class="math inline">\(x = y = z = \tfrac{1}{3}\)</span>.</li>
+<li>Value: <span class="math inline">\(f = 3 \cdot \tfrac{1}{9} = \tfrac{1}{3}\)</span> — the global minimum (single candidate, <span class="math inline">\(f \to \infty\)</span> at infinity).</li>
+</ol>
+<p>Geometrically: the two planes intersect in a line; the optimum is the point of that line closest to the origin, with <span class="math inline">\(f\)</span> the squared distance.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 11 — Equality <span class="math inline">\(h(\mathbf{x}) = 0\)</span>: to first order, feasible directions satisfy <span class="math inline">\(\mathbf{d}^T \nabla h(\mathbf{x}^\star) = 0\)</span> — a <em>line</em>, symmetric: if <span class="math inline">\(\mathbf{d}\)</span> is feasible, so is <span class="math inline">\(-\mathbf{d}\)</span>. The descent directions are the half-space <span class="math inline">\(\mathbf{d}^T \nabla f &lt; 0\)</span>. These avoid each other exactly when the line is perpendicular to <span class="math inline">\(\nabla f\)</span> — i.e.&nbsp;<span class="math inline">\(\nabla f \parallel \nabla h\)</span> — and parallelism covers <em>both</em> directions (<span class="math inline">\(\lambda &gt; 0\)</span> and <span class="math inline">\(\lambda &lt; 0\)</span>).
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-11" class="callout-11-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Inequality <span class="math inline">\(g(\mathbf{x}) \le 0\)</span>: feasible directions include the <em>half-space</em> <span class="math inline">\(\mathbf{d}^T \nabla g &lt; 0\)</span> — one-sided, not symmetric. Only the anti-parallel configuration (<span class="math inline">\(\nabla f = -\lambda \nabla g\)</span>, <span class="math inline">\(\lambda &gt; 0\)</span>) points the descent half-space entirely away from the feasible half-space. With <span class="math inline">\(\lambda &lt; 0\)</span> (parallel), every descent direction would be feasible — the point could be improved, so it cannot be a minimum.</p>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./10-unconstrained-optimization-gradient-descent.html" class="pagination-link" aria-label="10. Unconstrained optimization and gradient descent">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./12-convex-sets-functions.html" class="pagination-link" aria-label="12. Convex sets and convex functions">
+        <span class="nav-page-text"><span class="chapter-title">12. Convex sets and convex functions</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

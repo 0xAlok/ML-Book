@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Chapter 32: Hard-margin SVM – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./33-soft-margin-kernel-svm.html" rel="next">
+<link href="./31-perceptron-logistic.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./26-k-means.html">Part IV — Machine Learning Techniques</a></li><li class="breadcrumb-item"><a href="./32-hard-margin-svm.html"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#the-problem-with-any-wall-which-separator" id="toc-the-problem-with-any-wall-which-separator" class="nav-link active" data-scroll-target="#the-problem-with-any-wall-which-separator">32.1 The problem with “any” wall: which separator?</a></li>
+  <li><a href="#the-margin-functional-geometric-and-the-canonical-form" id="toc-the-margin-functional-geometric-and-the-canonical-form" class="nav-link" data-scroll-target="#the-margin-functional-geometric-and-the-canonical-form">32.2 The margin: functional, geometric, and the canonical form</a></li>
+  <li><a href="#the-hard-margin-primal-from-widest-street-to-min-frac12lvert-wrvert2" id="toc-the-hard-margin-primal-from-widest-street-to-min-frac12lvert-wrvert2" class="nav-link" data-scroll-target="#the-hard-margin-primal-from-widest-street-to-min-frac12lvert-wrvert2">32.3 The hard-margin primal: from “widest street” to <span class="math inline">\(\min \frac12\lVert w\rVert^2\)</span></a></li>
+  <li><a href="#the-dual-same-problem-mirrored" id="toc-the-dual-same-problem-mirrored" class="nav-link" data-scroll-target="#the-dual-same-problem-mirrored">32.4 The dual: same problem, mirrored</a></li>
+  <li><a href="#kkt-and-support-vectors-only-the-wall-huggers-vote" id="toc-kkt-and-support-vectors-only-the-wall-huggers-vote" class="nav-link" data-scroll-target="#kkt-and-support-vectors-only-the-wall-huggers-vote">32.5 KKT and support vectors: only the wall-huggers vote</a></li>
+  <li><a href="#worked-example-three-points-the-dual-solved-by-hand" id="toc-worked-example-three-points-the-dual-solved-by-hand" class="nav-link" data-scroll-target="#worked-example-three-points-the-dual-solved-by-hand">32.6 Worked example: three points, the dual solved by hand</a></li>
+  <li><a href="#strengths-and-limits-as-the-sources-list-them" id="toc-strengths-and-limits-as-the-sources-list-them" class="nav-link" data-scroll-target="#strengths-and-limits-as-the-sources-list-them">32.7 Strengths and limits (as the sources list them)</a></li>
+  <li><a href="#where-this-goes-next" id="toc-where-this-goes-next" class="nav-link" data-scroll-target="#where-this-goes-next">32.8 Where this goes next</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./26-k-means.html">Part IV — Machine Learning Techniques</a></li><li class="breadcrumb-item"><a href="./32-hard-margin-svm.html"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><em>Part IV — Machine Learning Techniques. Builds on: linear boundaries (§31.1), the perceptron’s margin <span class="math inline">\(\gamma\)</span> (§31.5), Lagrange/KKT machinery (Ch 11, Ch 13), and the SVM preview (§13.15). Sources: MLT Week 10 lecture slides (hard-margin SVM derivation) and the MLT Week 10 practice assignment.</em></p>
+<section id="the-problem-with-any-wall-which-separator" class="level2">
+<h2 class="anchored" data-anchor-id="the-problem-with-any-wall-which-separator">32.1 The problem with “any” wall: which separator?</h2>
+<p>The perceptron (§31.2–§31.5) finds <em>a</em> separating wall and stops. If the data is linearly separable, infinitely many walls separate it — the perceptron just grabs the first one its update order stumbles into, then stops dead (correct points cause no updates, §31.5).</p>
+<p>The lecture’s slide 1 asks the uncomfortable question: <em>given that we prefer classifiers with large margin, can we directly find them?</em> Its observation:</p>
+<ol type="i">
+<li>The perceptron’s mistake bound depends on the margin of the <em>best possible</em> separator <span class="math inline">\(w^\star\)</span> — the one we never actually compute.</li>
+<li>The wall the perceptron <em>does</em> find need not be <span class="math inline">\(w^\star\)</span>. It can be any wall that happens to work — including one that grazes the data.</li>
+</ol>
+<p>So the perceptron answers “find me a wall”, and this chapter answers the harder question: <strong>of all the walls that separate the classes, which one should we pick?</strong></p>
+<p>The SVM’s answer = the wall <strong>farthest from both classes</strong> — the max-margin wall. The perceptron’s practice-assignment margin <span class="math inline">\(\gamma\)</span> (§31.5) was the preview: there we measured how much room a separator leaves; here we <em>optimize</em> that room.</p>
+<p><strong>Basically, …</strong> “The perceptron is the first apartment you toured that had a roof. The SVM is the apartment farthest from both noisy neighbours. Same street (linear walls) — much better address.”</p>
+</section>
+<section id="the-margin-functional-geometric-and-the-canonical-form" class="level2">
+<h2 class="anchored" data-anchor-id="the-margin-functional-geometric-and-the-canonical-form">32.2 The margin: functional, geometric, and the canonical form</h2>
+<p>For a wall <span class="math inline">\(w^T x + b = 0\)</span> and a labelled point <span class="math inline">\((x^{(i)}, y^{(i)})\)</span>, <span class="math inline">\(y^{(i)} \in \{-1, +1\}\)</span>:</p>
+<ol type="i">
+<li><strong>Functional margin</strong> = <span class="math inline">\(y^{(i)}(w^T x^{(i)} + b)\)</span>. Positive means correct, and its size says “how correct” — but it is <em>scale-sensitive</em>: replace <span class="math inline">\((w, b)\)</span> by <span class="math inline">\((2w, 2b)\)</span> and every functional margin doubles while the wall never moves.</li>
+<li><strong>Geometric margin</strong> = <span class="math inline">\(\dfrac{y^{(i)}(w^T x^{(i)} + b)}{\lVert w \rVert}\)</span>. This is the true perpendicular distance from the point to the wall, signed by correctness. Scaling <span class="math inline">\((w,b)\)</span> leaves it unchanged — it measures the wall, not the numbers.</li>
+<li>The <strong>margin of the wall</strong> = the smallest geometric margin over the data: <span class="math inline">\(\gamma = \min_i \dfrac{y^{(i)}(w^T x^{(i)} + b)}{\lVert w \rVert}\)</span>.</li>
+</ol>
+<p>The scale problem in (i) is the whole game. Fix it by <em>choosing a scale</em>: demand that the closest point(s) sit at functional margin exactly <span class="math inline">\(1\)</span>:</p>
+<p><span class="math display">\[\boxed{\min_i y^{(i)}(w^T x^{(i)} + b) = 1} \qquad \text{(canonical form)}\]</span></p>
+<p>This is always achievable for a separating wall — just rescale <span class="math inline">\((w, b)\)</span> until the minimum functional margin equals <span class="math inline">\(1\)</span>. The wall doesn’t move; only the ruler changes.</p>
+<p><strong>Note:</strong> the canonical form pins down a unique <span class="math inline">\((w, b)\)</span> per wall. That is why you may rescale the <em>equation</em> <span class="math inline">\(w^T x + b = 0\)</span> by a constant but may not rescale <span class="math inline">\(w\)</span> alone — scaling <span class="math inline">\(w\)</span> alone changes which wall the canonical constraints describe (practice assignment, Q3).</p>
+<p>With the canonical scale, the geometry becomes clean. The closest points satisfy <span class="math inline">\(w^T x + b = \pm 1\)</span> — two hyperplanes parallel to the wall, one per class. These are the <strong>supporting hyperplanes</strong>. The distance between two parallel planes <span class="math inline">\(w^T x + b = c_1\)</span> and <span class="math inline">\(w^T x + b = c_2\)</span> is <span class="math inline">\(|c_1 - c_2|/\lVert w \rVert\)</span> (project the gap onto the unit normal <span class="math inline">\(w/\lVert w \rVert\)</span>). So:</p>
+<p><span class="math display">\[\boxed{\text{width} = \frac{1 - (-1)}{\lVert w \rVert} = \frac{2}{\lVert w \rVert}}\]</span></p>
+<p>and the margin on each side is <span class="math inline">\(\gamma = 1/\lVert w \rVert\)</span>. Maximizing the margin is now purely about making <span class="math inline">\(\lVert w \rVert\)</span> small.</p>
+<p><strong>Basically, …</strong> “Functional margin is the score in made-up points — double the numbers, double the score, same wall. Geometric margin is the score in metres — it can’t be faked. The canonical form just declares ‘the nearest point scores exactly 1’, which fixes the ruler. After that, the whole gap between the two classes is <span class="math inline">\(2/\lVert w \rVert\)</span>: a shorter <span class="math inline">\(w\)</span> means a wider street.”</p>
+</section>
+<section id="the-hard-margin-primal-from-widest-street-to-min-frac12lvert-wrvert2" class="level2">
+<h2 class="anchored" data-anchor-id="the-hard-margin-primal-from-widest-street-to-min-frac12lvert-wrvert2">32.3 The hard-margin primal: from “widest street” to <span class="math inline">\(\min \frac12\lVert w\rVert^2\)</span></h2>
+<p>Maximize the width <span class="math inline">\(2/\lVert w \rVert\)</span> over all separating walls:</p>
+<ol type="i">
+<li>Maximizing <span class="math inline">\(2/\lVert w \rVert\)</span> <span class="math inline">\(\iff\)</span> minimizing <span class="math inline">\(\lVert w \rVert\)</span> <span class="math inline">\(\iff\)</span> minimizing <span class="math inline">\(\lVert w \rVert^2\)</span> (monotone transforms; the optimum <span class="math inline">\((w, b)\)</span> is the same).</li>
+<li>The <span class="math inline">\(\frac12\)</span> is cosmetic: <span class="math inline">\(\frac12\lVert w \rVert^2\)</span> differentiates to <span class="math inline">\(w\)</span>, keeping every gradient clean (§13.15’s Hessian remark: the Hessian is the identity).</li>
+<li>“Separating wall” in canonical form = every point’s functional margin is at least <span class="math inline">\(1\)</span>.</li>
+</ol>
+<p>The <strong>hard-margin SVM primal</strong>:</p>
+<p><span class="math display">\[\boxed{\min_{w, b}\ \frac{1}{2}\lVert w \rVert^2 \quad \text{s.t.}\quad y^{(i)}(w^T x^{(i)} + b) \ge 1\ \ \forall i}\]</span></p>
+<p><strong>Note (when this has no answer).</strong> The constraints demand a wall with <em>every</em> point on the correct side with functional margin <span class="math inline">\(\ge 1\)</span>. If the data is not linearly separable, no such <span class="math inline">\((w, b)\)</span> exists — the problem is infeasible. The hard-margin SVM, like the perceptron (§31.5), needs separable data; the lecture’s closing question (“how to adapt the SVM when data has outliers?”) is exactly this weakness, and Chapter 33’s soft margin is the answer.</p>
+<p><strong>Basically, …</strong> “Widest street = shortest <span class="math inline">\(w\)</span>. The <span class="math inline">\(\frac12\)</span> and the square are just tidying up so the calculus comes out nice. And the fine print: this whole problem only makes sense if a separating wall exists at all — one point on the wrong side and there is no feasible answer.”</p>
+</section>
+<section id="the-dual-same-problem-mirrored" class="level2">
+<h2 class="anchored" data-anchor-id="the-dual-same-problem-mirrored">32.4 The dual: same problem, mirrored</h2>
+<p>The primal is a quadratic objective with linear constraints — exactly the shape Chapters 11 and 13 were built for (§13.15(i): strong duality holds, so the dual agrees with the primal). The lecture derives the dual in four moves:</p>
+<p><strong>Move 1 — the Lagrangian.</strong> With one multiplier <span class="math inline">\(\alpha_i \ge 0\)</span> per constraint, written in the <span class="math inline">\(g_i \le 0\)</span> shape (<span class="math inline">\(g_i(w, b) = 1 - y^{(i)}(w^T x^{(i)} + b)\)</span>, §13.2):</p>
+<p><span class="math display">\[L(w, b, \alpha) = \frac{1}{2}\lVert w \rVert^2 + \sum_{i=1}^{n} \alpha_i \big(1 - y^{(i)}(w^T x^{(i)} + b)\big).\]</span></p>
+<p><strong>Move 2 — the primal as min-max.</strong> By §13.3’s trick, <span class="math inline">\(\max_{\alpha \ge 0} L\)</span> is <span class="math inline">\(\frac12\lVert w \rVert^2\)</span> when <span class="math inline">\((w, b)\)</span> is feasible and <span class="math inline">\(+\infty\)</span> otherwise. So the primal is <span class="math inline">\(\min_{w,b} \max_{\alpha \ge 0} L\)</span>.</p>
+<p><strong>Move 3 — swap.</strong> For convex <span class="math inline">\(f\)</span> and <span class="math inline">\(g\)</span> (quadratic objective, linear constraints), min and max swap (§13.4, §13.7):</p>
+<p><span class="math display">\[\min_{w,b}\ \max_{\alpha \ge 0}\ L(w, b, \alpha) \quad = \quad \max_{\alpha \ge 0}\ \min_{w,b}\ L(w, b, \alpha).\]</span></p>
+<p>The right side is the <strong>dual problem</strong>.</p>
+<p><strong>Move 4 — the inner min, by stationarity.</strong> Fix <span class="math inline">\(\alpha \ge 0\)</span> and minimize over <span class="math inline">\((w, b)\)</span> (unconstrained now — set gradients to zero, §11.3):</p>
+<p><span class="math display">\[\frac{\partial L}{\partial w} = w - \sum_{i=1}^{n} \alpha_i y^{(i)} x^{(i)} = 0 \quad\Longrightarrow\quad \boxed{w^\star = \sum_{i=1}^{n} \alpha_i y^{(i)} x^{(i)}},\]</span></p>
+<p><span class="math display">\[\frac{\partial L}{\partial b} = -\sum_{i=1}^{n} \alpha_i y^{(i)} = 0 \quad\Longrightarrow\quad \boxed{\sum_{i=1}^{n} \alpha_i y^{(i)} = 0}.\]</span></p>
+<p>Substituting <span class="math inline">\(w^\star\)</span> back into <span class="math inline">\(L\)</span> and simplifying (the <span class="math inline">\(\frac12\lVert w \rVert^2\)</span> and the <span class="math inline">\(-\sum \alpha_i y^{(i)} w^T x^{(i)}\)</span> terms collapse into <span class="math inline">\(-\frac12\sum_{i,j} \alpha_i\alpha_j y^{(i)}y^{(j)} {x^{(i)}}^T x^{(j)}\)</span>):</p>
+<p><span class="math display">\[\boxed{\max_{\alpha \ge 0,\ \sum_i \alpha_i y^{(i)} = 0}\ \ \sum_{i=1}^{n} \alpha_i \;-\; \frac{1}{2}\sum_{i,j=1}^{n} \alpha_i \alpha_j\, y^{(i)} y^{(j)}\, {x^{(i)}}^T x^{(j)}}\]</span></p>
+<p><strong>Note (notation vs the lecture).</strong> The lecture folds the bias into <span class="math inline">\(w\)</span> (augmented <span class="math inline">\(\tilde x\)</span>), so its dual has only <span class="math inline">\(\alpha \ge 0\)</span>. Keeping <span class="math inline">\(b\)</span> explicit — as the canonical form of §32.2 does — adds the stationarity condition <span class="math inline">\(\sum_i \alpha_i y^{(i)} = 0\)</span>. Same problem, one extra bookkeeping line.</p>
+<p><strong>Basically, …</strong> “The primal asks: smallest <span class="math inline">\(w\)</span> among all feasible walls. The dual asks a mirror question: how much ‘vote’ <span class="math inline">\(\alpha_i\)</span> should each datapoint get? Stationarity says the winning <span class="math inline">\(w\)</span> is just a weighted vote of the datapoints — and once you plug that back in, the data appears only as dot products <span class="math inline">\(x^{(i)T} x^{(j)}\)</span>. That last fact is the whole reason kernels will work in Chapter 33.”</p>
+</section>
+<section id="kkt-and-support-vectors-only-the-wall-huggers-vote" class="level2">
+<h2 class="anchored" data-anchor-id="kkt-and-support-vectors-only-the-wall-huggers-vote">32.5 KKT and support vectors: only the wall-huggers vote</h2>
+<p>At the optimum, the four KKT conditions (§13.8–§13.9) hold. For the SVM they say:</p>
+<ol type="i">
+<li><strong>Stationarity:</strong> <span class="math inline">\(w^\star = \sum_i \alpha_i^\star y^{(i)} x^{(i)}\)</span> and <span class="math inline">\(\sum_i \alpha_i^\star y^{(i)} = 0\)</span> (§32.4).</li>
+<li><strong>Primal feasibility:</strong> <span class="math inline">\(y^{(i)}(w^{\star T} x^{(i)} + b^\star) \ge 1\)</span> for all <span class="math inline">\(i\)</span> — every point correctly placed with functional margin <span class="math inline">\(\ge 1\)</span>.</li>
+<li><strong>Dual feasibility:</strong> <span class="math inline">\(\alpha_i^\star \ge 0\)</span> for all <span class="math inline">\(i\)</span>.</li>
+<li><strong>Complementary slackness:</strong> <span class="math inline">\(\alpha_i^\star \cdot \big(1 - y^{(i)}(w^{\star T} x^{(i)} + b^\star)\big) = 0\)</span> for all <span class="math inline">\(i\)</span> (§11.7, §13.11).</li>
+</ol>
+<p>From (iv): <strong>if <span class="math inline">\(\alpha_i^\star &gt; 0\)</span> then <span class="math inline">\(y^{(i)}(w^{\star T} x^{(i)} + b^\star) = 1\)</span></strong> — the point sits exactly on its supporting hyperplane. These points are the <strong>support vectors</strong>: the wall-huggers that pin the margin in place.</p>
+<p>The subtle direction (practice assignment, Q1): the converse is <em>not</em> guaranteed. A point can sit exactly on a supporting hyperplane and still have <span class="math inline">\(\alpha_i^\star = 0\)</span> — complementary slackness only forces the product to zero, and <span class="math inline">\(0 \cdot 0 = 0\)</span> is fine. So: <strong>every support vector lies on a supporting hyperplane, but not every point on a supporting hyperplane is a support vector.</strong></p>
+<p>Consequences (the lecture’s “what have we gained”, slide 7):</p>
+<ol type="i">
+<li><span class="math inline">\(w^\star\)</span> is a <strong>sparse</strong> linear combination of the data — only support vectors contribute; every other point gets <span class="math inline">\(\alpha_i^\star = 0\)</span> and drops out of the answer entirely.</li>
+<li>The dual sees the data <strong>only through inner products</strong> <span class="math inline">\({x^{(i)}}^T x^{(j)}\)</span> — the doorway to kernels (Chapter 33).</li>
+<li>The decision function needs only the support vectors:</li>
+</ol>
+<p><span class="math display">\[\boxed{\hat y(x_{\mathrm{test}}) = \operatorname{sign}\!\left(\sum_{i:\ \alpha_i^\star &gt; 0} \alpha_i^\star\, y^{(i)}\, {x^{(i)}}^T x_{\mathrm{test}} + b^\star\right)}\]</span></p>
+<ol start="4" type="i">
+<li>Recover <span class="math inline">\(b^\star\)</span> from any support vector <span class="math inline">\(j\)</span>: <span class="math inline">\(y^{(j)}(w^{\star T} x^{(j)} + b^\star) = 1\)</span> gives <span class="math inline">\(\boxed{b^\star = y^{(j)} - w^{\star T} x^{(j)}}\)</span>.</li>
+</ol>
+<p><strong>Note (prediction inside the margin).</strong> A test point landing <em>between</em> the supporting hyperplanes still gets a label — the sign of <span class="math inline">\(w^{\star T} x_{\mathrm{test}} + b^\star\)</span> decides, margin or no margin (practice assignment, Q6). The constraints shaped the wall during training; they don’t gate predictions.</p>
+<p><strong>Basically, …</strong> “Complementary slackness is the bouncer: a datapoint either has voting power (<span class="math inline">\(\alpha_i &gt; 0\)</span>) and then it must be pressed against the margin wall, or it sits safely away and gets zero vote. The final wall is built from the wall-huggers alone — delete every other point and nothing changes. (Careful: hugging the wall doesn’t <em>guarantee</em> a vote — a point can lean on the margin line with <span class="math inline">\(\alpha_i = 0\)</span>.)”</p>
+<!-- Original matplotlib illustration drawn for this chapter (not reused from any URL): the three §32.6 training points, the max-margin boundary 2x1+x2=1/2, the two supporting hyperplanes, the margin width sqrt(5), and the gold-ringed support vectors -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/32-margin-example.png" class="img-fluid figure-img"></p>
+<figcaption>The three §32.6 training points: x^(1)=(2,0) and x^(2)=(1,1) as red squares (label +1), x^(3)=(-1,0) as a blue circle (label -1); the solid max-margin boundary 2x_1+x_2=1/2, the dashed supporting hyperplanes 2x_1+x_2=3 and 2x_1+x_2=-2 with the margin band shaded, gold rings marking the support vectors x^(2) and x^(3), and a green arrow for w^<em>=(0.8,0.4); margin width 2/||w^</em>||=sqrt(5)≈2.236.</figcaption>
+</figure>
+</div>
+</section>
+<section id="worked-example-three-points-the-dual-solved-by-hand" class="level2">
+<h2 class="anchored" data-anchor-id="worked-example-three-points-the-dual-solved-by-hand">32.6 Worked example: three points, the dual solved by hand</h2>
+<p>Data: <span class="math inline">\(x^{(1)} = (2, 0),\; y^{(1)} = +1\)</span>; <span class="math inline">\(\quad x^{(2)} = (1, 1),\; y^{(2)} = +1\)</span>; <span class="math inline">\(\quad x^{(3)} = (-1, 0),\; y^{(3)} = -1\)</span>.</p>
+<p><strong>Step 1 — guess which constraints bind.</strong> The margin will be pinned by the closest cross-class pair. Distances: <span class="math inline">\(\lVert x^{(2)} - x^{(3)}\rVert = \sqrt{5} \approx 2.236\)</span>; <span class="math inline">\(\lVert x^{(1)} - x^{(3)}\rVert = 3\)</span>. So try <span class="math inline">\(\alpha_1 = 0\)</span> (point 1 sits safely beyond the margin) with points 2, 3 active.</p>
+<p><strong>Step 2 — the dual on the active set.</strong> With <span class="math inline">\(\alpha_1 = 0\)</span>, the constraint <span class="math inline">\(\sum_i \alpha_i y^{(i)} = 0\)</span> gives <span class="math inline">\(\alpha_2 = \alpha_3 =: \alpha\)</span>. Dot products: <span class="math inline">\(x^{(2)T}x^{(2)} = 2\)</span>, <span class="math inline">\(x^{(3)T}x^{(3)} = 1\)</span>, <span class="math inline">\(y^{(2)}y^{(3)}\,x^{(2)T}x^{(3)} = (-1)(-1) = 1\)</span>. The dual objective:</p>
+<p><span class="math display">\[\begin{aligned}
+D(\alpha) &amp;= (\alpha_2 + \alpha_3) - \tfrac12\big(\alpha_2^2 \cdot 2 + \alpha_3^2 \cdot 1 + 2\alpha_2\alpha_3 \cdot 1\big) \\
+&amp;= 2\alpha - \tfrac12(2\alpha^2 + \alpha^2 + 2\alpha^2) = 2\alpha - \tfrac52\alpha^2.
+\end{aligned}\]</span></p>
+<p><span class="math inline">\(D'(\alpha) = 2 - 5\alpha = 0 \Rightarrow \boxed{\alpha^\star = (0,\ 0.4,\ 0.4)}\)</span>, <span class="math inline">\(D = 0.8 - 0.4 = 0.4\)</span>.</p>
+<p><strong>Step 3 — recover <span class="math inline">\(w^\star, b^\star\)</span>.</strong></p>
+<p><span class="math display">\[w^\star = 0.4\cdot(+1)\cdot(1,1) + 0.4\cdot(-1)\cdot(-1,0) = (0.4, 0.4) + (0.4, 0) = \boxed{(0.8,\ 0.4)}.\]</span></p>
+<p>From support vector 2 (<span class="math inline">\(y^{(2)}(w^{\star T}x^{(2)} + b) = 1\)</span>): <span class="math inline">\(0.8 + 0.4 + b = 1 \Rightarrow \boxed{b^\star = -0.2}\)</span>. Cross-check with support vector 3: <span class="math inline">\((-1)\big(0.8\cdot(-1) + 0 - 0.2\big) = (-1)(-1) = 1\)</span> ✓.</p>
+<p><strong>Step 4 — verify everything (KKT).</strong> Functional margins <span class="math inline">\(y^{(i)}(w^{\star T}x^{(i)} + b^\star)\)</span>:</p>
+<ul>
+<li>Point 1: <span class="math inline">\(0.8\cdot 2 + 0 - 0.2 = 1.4 \ge 1\)</span> ✓ (inactive, <span class="math inline">\(\alpha_1 = 0\)</span> ✓),</li>
+<li>Point 2: <span class="math inline">\(0.8 + 0.4 - 0.2 = 1.0\)</span> ✓ (active, <span class="math inline">\(\alpha_2 &gt; 0\)</span> ✓),</li>
+<li>Point 3: <span class="math inline">\((-1)(-0.8 - 0.2) = 1.0\)</span> ✓ (active, <span class="math inline">\(\alpha_3 &gt; 0\)</span> ✓).</li>
+</ul>
+<p>Complementary-slackness products <span class="math inline">\(\alpha_i(1 - \text{margin}_i)\)</span>: <span class="math inline">\(0\cdot(1-1.4) = 0\)</span>, <span class="math inline">\(0.4\cdot 0 = 0\)</span>, <span class="math inline">\(0.4\cdot 0 = 0\)</span> ✓. Primal value <span class="math inline">\(\frac12\lVert w^\star\rVert^2 = \frac12(0.64+0.16) = 0.4\)</span> = dual value <span class="math inline">\(0.4\)</span> ✓ (strong duality). A numpy grid search over the dual feasible set confirms <span class="math inline">\(0.4\)</span> is the maximum, attained at <span class="math inline">\((0, 0.4, 0.4)\)</span> — see the review log.</p>
+<p><strong>Step 5 — the geometry.</strong> <span class="math inline">\(\lVert w^\star\rVert = \sqrt{0.8} = 2/\sqrt5\)</span>, so <span class="math inline">\(\boxed{\text{width} = 2/\lVert w^\star\rVert = \sqrt5 \approx 2.236}\)</span>. Supporting hyperplanes <span class="math inline">\(0.8x_1 + 0.4x_2 - 0.2 = \pm 1\)</span>, i.e.&nbsp;<span class="math inline">\(\boxed{2x_1 + x_2 = 3}\)</span> and <span class="math inline">\(\boxed{2x_1 + x_2 = -2}\)</span>; boundary <span class="math inline">\(\boxed{2x_1 + x_2 = 0.5}\)</span>.</p>
+<p><strong>Step 6 — support vectors and a prediction.</strong> Support vectors = <span class="math inline">\(x^{(2)}, x^{(3)}\)</span> (gold rings in the figure). Point <span class="math inline">\(x^{(1)}\)</span> has <span class="math inline">\(\alpha_1 = 0\)</span>: it contributes nothing to <span class="math inline">\(w^\star\)</span> and could be deleted without changing the answer. Test point <span class="math inline">\(x_{\mathrm{test}} = (0,0)\)</span>: <span class="math inline">\(\operatorname{sign}(w^{\star T}x_{\mathrm{test}} + b^\star) = \operatorname{sign}(-0.2) = \boxed{-1}\)</span> — labelled even though it falls inside the margin band (cf.&nbsp;§32.5, Note).</p>
+<p><strong>Basically, …</strong> “Three points, and only the two hugging the gap matter. The dual said ‘give the two wall-huggers 0.4 votes each, the safe point gets nothing’, and out popped <span class="math inline">\(w^\star = (0.8, 0.4)\)</span>, <span class="math inline">\(b^\star = -0.2\)</span>, street width <span class="math inline">\(\sqrt5\)</span>. Primal and dual agree at <span class="math inline">\(0.4\)</span> — the mirror told the truth.”</p>
+</section>
+<section id="strengths-and-limits-as-the-sources-list-them" class="level2">
+<h2 class="anchored" data-anchor-id="strengths-and-limits-as-the-sources-list-them">32.7 Strengths and limits (as the sources list them)</h2>
+<p><strong>Strengths.</strong></p>
+<ol type="i">
+<li><strong>A principled wall, not the first one found.</strong> Max-margin is a deliberate choice of separator; the assignment states max-margin classifiers “will generalize better than perceptrons” (practice Q8).</li>
+<li><strong>Sparse answer.</strong> Only the support vectors decide — the rest of the dataset is dead weight after training (lecture, slide 9).</li>
+<li><strong>The dual is the better game.</strong> <span class="math inline">\(n\)</span> variables with “easier” constraints (§13.15(ii)), data entering only via inner products — which “will help one go from linear models to non-linear models in a very smooth way” (kernels, Chapter 33).</li>
+<li><strong>Same family as perceptron and logistic regression.</strong> All three are linear, discriminative models with boundary <span class="math inline">\(w^T x + b = 0\)</span> (practice Q7–Q8) — the SVM is the heavy machinery §29.8(iii) promised would beat KNN on hard tasks.</li>
+</ol>
+<p><strong>Limits.</strong></p>
+<ol type="i">
+<li><strong>Separability or nothing.</strong> The hard-margin primal is infeasible the moment one point crosses into the wrong side — it is not robust to outliers (lecture’s closing question; practice Q8 notes the soft margin <em>is</em> robust where the perceptron merely “converges only in the linearly separable case”).</li>
+<li><strong>No probabilities.</strong> Distance from the wall carries no confidence — unlike logistic regression, where farther from the boundary means a surer prediction (practice Q8).</li>
+<li><strong>Heavier than the perceptron.</strong> The answer is a quadratic program, not a few online updates — the price of principled.</li>
+</ol>
+<p><strong>Basically, …</strong> “SVM’s pitch: the most defensible wall, decided by a handful of points, in a form that kernels can stretch. SVM’s price: it demands cleanly separable data, it never tells you how sure it is, and you pay for the principle with a real optimization problem.”</p>
+</section>
+<section id="where-this-goes-next" class="level2">
+<h2 class="anchored" data-anchor-id="where-this-goes-next">32.8 Where this goes next</h2>
+<p>One pointer, as promised: the lecture ends by asking how to adapt the SVM when data has outliers — “kernels can help but is not the right way to solve this” — and answers with the soft-margin primal (slack variables <span class="math inline">\(\xi_i\)</span>, the “bribe” each misbehaving point pays). Soft margins <em>and</em> the kernel trick are Chapter 33’s job.</p>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li><strong>Width and supporting lines.</strong> For the §32.6 solution <span class="math inline">\(w^\star = (0.8, 0.4)\)</span>, <span class="math inline">\(b^\star = -0.2\)</span>: (i) compute the margin width from <span class="math inline">\(2/\lVert w^\star\rVert\)</span>; (ii) write the two supporting hyperplanes and the boundary as <span class="math inline">\(2x_1 + x_2 = c\)</span> for suitable <span class="math inline">\(c\)</span>; (iii) compute the perpendicular distance from <span class="math inline">\(x^{(1)} = (2,0)\)</span> to the boundary and confirm it exceeds half the width.</li>
+<li><strong>Scaling, canonical and otherwise.</strong> (i) If <span class="math inline">\((w, b)\)</span> separates the data, show <span class="math inline">\((2w, 2b)\)</span> gives the same wall, doubled functional margins, and unchanged geometric margins. (ii) In one line: what does the canonical condition <span class="math inline">\(\min_i y^{(i)}(w^T x^{(i)} + b) = 1\)</span> buy you? (iii) Why is rescaling <span class="math inline">\(w\)</span> <em>alone</em> (leaving <span class="math inline">\(b\)</span>) forbidden — what breaks?</li>
+<li><strong>The symmetric square.</strong> <span class="math inline">\(x^{(1)} = (1,1), y^{(1)} = +1\)</span>; <span class="math inline">\(x^{(2)} = (1,-1), y^{(2)} = +1\)</span>; <span class="math inline">\(x^{(3)} = (-1,1), y^{(3)} = -1\)</span>; <span class="math inline">\(x^{(4)} = (-1,-1), y^{(4)} = -1\)</span>. (i) By symmetry set <span class="math inline">\(\alpha_1 = \alpha_2 = \alpha_3 = \alpha_4 = \alpha\)</span>; write the dual objective and maximize it. (ii) Recover <span class="math inline">\(w^\star, b^\star\)</span>, the width, and the supporting hyperplanes. (iii) Which points are support vectors?</li>
+<li><strong>Complementary slackness, both directions.</strong> (i) From <span class="math inline">\(\alpha_i^\star(1 - y^{(i)}(w^{\star T}x^{(i)} + b^\star)) = 0\)</span>, prove: <span class="math inline">\(\alpha_i^\star &gt; 0 \Rightarrow y^{(i)}(w^{\star T}x^{(i)} + b^\star) = 1\)</span>. (ii) Explain, in the practice assignment’s words (Q1), why a point sitting exactly on a supporting hyperplane may still have <span class="math inline">\(\alpha_i^\star = 0\)</span>.</li>
+<li><strong>Delete the bystander.</strong> Using §32.6’s numbers: (i) classify <span class="math inline">\(x_{\mathrm{test}} = (0,0)\)</span> via the support-vector sum <span class="math inline">\(\sum_{i:\alpha_i&gt;0} \alpha_i y^{(i)} {x^{(i)}}^T x_{\mathrm{test}} + b^\star\)</span>; (ii) delete <span class="math inline">\(x^{(1)}\)</span> from the dataset and argue (no re-solving needed) that <span class="math inline">\(w^\star, b^\star\)</span> and the prediction are unchanged — which KKT condition guarantees this?</li>
+<li><strong>Three linear classifiers.</strong> List three similarities and three differences between the perceptron, logistic regression, and the hard-margin SVM (practice assignment, Q8).</li>
+</ol>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — Width and supporting lines
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Given <span class="math inline">\(w^\star = (0.8, 0.4)\)</span>, <span class="math inline">\(b^\star = -0.2\)</span>.</p>
+<p><strong>(i) Width.</strong> <span class="math inline">\(\lVert w^\star\rVert^2 = 0.64 + 0.16 = 0.8 = 4/5\)</span>, so <span class="math inline">\(\lVert w^\star\rVert = 2/\sqrt5\)</span>. Width <span class="math inline">\(= 2/\lVert w^\star\rVert = 2/(2/\sqrt5) = \boxed{\sqrt5 \approx 2.236}\)</span>.</p>
+<p><strong>(ii) The three lines.</strong> Supporting hyperplanes <span class="math inline">\(w^{\star T}x + b^\star = \pm 1\)</span>:</p>
+<ul>
+<li><span class="math inline">\(0.8x_1 + 0.4x_2 - 0.2 = 1 \;\Rightarrow\; 0.8x_1 + 0.4x_2 = 1.2 \;\Rightarrow\; \boxed{2x_1 + x_2 = 3}\)</span> (multiply by <span class="math inline">\(2.5\)</span>),</li>
+<li><span class="math inline">\(0.8x_1 + 0.4x_2 - 0.2 = -1 \;\Rightarrow\; 0.8x_1 + 0.4x_2 = -0.8 \;\Rightarrow\; \boxed{2x_1 + x_2 = -2}\)</span>.</li>
+</ul>
+<p>Boundary <span class="math inline">\(w^{\star T}x + b^\star = 0\)</span>: <span class="math inline">\(0.8x_1 + 0.4x_2 = 0.2 \Rightarrow \boxed{2x_1 + x_2 = 0.5}\)</span>.</p>
+<p><strong>(iii) Distance of <span class="math inline">\(x^{(1)} = (2,0)\)</span> from the boundary.</strong> Distance from <span class="math inline">\((x_1, x_2)\)</span> to <span class="math inline">\(2x_1 + x_2 - 0.5 = 0\)</span> is <span class="math inline">\(|2x_1 + x_2 - 0.5|/\sqrt{2^2 + 1^2}\)</span>. At <span class="math inline">\((2, 0)\)</span>: <span class="math inline">\(|4 - 0.5|/\sqrt5 = 3.5/\sqrt5 \approx \boxed{1.565}\)</span>. Half-width <span class="math inline">\(= \sqrt5/2 \approx 1.118\)</span>. Since <span class="math inline">\(1.565 &gt; 1.118\)</span>, the point lies strictly beyond the <span class="math inline">\(+1\)</span> supporting line — consistent with its functional margin <span class="math inline">\(1.4 &gt; 1\)</span> (geometric margin <span class="math inline">\(1.4/\lVert w^\star\rVert = 1.4\sqrt5/2 = 0.7\sqrt5 \approx 1.565\)</span> ✓, same number both ways).</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — Scaling, canonical and otherwise
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> Wall from <span class="math inline">\((2w, 2b)\)</span>: <span class="math inline">\(\{x : 2w^T x + 2b = 0\} = \{x : w^T x + b = 0\}\)</span> — same set, same wall. Functional margin: <span class="math inline">\(y^{(i)}(2w^T x^{(i)} + 2b) = 2\,y^{(i)}(w^T x^{(i)} + b)\)</span> — doubled. Geometric margin: <span class="math inline">\(\dfrac{2\,y^{(i)}(w^T x^{(i)} + b)}{\lVert 2w\rVert} = \dfrac{y^{(i)}(w^T x^{(i)} + b)}{\lVert w\rVert}\)</span> — unchanged. (If <span class="math inline">\((w,b)\)</span> already satisfied the canonical constraints <span class="math inline">\(y^{(i)}(w^Tx^{(i)}+b)\ge1\)</span>, doubling keeps them satisfied a fortiori; either way, the wall is unchanged.)</p>
+<p><strong>(ii)</strong> One line: the canonical condition fixes the ruler — it selects the <em>unique</em> scale <span class="math inline">\((w, b)\)</span> per wall whose nearest point has functional margin exactly <span class="math inline">\(1\)</span>, so the primal’s minimizer is a single <span class="math inline">\((w, b)\)</span>, not a ray.</p>
+<p><strong>(iii)</strong> Rescaling <span class="math inline">\(w\)</span> alone changes the wall itself: <span class="math inline">\(\{x : (tw)^T x + b = 0\} \ne \{x : w^T x + b = 0\}\)</span> for <span class="math inline">\(t \ne 1\)</span> — the normal direction is the same but the offset-to-normal ratio changes, so the boundary moves. Worse, the canonical constraints <span class="math inline">\(y^{(i)}(tw^T x^{(i)} + b) \ge 1\)</span> now describe a <em>different</em> feasible set, and minimizing <span class="math inline">\(\frac12\lVert tw\rVert^2\)</span> over it no longer finds the max-margin wall (practice assignment, Q3: the scaled weight vector “would not be a solution to the primal problem”).</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — The symmetric square
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i) Dual by symmetry.</strong> <span class="math inline">\(x^{(1)} = (1,1), y=+1\)</span>; <span class="math inline">\(x^{(2)} = (1,-1), y=+1\)</span>; <span class="math inline">\(x^{(3)} = (-1,1), y=-1\)</span>; <span class="math inline">\(x^{(4)} = (-1,-1), y=-1\)</span>. Set <span class="math inline">\(\alpha_i = \alpha\)</span> (dual constraint <span class="math inline">\(\sum \alpha_i y^{(i)} = \alpha + \alpha - \alpha - \alpha = 0\)</span> ✓). <span class="math inline">\(\sum_i \alpha_i = 4\alpha\)</span>. Quadratic coefficient: <span class="math inline">\(\sum_{i,j} y^{(i)}y^{(j)}x^{(i)T}x^{(j)} = \lVert\sum_i y^{(i)}x^{(i)}\rVert^2\)</span> with <span class="math inline">\(\sum_i y^{(i)}x^{(i)} = (1,1) + (1,-1) + (1,-1) + (1,1) = (4, 0)\)</span>, norm-squared <span class="math inline">\(16\)</span>. So <span class="math inline">\(D(\alpha) = 4\alpha - \tfrac12\cdot 16\alpha^2 = \boxed{4\alpha - 8\alpha^2}\)</span>, maximized at <span class="math inline">\(\alpha^\star = 4/16 = \boxed{1/4}\)</span>, <span class="math inline">\(D_{\max} = 1 - 1/2 = 0.5\)</span>.</p>
+<p><strong>(ii) Recover.</strong> <span class="math inline">\(w^\star = \tfrac14(4, 0) = \boxed{(1, 0)}\)</span>. From <span class="math inline">\(x^{(1)}\)</span>: <span class="math inline">\(1\cdot(1 + b) = 1 \Rightarrow \boxed{b^\star = 0}\)</span> (check <span class="math inline">\(x^{(3)}\)</span>: <span class="math inline">\((-1)(-1 + 0) = 1\)</span> ✓). Width <span class="math inline">\(= 2/\lVert(1,0)\rVert = \boxed{2}\)</span>. Supporting hyperplanes <span class="math inline">\(\boxed{x_1 = 1}\)</span> and <span class="math inline">\(\boxed{x_1 = -1}\)</span>; boundary <span class="math inline">\(\boxed{x_1 = 0}\)</span>.</p>
+<p><strong>(iii)</strong> Functional margins: <span class="math inline">\(x^{(1)}: 1\)</span>; <span class="math inline">\(x^{(2)}: 1\)</span>; <span class="math inline">\(x^{(3)}: (-1)(-1) = 1\)</span>; <span class="math inline">\(x^{(4)}: (-1)(-1) = 1\)</span> — all exactly <span class="math inline">\(1\)</span>, all active, all <span class="math inline">\(\alpha_i = 1/4 &gt; 0\)</span>: <strong>all four points are support vectors</strong>. Primal value <span class="math inline">\(\frac12\lVert w^\star\rVert^2 = 0.5 =\)</span> dual <span class="math inline">\(0.5\)</span> ✓.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — Complementary slackness, both directions
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> <span class="math inline">\(\alpha_i^\star\big(1 - y^{(i)}(w^{\star T}x^{(i)} + b^\star)\big) = 0\)</span> with <span class="math inline">\(\alpha_i^\star &gt; 0\)</span>: divide by the positive <span class="math inline">\(\alpha_i^\star\)</span> to get <span class="math inline">\(1 - y^{(i)}(w^{\star T}x^{(i)} + b^\star) = 0\)</span>, i.e.&nbsp;<span class="math inline">\(\boxed{y^{(i)}(w^{\star T}x^{(i)} + b^\star) = 1}\)</span> — the point lies exactly on its supporting hyperplane.</p>
+<p><strong>(ii)</strong> Complementary slackness constrains only the <em>product</em>. If <span class="math inline">\(y^{(i)}(w^{\star T}x^{(i)} + b^\star) = 1\)</span> (point on the supporting hyperplane), then the second factor is <span class="math inline">\(0\)</span> and the product is <span class="math inline">\(0\)</span> <em>whatever</em> <span class="math inline">\(\alpha_i^\star\)</span> is — including <span class="math inline">\(\alpha_i^\star = 0\)</span>. So a point can sit on the margin line yet carry no vote. In the assignment’s words: every support vector lies on a supporting hyperplane, but not every point on a supporting hyperplane is a support vector; the implication <span class="math inline">\(\alpha_i &gt; 0 \Rightarrow\)</span> (on margin) holds, the converse does not.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — Delete the bystander
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>(i)</strong> Support-vector sum at <span class="math inline">\(x_{\mathrm{test}} = (0,0)\)</span>:</p>
+<p><span class="math display">\[\sum_{i:\alpha_i&gt;0} \alpha_i y^{(i)} {x^{(i)}}^T x_{\mathrm{test}} + b^\star = 0.4\cdot(+1)\cdot 0 + 0.4\cdot(-1)\cdot 0 + (-0.2) = -0.2,\]</span></p>
+<p><span class="math inline">\(\operatorname{sign}(-0.2) = \boxed{-1}\)</span> — matches §32.6’s direct computation.</p>
+<p><strong>(ii)</strong> <span class="math inline">\(x^{(1)}\)</span> had <span class="math inline">\(\alpha_1^\star = 0\)</span>, so it appears nowhere in <span class="math inline">\(w^\star = \sum_i \alpha_i^\star y^{(i)} x^{(i)}\)</span>. Deleting it: the remaining <span class="math inline">\((w^\star, b^\star, \alpha_2^\star, \alpha_3^\star)\)</span> still satisfies every KKT condition on the reduced dataset — stationarity is unchanged (the deleted term was zero), primal feasibility and complementary slackness only <em>drop</em> a constraint, dual feasibility is untouched. By KKT sufficiency for this convex problem (§13.10), the reduced problem’s optimum is unchanged: same <span class="math inline">\(w^\star, b^\star\)</span>, same prediction <span class="math inline">\(-1\)</span>. The guaranteeing condition is the KKT system as a whole — concretely, complementary slackness (<span class="math inline">\(\alpha_1 = 0\)</span> for the inactive constraint) is what certifies the point was irrelevant.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — Three linear classifiers
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>Similarities</strong> (practice assignment, Q8): (1) all three are <em>linear</em> models; (2) the decision boundary is <span class="math inline">\(w^T x + b = 0\)</span> for all three; (3) all three are <em>discriminative</em> — they model the boundary directly, with no model of how the data was generated.</p>
+<p><strong>Differences</strong> (practice assignment, Q8): (1) logistic regression attaches an explicit probability to each point, and confidence grows with distance from the boundary — farther means surer; the perceptron and SVM have no such notion. (2) The SVM is the <em>principled</em> choice of wall — the max-margin one — and “max-margin classifiers will generalize better than perceptrons”, which just take the first wall that works. (3) The hard-margin SVM demands separable data and is not robust to outliers (the soft-margin formulation fixes this); the perceptron is likewise only guaranteed to converge in the separable case, while logistic regression is more forgiving with outliers.</p>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./31-perceptron-logistic.html" class="pagination-link" aria-label="31. Perceptron and logistic regression">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">31. Perceptron and logistic regression</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./33-soft-margin-kernel-svm.html" class="pagination-link" aria-label="Chapter 33: Soft-margin SVM and the kernel trick">
+        <span class="nav-page-text"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

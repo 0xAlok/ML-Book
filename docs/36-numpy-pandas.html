@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Chapter 36: NumPy and Pandas for ML – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./37-sklearn-regression.html" rel="next">
+<link href="./35-loss-functions.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./36-numpy-pandas.html">Part V — Machine Learning in Practice</a></li><li class="breadcrumb-item"><a href="./36-numpy-pandas.html"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#the-ndarray-the-books-data-structure" id="toc-the-ndarray-the-books-data-structure" class="nav-link active" data-scroll-target="#the-ndarray-the-books-data-structure">36.1 The ndarray: the book’s data structure</a></li>
+  <li><a href="#vectorized-ops-vs-python-loops" id="toc-vectorized-ops-vs-python-loops" class="nav-link" data-scroll-target="#vectorized-ops-vs-python-loops">36.2 Vectorized ops vs Python loops</a></li>
+  <li><a href="#broadcasting-the-silent-shape-rule" id="toc-broadcasting-the-silent-shape-rule" class="nav-link" data-scroll-target="#broadcasting-the-silent-shape-rule">36.3 Broadcasting: the silent shape rule</a></li>
+  <li><a href="#indexing-slicing-and-the-axis-semantics" id="toc-indexing-slicing-and-the-axis-semantics" class="nav-link" data-scroll-target="#indexing-slicing-and-the-axis-semantics">36.4 Indexing, slicing, and the axis semantics</a></li>
+  <li><a href="#reductions-sorting-stacking-comparing" id="toc-reductions-sorting-stacking-comparing" class="nav-link" data-scroll-target="#reductions-sorting-stacking-comparing">36.5 Reductions, sorting, stacking, comparing</a></li>
+  <li><a href="#random-numbers-seeded-and-reproducible" id="toc-random-numbers-seeded-and-reproducible" class="nav-link" data-scroll-target="#random-numbers-seeded-and-reproducible">36.6 Random numbers: seeded and reproducible</a></li>
+  <li><a href="#pandas-the-labeled-table" id="toc-pandas-the-labeled-table" class="nav-link" data-scroll-target="#pandas-the-labeled-table">36.7 pandas: the labeled table</a></li>
+  <li><a href="#worked-end-to-end-load-clean-describe-extract" id="toc-worked-end-to-end-load-clean-describe-extract" class="nav-link" data-scroll-target="#worked-end-to-end-load-clean-describe-extract">36.8 Worked end-to-end: load, clean, describe, extract</a></li>
+  <li><a href="#where-this-goes-next" id="toc-where-this-goes-next" class="nav-link" data-scroll-target="#where-this-goes-next">36.9 Where this goes next</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./36-numpy-pandas.html">Part V — Machine Learning in Practice</a></li><li class="breadcrumb-item"><a href="./36-numpy-pandas.html"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Everything in §§36.1–36.6 comes from the MLT TA colab notes (the “Intro to Libraries” notebooks — vectors, matrices, more-on-numpy, random-sampling — plus the Week-1 programming-assignment solution for the MNIST data-matrix example), and §§36.7–36.9 from the MLP Week-1 material (Lecture 7 “Data loading”, the Lecture 1–5 end-to-end wine-quality deck, and the Week-1 programming questions notebook with its solutions). Every code block below was re-run in this session (numpy 1.26.4, pandas 2.1.4) and shows the actual output — except the explicitly marked spots where the course notebooks used sklearn, which is not installed on this machine (§36.7’s diabetes/breast-cancer notes and its <code>SimpleImputer</code> call). Those are reported as recorded in the course notebooks, not re-run.</p>
+<p>This is the chapter where the book’s math becomes code. Parts I–IV worked with <span class="math inline">\(x^{(i)}\)</span>, <span class="math inline">\(X\)</span>, <span class="math inline">\(w^T x\)</span> on paper; from here on, those live inside arrays.</p>
+<p><strong>Notation.</strong> The book’s standing convention (chapters 31–35): the design matrix <span class="math inline">\(\boxed{X \in \mathbb{R}^{n \times d}}\)</span> holds the points <span class="math inline">\(x^{(1)}, \dots, x^{(n)}\)</span> as its rows in order, and <span class="math inline">\(y \in \mathbb{R}^n\)</span> holds the labels — <span class="math inline">\(n\)</span> points, <span class="math inline">\(d\)</span> features. Zero-indexed, so <code>X[0]</code> is <span class="math inline">\(x^{(1)}\)</span> and <code>X[i]</code> is <span class="math inline">\(x^{(i+1)}\)</span>.</p>
+<p><strong>Note (the convention clash).</strong> Two older sources disagree with this. §22.6 wrote the points as <span class="math inline">\(x^i\)</span> (superscript, no parens), and the MLT TA colabs stack data as <span class="math inline">\((d, n)\)</span> — features as rows, points as columns (“we transpose so that the data-matrix is <span class="math inline">\((d, n)\)</span> and not <span class="math inline">\((n, d)\)</span>”). Chapters 23–24 and the whole sklearn ecosystem use <span class="math inline">\((n, d)\)</span>. This chapter uses the book’s <span class="math inline">\((n, d)\)</span> everywhere and flags the TA colab’s <span class="math inline">\((d, n)\)</span> when it matters (§36.4). Reading either convention into the other is the single most common shape bug in ML code.</p>
+<section id="the-ndarray-the-books-data-structure" class="level2">
+<h2 class="anchored" data-anchor-id="the-ndarray-the-books-data-structure">36.1 The ndarray: the book’s data structure</h2>
+<p><strong>Def (ndarray).</strong> The TA colab’s one-liner: “Everything in <code>NumPy</code> is an array.” An <strong>ndarray</strong> = an <span class="math inline">\(n\)</span>-dimensional grid of numbers of one type. A vector is a 1-D array, a matrix a 2-D array, an image a 3-D array (MNIST: <span class="math inline">\((60000, 28, 28)\)</span> in the TA colab’s Week-1 assignment).</p>
+<ol type="i">
+<li><strong>Create:</strong> <code>np.array([...])</code>, <code>np.zeros(n)</code>, <code>np.ones((r, c))</code>, <code>np.arange(a, b)</code>, <code>np.linspace(a, b, k)</code>, <code>np.eye(n)</code>, <code>np.diag([...])</code>.</li>
+<li><strong>Inspect:</strong> <code>.shape</code> (the book’s dimensions: <span class="math inline">\((n, d)\)</span>), <code>.ndim</code> (array-dimension, not vector-space dimension — the TA colab warns these differ), <code>.size</code>, <code>.dtype</code>.</li>
+</ol>
+<p><strong>eg 1 (the book’s dataset, as code).</strong> §22.3’s six houses, features = rooms, area, distance-to-metro; label = price:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array([[<span class="dv">3</span>,<span class="dv">9</span>,<span class="fl">1.9</span>],[<span class="dv">2</span>,<span class="dv">7</span>,<span class="fl">2.1</span>],[<span class="dv">4</span>,<span class="dv">12</span>,<span class="fl">2.8</span>],</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>              [<span class="dv">5</span>,<span class="dv">16</span>,<span class="fl">0.9</span>],[<span class="dv">5</span>,<span class="dv">15</span>,<span class="fl">3.1</span>],[<span class="dv">4</span>,<span class="dv">11</span>,<span class="fl">1.6</span>]])</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> np.array([<span class="dv">50</span>,<span class="dv">32</span>,<span class="dv">66</span>,<span class="dv">98</span>,<span class="dv">85</span>,<span class="dv">69</span>])</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>X.shape, y.shape, X.ndim, X.size, X.dtype</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># (6, 3) (6,) 2 18 float64</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>X[<span class="dv">2</span>]          <span class="co"># row 2 = x^(3) = [ 4.  12.   2.8]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><span class="math inline">\(X\)</span> is the feature matrix of §23.1 (<span class="math inline">\(n \times d\)</span>, rows are points as row vectors); <span class="math inline">\(y\)</span> is the label vector. <code>X[2]</code> is <span class="math inline">\(x^{(3)}\)</span> — zero-indexed, so row <span class="math inline">\(i\)</span> holds <span class="math inline">\(x^{(i+1)}\)</span>.</p>
+</section>
+<section id="vectorized-ops-vs-python-loops" class="level2">
+<h2 class="anchored" data-anchor-id="vectorized-ops-vs-python-loops">36.2 Vectorized ops vs Python loops</h2>
+<p>The TA colab contrasts the two ways to add vectors: a Python loop with <code>zip</code> + <code>append</code>, versus <code>z = x + y</code>. Everything element-wise is supported directly:</p>
+<ol type="i">
+<li><code>x + y</code>, <code>3 * x</code> (scaling), <code>x * y</code> = Hadamard product <span class="math inline">\(x \odot y\)</span> (§2.3’s ops), <code>x ** 2</code>, <code>np.log10(x)</code> — element-wise functions of vectors (the colab’s <span class="math inline">\(f(x) = x^2\)</span>, <span class="math inline">\(f(x) = 5x - 2\)</span> examples).</li>
+<li><code>x @ y</code> = the dot product <span class="math inline">\(x^T y = \sum_j x_j y_j\)</span> (§2.5); the colab “shall stick to this” since it matches the math.</li>
+<li><code>np.linalg.norm(x)</code> (<span class="math inline">\(L_2\)</span> default; <code>ord=1</code> for <span class="math inline">\(L_1\)</span>), <code>np.abs(A)</code> element-wise (§2.4’s norms).</li>
+</ol>
+<p><strong>eg 2 (why ML code never loops).</strong> Sum of squares of <span class="math inline">\(10^6\)</span> numbers — Python loop vs vectorized, each timed 5 times, best of 5:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>a <span class="op">=</span> np.arange(<span class="dv">10</span><span class="op">**</span><span class="dv">6</span>, dtype<span class="op">=</span><span class="bu">float</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>t_loop <span class="op">=</span> <span class="fl">0.191</span>      <span class="co"># s :  s = 0.0</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                    <span class="co">#      for v in a: s += v*v</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>t_vec  <span class="op">=</span> <span class="fl">0.00078</span>    <span class="co"># s :  s = (a**2).sum()</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># speedup: ~246x; both sums 3.3333e+17, relative difference 1.12e-12</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Basically, …</strong> “A Python loop does one number at a time through the interpreter; a NumPy op hands the whole array to compiled C in one call. On a million elements that’s the difference between <span class="math inline">\(0.19\)</span> s and under a millisecond — <span class="math inline">\(\sim 246\times\)</span> here — for the <em>same</em> answer. Every training loop in this book (Chapters 10, 37–42) runs millions of such ops, so the vectorized form is not style, it’s the only thing that finishes.”</p>
+</section>
+<section id="broadcasting-the-silent-shape-rule" class="level2">
+<h2 class="anchored" data-anchor-id="broadcasting-the-silent-shape-rule">36.3 Broadcasting: the silent shape rule</h2>
+<p>The TA colab’s question: “Sometimes we would have to add a vector to each row or column of a matrix” — but <span class="math inline">\(M + b\)</span> is, strictly, “a slight abuse of notation as we can’t add a matrix and a vector together.” NumPy resolves the abuse with one rule:</p>
+<p><strong>Def (broadcasting).</strong> Align shapes on their <em>trailing</em> axes. An axis of size <span class="math inline">\(1\)</span> (or a missing axis) is <em>stretched</em> — repeated — to match. No copying happens; it’s a view trick.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> np.array([[<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>],</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>              [<span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>]])          <span class="co"># (2, 3)</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>M <span class="op">+</span> np.array([<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>])            <span class="co"># (3,) -&gt; stretched down each row</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># array([[2, 4, 6],</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">#        [5, 7, 9]])</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>M <span class="op">+</span> np.array([<span class="dv">1</span>, <span class="dv">2</span>]).reshape(<span class="dv">2</span>, <span class="dv">1</span>) <span class="co"># (2, 1) -&gt; stretched across columns</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># array([[2, 3, 4],</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">#        [6, 7, 8]])</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>eg 3 (centering a data matrix).</strong> §24.2’s covariance is built from <em>centered</em> rows <span class="math inline">\(x^{(i)} - \bar x\)</span>. Broadcasting does all <span class="math inline">\(n\)</span> subtractions at once:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>mu <span class="op">=</span> X.mean(axis<span class="op">=</span><span class="dv">0</span>)      <span class="co"># column means: [ 3.83333333 11.66666667  2.06666667]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>Xc <span class="op">=</span> X <span class="op">-</span> mu              <span class="co"># (6,3) - (3,) -&gt; mu stretched down every row</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>Xc[<span class="dv">0</span>]                    <span class="co"># [-0.83333333 -2.66666667 -0.16666667]</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>Xc.mean(axis<span class="op">=</span><span class="dv">0</span>)          <span class="co"># [-0.  0. -0.]  -&gt; columns now average to 0</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Basically, …</strong> “Broadcasting = NumPy pretends the small array is as big as the big one, by repeating it. <span class="math inline">\((3,)\)</span> against <span class="math inline">\((6, 3)\)</span>: the 3 numbers get copied down all 6 rows. The rule is always ‘line up the <em>right</em> edges, stretch the <span class="math inline">\(1\)</span>s’. Once you see it, <code>X - mu</code> reads as the math <span class="math inline">\(x^{(i)} - \bar x\)</span> for all <span class="math inline">\(i\)</span> at once.”</p>
+<p><strong>Note.</strong> Broadcasting fails loudly when nothing stretches: <code>(2,3) + (4,)</code> is a <code>ValueError</code>. That error is your friend — it means you mixed up the <span class="math inline">\((n, d)\)</span> convention (the Note at the top).</p>
+</section>
+<section id="indexing-slicing-and-the-axis-semantics" class="level2">
+<h2 class="anchored" data-anchor-id="indexing-slicing-and-the-axis-semantics">36.4 Indexing, slicing, and the axis semantics</h2>
+<ol type="i">
+<li><strong>Indexing:</strong> <code>M[1, 2]</code> = element (row 1, col 2), zero-indexed (the colab prefers this over <code>M[1][2]</code>). <strong>Slicing:</strong> <code>M[2, :]</code> = row 2, <code>M[:, 1]</code> = column 1, <code>M[1:3, 2:4]</code> = submatrix — start included, end excluded, like Python:</li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> np.array([[<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">0</span>],[<span class="dv">4</span>, <span class="dv">2</span>, <span class="dv">5</span>],[<span class="dv">9</span>, <span class="dv">8</span>, <span class="dv">7</span>]])</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>M[<span class="dv">1</span>, <span class="dv">2</span>], M[<span class="dv">2</span>, :], M[:, <span class="dv">1</span>]</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 5  array([9, 8, 7])  array([3, 2, 8])</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ol start="2" type="i">
+<li><strong>Fancy indexing:</strong> arrays as indices — <code>x[[1, 3, 6]]</code> picks positions <span class="math inline">\(1, 3, 6\)</span>; <strong>boolean masks</strong> — <code>x[x &gt; 0]</code> keeps the positives. The colab’s payoff example: ReLU, three lines,</li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>relu <span class="op">=</span> <span class="kw">lambda</span> t: np.where(t <span class="op">&gt;</span> <span class="dv">0</span>, t, <span class="dv">0</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>relu(np.array([<span class="dv">1</span>, <span class="op">-</span><span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">3</span>, <span class="op">-</span><span class="dv">4</span>, <span class="op">-</span><span class="dv">3</span>]))</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># array([1, 0, 1, 3, 0, 0])</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>the activation function Chapter 41 runs inside every neural net — a boolean mask wearing a one-line disguise.</p>
+<ol start="3" type="i">
+<li><p><strong>Reshape:</strong> <code>x.reshape(3, 2)</code>, <code>M.reshape(6)</code>, <code>M.reshape(3, -1)</code> (NumPy infers the <span class="math inline">\(-1\)</span>); <code>.T</code> transposes. <code>x[:, np.newaxis]</code> turns a <span class="math inline">\((d,)\)</span> vector into a <span class="math inline">\((d, 1)\)</span> column — the colab’s bridge between the “flat” vector and the matrix forms. <strong>Note:</strong> this is also where you convert the TA colab’s <span class="math inline">\((d, n)\)</span> habit to the book’s <span class="math inline">\((n, d)\)</span>: <code>X_dn.T</code> is <span class="math inline">\(X\)</span>.</p></li>
+<li><p><strong>Axis semantics</strong> — the one everyone gets backwards once. <code>axis=k</code> <em>collapses</em> axis <span class="math inline">\(k\)</span>: the result has one entry per position of every <em>other</em> axis.</p></li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>A <span class="op">=</span> np.arange(<span class="dv">1</span>, <span class="dv">9</span>).reshape(<span class="dv">2</span>, <span class="dv">4</span>)   <span class="co"># [[1 2 3 4],[5 6 7 8]]</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>A.<span class="bu">sum</span>(axis<span class="op">=</span><span class="dv">0</span>)  <span class="co"># [ 6  8 10 12]  -&gt; rows collapsed: one value per COLUMN</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>A.<span class="bu">sum</span>(axis<span class="op">=</span><span class="dv">1</span>)  <span class="co"># [10 26]        -&gt; columns collapsed: one value per ROW</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>M <span class="op">=</span> np.arange(<span class="dv">1</span>, <span class="dv">10</span>).reshape(<span class="dv">3</span>, <span class="dv">3</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>M.mean(axis<span class="op">=</span><span class="dv">0</span>) <span class="co"># [4. 5. 6.]    -&gt; column means (eg 3's mu)</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>M.var(axis<span class="op">=</span><span class="dv">1</span>)  <span class="co"># [0.66666667 ...] -&gt; variance within each row</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Note.</strong> The TA colab describes <code>axis=0</code> as “top-bottom operations … done on row-vectors” and <code>axis=1</code> as “left-right … done on column-vectors” — loose wording (its own “left-right” example sums <em>rows</em>). The collapse rule above is the correct one and matches the verified outputs; the chapter uses it, not the colab’s phrasing.</p>
+<p><strong>Basically, …</strong> “<code>axis=0</code> eats the rows: you’re left with one number per column. <code>axis=1</code> eats the columns: one number per row. Want the mean of each feature? Features are columns, so <code>X.mean(axis=0)</code>. Want the length of each data point? Points are rows, so <code>np.linalg.norm(X, axis=1)</code>.”</p>
+</section>
+<section id="reductions-sorting-stacking-comparing" class="level2">
+<h2 class="anchored" data-anchor-id="reductions-sorting-stacking-comparing">36.5 Reductions, sorting, stacking, comparing</h2>
+<p>The colab’s “misc functions”, verified:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.array([<span class="dv">10</span>, <span class="op">-</span><span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">15</span>, <span class="dv">5</span>])</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>np.<span class="bu">max</span>(x), np.argmax(x)    <span class="co"># 15, 3   -&gt; value and its POSITION</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>np.<span class="bu">min</span>(x), np.argmin(x)    <span class="co"># -3, 1</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>np.sort(x)                 <span class="co"># [-3  2  5 10 15]</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>np.argsort(x)              <span class="co"># [1 2 4 0 3]  -&gt; the permutation that sorts</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ol type="i">
+<li><code>argmax</code>/<code>argsort</code> return <em>indices</em>, not values — the standard “which class / which example” query (the classification chapters will use <code>argmax</code> over score vectors to extract predicted classes).</li>
+<li><strong>Stacking:</strong> <code>np.concatenate((A, B), axis=0)</code> piles rows (<span class="math inline">\(4 \times 2\)</span> from two <span class="math inline">\(2 \times 2\)</span>s — the “add more data points” direction); <code>axis=1</code> glues columns (<span class="math inline">\(2 \times 4\)</span> — “add more features”).</li>
+<li><strong>Comparing:</strong> <code>np.array_equal(x, y)</code> for exact equality; <code>x == y</code> gives a boolean <em>array</em>, unusable in an <code>if</code>. For floats — which are never exact — <code>np.allclose(x, y, rtol=0, atol=1e-2)</code>: <span class="math inline">\(|x - y| \le \text{atol} + \text{rtol}\cdot|y|\)</span> element-wise. <strong>Note:</strong> eg 2’s loop-vs-vectorized check used exactly this idea (relative difference <span class="math inline">\(1.12\times 10^{-12}\)</span>). Never test trained weights with <code>==</code>; Chapter 40’s debugging discipline starts here.</li>
+</ol>
+</section>
+<section id="random-numbers-seeded-and-reproducible" class="level2">
+<h2 class="anchored" data-anchor-id="random-numbers-seeded-and-reproducible">36.6 Random numbers: seeded and reproducible</h2>
+<p>Two APIs appear in the course materials, and they are <em>not</em> interchangeable calls:</p>
+<ol type="i">
+<li><strong>Legacy:</strong> <code>np.random.seed(42)</code> then <code>np.random.permutation(10)</code>, <code>np.random.randn(...)</code> — global state (the MLP slide’s choice).</li>
+<li><strong>Modern:</strong> <code>rng = np.random.default_rng(seed=42)</code> then <code>rng.random(3)</code>, <code>rng.normal(...)</code>, <code>rng.choice(...)</code>, <code>rng.multivariate_normal(...)</code> — an explicit generator object (the TA colab’s choice).</li>
+</ol>
+<p>Same seed <span class="math inline">\(\Rightarrow\)</span> same stream, every run:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>np.random.default_rng(<span class="dv">42</span>).random(<span class="dv">3</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># [0.77395605 0.43887844 0.85859792]</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>np.random.seed(<span class="dv">42</span>)<span class="op">;</span> np.random.permutation(<span class="dv">10</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># [8 1 5 0 7 2 9 4 3 6]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Note.</strong> Pseudo-random, not random: the generator is a deterministic algorithm, so fixing the seed fixes the whole sequence. That is the entire point — reproducibility.</p>
+<p><strong>eg 4 (train/test split, the MLP slide’s function).</strong> The slide: “Make sure to set the seed so that we get the same test set in the next run.” <code>np.random.seed(42)</code> + <code>np.random.permutation(len(data))</code>, first <span class="math inline">\(20\%\)</span> = test:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> split_train_test(data, test_ratio):</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    np.random.seed(<span class="dv">42</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    shuffled_indices <span class="op">=</span> np.random.permutation(<span class="bu">len</span>(data))</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    test_set_size <span class="op">=</span> <span class="bu">int</span>(<span class="bu">len</span>(data) <span class="op">*</span> test_ratio)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    test_indices <span class="op">=</span> shuffled_indices[:test_set_size]</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    train_indices <span class="op">=</span> shuffled_indices[test_set_size:]</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> data.iloc[train_indices], data.iloc[test_indices]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>(On §36.8’s 10-row table: train <span class="math inline">\((8, 4)\)</span>, test <span class="math inline">\((2, 4)\)</span>, test rows = ids 9 and 2 — the same two, every run.) The slide’s sklearn one-liner is the same idea packaged: <code>train_test_split(data, test_size=0.2, random_state=42)</code>.</p>
+<p><strong>Basically, …</strong> “Randomness in ML is a controlled substance. You <em>want</em> shuffling and sampling (Chapter 39 lives on it), but you want the <em>same</em> shuffle every time you re-run, or you can never debug. Set the seed once, and ‘random’ becomes a fixed, replayable script.”</p>
+</section>
+<section id="pandas-the-labeled-table" class="level2">
+<h2 class="anchored" data-anchor-id="pandas-the-labeled-table">36.7 pandas: the labeled table</h2>
+<p><strong>Def.</strong> A <strong>DataFrame</strong> = a 2-D labeled table (rows = examples, columns = named features); a <strong>Series</strong> = one labeled column. If an ndarray is the math, a DataFrame is the math <em>with the metadata attached</em> (§22.3: column <span class="math inline">\(j\)</span> means the same thing in every row — the labels are that meaning, written down).</p>
+<ol type="i">
+<li><strong>Load:</strong> <code>pd.read_csv(url, sep=";")</code>. The MLP slide’s wine-quality flow: 1599 rows, 12 columns — 11 features + label <code>quality</code>, all <code>float64</code>, label <code>int64</code> (verified against the same UCI file the slide downloads).</li>
+<li><strong>First look:</strong> <code>data.head()</code> (first 5 rows), <code>data.info()</code> (1599 entries, dtypes, non-null counts), <code>data.describe()</code> (count, mean, std, quartiles per numeric column), <code>data.shape</code>.</li>
+<li><strong>Select:</strong> <code>data['quality']</code> (Series), <code>data[['fixed acidity','alcohol']]</code> (DataFrame), <code>data.iloc[train_indices]</code> / <code>data.loc[train_index]</code> (positional vs label — the slide uses both), boolean filter <code>data[data['price'] &gt; 80]</code>.</li>
+<li><strong>Summarize:</strong> <code>data['quality'].value_counts()</code> (the label distribution: quality <span class="math inline">\(3\)</span>: <span class="math inline">\(10\)</span>, <span class="math inline">\(4\)</span>: <span class="math inline">\(53\)</span>, <span class="math inline">\(5\)</span>: <span class="math inline">\(681\)</span>, <span class="math inline">\(6\)</span>: <span class="math inline">\(638\)</span>, <span class="math inline">\(7\)</span>: <span class="math inline">\(199\)</span>, <span class="math inline">\(8\)</span>: <span class="math inline">\(18\)</span> — “lots of samples of average wines”, the slide’s words); <code>data.groupby('diagnosis').describe()</code> (the W1 programming notebook: breast-cancer, 569 rows × 33 cols; benign <span class="math inline">\(B = 357\)</span>, malignant <span class="math inline">\(M = 212\)</span> — recorded in the notebook, the data file wasn’t in this dump to re-run).</li>
+<li><strong>Correlate:</strong> <code>corr_matrix = exploration_set.corr()</code>; <code>corr_matrix['quality']</code> — alcohol <span class="math inline">\(0.4762\)</span>, volatile acidity <span class="math inline">\(-0.3906\)</span> (verified; the slide rounds to <span class="math inline">\(0.48\)</span> / <span class="math inline">\(-0.38\)</span>). Standard correlation <span class="math inline">\(\in [-1, 1]\)</span>; “only captures linear relationship” (slide’s warning).</li>
+</ol>
+<p><strong>NaN semantics.</strong> A column with one missing value becomes <code>float64</code> (NaN is a float) — verified in §36.8. And NaN is <em>contagious and unfindable by equality</em>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>np.nan <span class="op">==</span> np.nan   <span class="co"># False</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="dv">3</span> <span class="op">+</span> np.nan         <span class="co"># nan</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>So: <code>df.isna().sum()</code> counts missing per column (the slide’s check). The slide’s three-way discipline, verbatim in spirit: (a) <em>recorded-but-absent</em> → impute (<code>fillna</code>, or sklearn’s <code>SimpleImputer(strategy="median")</code> — its <code>fit</code> learns the medians on the training set, <code>transform</code> applies them; recorded, sklearn not installed here); (b) <em>too broken</em> → <code>dropna()</code>; (c) <em>doesn’t exist</em> (a pregnancy test for a male patient) → keep as NaN. Chapter 39 takes up imputation properly; the rule to carry forward is the slide’s: never learn the imputer on the full dataset — train statistics on train only.</p>
+<p><strong>Back to NumPy.</strong> The round trip the slide shows both ways: <code>wine_features_tr = pd.DataFrame(tr_features, columns=wine_features.columns)</code> (ndarray → labeled), and the reverse every model needs —</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> df[[<span class="st">'area'</span>,<span class="st">'rooms'</span>]].to_numpy()   <span class="co"># (10, 2) ndarray</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> df[<span class="st">'price'</span>].to_numpy()            <span class="co"># (10,)   ndarray</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>— the <span class="math inline">\(X, y\)</span> of §36.1, ready for Chapter 37.</p>
+<p><strong>Basically, …</strong> “NumPy is the engine room; pandas is the loading dock with labels. You <em>receive</em> data as a DataFrame (named columns, mixed types, missing values visible), <em>explore</em> it with <code>head/describe/value_counts/groupby/corr</code>, <em>clean</em> it (<code>isna</code>, fill or drop), and <em>hand it over</em> as plain <span class="math inline">\(X, y\)</span> arrays the moment the model starts. Every sklearn <code>fit(X, y)</code> in Chapters 37–38 is the end of a pandas pipeline.”</p>
+</section>
+<section id="worked-end-to-end-load-clean-describe-extract" class="level2">
+<h2 class="anchored" data-anchor-id="worked-end-to-end-load-clean-describe-extract">36.8 Worked end-to-end: load, clean, describe, extract</h2>
+<p>One small table, the whole §36.7 pipeline, every number re-run. (The CSV is inline so the example is self-contained.)</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd, numpy <span class="im">as</span> np, io</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>csv <span class="op">=</span> <span class="st">"""id,area,rooms,price</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="st">1,900,3,50</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="st">2,700,2,32</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="st">3,1200,4,66</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="st">4,1600,5,98</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="st">5,1500,5,85</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="st">6,1100,4,69</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="st">7,950,3,55</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="st">8,1300,4,72</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="st">9,800,,40</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="st">10,1400,5,90</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(io.StringIO(csv))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Step 1 — look.</strong> <code>df.shape</code> = <span class="math inline">\((10, 4)\)</span>. <code>df.dtypes</code>: <code>id, area, price</code> int64; <code>rooms</code> <strong>float64</strong> — the empty cell in row 9 forced it. <code>df.head(3)</code> shows rows 1–3; row 9’s rooms cell is <code>NaN</code>.</p>
+<p><strong>Step 2 — count the damage.</strong> <code>df.isna().sum()</code>: rooms = 1, everything else 0.</p>
+<p><strong>Step 3 — clean.</strong> Median of rooms = <span class="math inline">\(4.0\)</span>; <code>df['rooms'] = df['rooms'].fillna(4.0)</code>; <code>df.isna().sum().sum()</code> = 0. (This is the slide’s <code>SimpleImputer(strategy="median")</code> by hand, on a table small enough to check.)</p>
+<p><strong>Step 4 — describe.</strong> <code>df.describe()</code>: mean price <span class="math inline">\(65.70\)</span>, std <span class="math inline">\(21.64\)</span>, area mean <span class="math inline">\(1145.0\)</span>; <code>df['price'].corr(df['area'])</code> = <span class="math inline">\(0.98\)</span> — area nearly determines price, as built. <code>df.groupby('rooms')['price'].mean()</code>: 2→<span class="math inline">\(32.00\)</span>, 3→<span class="math inline">\(52.50\)</span>, 4→<span class="math inline">\(61.75\)</span>, 5→<span class="math inline">\(91.00\)</span>.</p>
+<p><strong>Step 5 — extract.</strong> <code>X = df[['area','rooms']].to_numpy()</code> → <span class="math inline">\((10, 2)\)</span>; <code>y = df['price'].to_numpy()</code> → <span class="math inline">\((10,)\)</span>. Done: the labeled table is now the book’s <span class="math inline">\((X, y)\)</span>, and Chapter 37 can <code>fit</code> on it.</p>
+<p><strong>Note.</strong> The wine-quality deck runs exactly this pipeline at scale — <code>read_csv</code> → <code>head</code> → <code>info</code>/<code>describe</code> → <code>value_counts</code> → <code>corr</code> → split — and every one of its reported numbers re-verified here: 1599 rows, quality <span class="math inline">\(\in [3, 8]\)</span>, alcohol–quality correlation <span class="math inline">\(0.4762\)</span>, volatile-acidity–quality <span class="math inline">\(-0.3906\)</span>.</p>
+</section>
+<section id="where-this-goes-next" class="level2">
+<h2 class="anchored" data-anchor-id="where-this-goes-next">36.9 Where this goes next</h2>
+<ol type="i">
+<li>Chapter 37 feeds this chapter’s <span class="math inline">\((X, y)\)</span> to sklearn regressors — <code>fit</code>, <code>predict</code>, and the transformers of the MLP Lecture-7 slide (<code>fit</code> learns parameters on the training set, <code>transform</code> applies them; <code>fit_transform</code> does both). The slide’s warning stands as the chapter’s last word: <em>never learn a transformer on the full dataset</em> — the same discipline as §36.7’s imputation note.</li>
+<li>The vectorization habit (§36.2) is what makes every gradient-descent loop from Chapter 10 onward actually run; broadcasting (§36.3) is how a bias vector joins a score matrix in Chapter 41 without a single loop.</li>
+<li>The <span class="math inline">\((n, d)\)</span> convention is now load-bearing: Chapter 38’s classifiers expect <code>X.shape == (n_samples, n_features)</code>. When a shape error bites, check the convention first (§36.1’s Note) — it is the cheapest bug to find and the most common one to make.</li>
+</ol>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li><strong>Broadcast or break.</strong> For each pair, give the result shape or say it errors, with one line of the broadcasting rule: (i) <span class="math inline">\((4, 5) + (5,)\)</span>; (ii) <span class="math inline">\((4, 5) + (4, 1)\)</span>; (iii) <span class="math inline">\((4, 5) + (4,)\)</span>; (iv) <span class="math inline">\((6, 1, 5) + (5,)\)</span>.</li>
+<li><strong>Reproduce the speedup.</strong> On <span class="math inline">\(n = 10^5\)</span> numbers: (i) time a Python loop computing <span class="math inline">\(\sum v^3\)</span> vs <code>(a**3).sum()</code> (best of 5 each) and report the speedup; (ii) use <code>np.allclose</code> (not <code>==</code>) to check the two answers agree and say why <code>==</code> is the wrong test.</li>
+<li><strong>Read the slice.</strong> <code>M = np.arange(1, 17).reshape(4, 4)</code>. By hand, then check in code: (i) <code>M[1::2, :]</code>; (ii) <code>M[:, -1]</code>; (iii) <code>M[M &gt; 12]</code>; (iv) write the mask expression that selects the <em>even</em> entries.</li>
+<li><strong>Axis by hand.</strong> <code>M = np.arange(1, 13).reshape(3, 4)</code>. (i) Compute <code>M.mean(axis=0)</code> and <code>M.sum(axis=1)</code> by hand. (ii) In one line each: which gives a per-feature statistic and which a per-point statistic? (iii) The TA colab calls <code>axis=0</code> “top-bottom”; give the collapse-rule reading that replaces it.</li>
+<li><strong>Clean the table.</strong> Load the §36.8 CSV in code. (i) Which column has missing values, and why did its dtype become <code>float64</code>? (ii) Fill with the median and verify zero NaNs remain. (iii) Report mean price per <code>rooms</code> via <code>groupby</code>, and the area–price correlation.</li>
+<li><strong>Seeds.</strong> (i) Run <code>np.random.default_rng(42).random(3)</code> twice — the two calls give identical output. Explain in one line why, and contrast with calling <code>.random(3)</code> twice on <em>one</em> <code>rng = np.random.default_rng(42)</code> object. (ii) The MLP slide’s <code>split_train_test</code> calls <code>np.random.seed(42)</code> <em>inside</em> the function: what breaks if you call the function twice and expect different splits? (iii) In one line, why does any of this matter for Chapter 39’s cross-validation?</li>
+<li><strong>Course-sourced.</strong> The MLP Week-1 programming notebook’s Q5: <code>load_diabetes(as_frame=True, return_X_y=True)</code> returns the feature matrix as a <code>DataFrame</code> and the target as a <code>Series</code> (recorded in the notebook’s solution output). (i) State both types. (ii) In one line, what does the DataFrame buy you over a bare ndarray here — answer in §22.3’s vocabulary.</li>
+</ol>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — Broadcast or break
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Rule: align on trailing axes; size-<span class="math inline">\(1\)</span> or missing axes stretch; anything else errors.</p>
+<ol type="i">
+<li><span class="math inline">\((4, 5) + (5,) \to (4, 5)\)</span>. The <span class="math inline">\((5,)\)</span> aligns with the trailing axis and stretches down the 4 rows (the §36.3 row-vector case).</li>
+<li><span class="math inline">\((4, 5) + (4, 1) \to (4, 5)\)</span>. Trailing: <span class="math inline">\(5\)</span> vs <span class="math inline">\(1\)</span> → the <span class="math inline">\(1\)</span> stretches; leading: <span class="math inline">\(4\)</span> vs <span class="math inline">\(4\)</span> → fine. (The §36.3 column-vector case.)</li>
+<li><span class="math inline">\((4, 5) + (4,) \to\)</span> <strong>ValueError</strong>. Trailing axes <span class="math inline">\(5\)</span> vs <span class="math inline">\(4\)</span>: neither is <span class="math inline">\(1\)</span>, nothing stretches.</li>
+<li><span class="math inline">\((6, 1, 5) + (5,) \to (6, 1, 5)\)</span>. <span class="math inline">\((5,)\)</span> aligns with the trailing <span class="math inline">\(5\)</span>; the middle <span class="math inline">\(1\)</span> stretches to <span class="math inline">\(6\)</span> (and the leading <span class="math inline">\(6\)</span> is untouched).</li>
+</ol>
+<p>All four confirmed with <code>np.broadcast_shapes</code>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — Reproduce the speedup
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math inline">\(n = 10^5\)</span>, best of 5 runs (numpy 1.26.4):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>a <span class="op">=</span> np.arange(<span class="dv">10</span><span class="op">**</span><span class="dv">5</span>, dtype<span class="op">=</span><span class="bu">float</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co"># loop:      s = 0.0</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co">#            for v in a: s += v**3          -&gt; 0.0224 s</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># vectorized: s = (a**3).sum()              -&gt; 0.00037 s</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co"># speedup: 60.9x</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ol type="i">
+<li><p><span class="math inline">\(\approx 61\times\)</span> on this machine (eg 2’s <span class="math inline">\(n = 10^6\)</span> run gave $<span class="math inline">\(246\)</span>$ — the gap widens with <span class="math inline">\(n\)</span> because the per-element interpreter overhead dominates).</p></li>
+<li><p><code>np.allclose(s1, s2)</code> → <code>True</code>; <code>s1 == s2</code> → <code>False</code>. Both sums print as <span class="math inline">\(2.499950\times 10^{19}\)</span> but differ in the last bits: the loop accumulates left-to-right in Python floats while NumPy sums in a different (blocked/pairwise) order, so the round-off differs. <code>==</code> demands bit-identical floats — the wrong test for any two independently computed floating results; <code>allclose</code> (relative + absolute tolerance) is the right one (§36.5, §36.2’s <span class="math inline">\(1.12\times 10^{-12}\)</span> relative difference).</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — Read the slice
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math inline">\(M = \begin{bmatrix} 1&amp;2&amp;3&amp;4\\ 5&amp;6&amp;7&amp;8\\ 9&amp;10&amp;11&amp;12\\ 13&amp;14&amp;15&amp;16 \end{bmatrix}\)</span>.</p>
+<ol type="i">
+<li><code>M[1::2, :]</code> = rows <span class="math inline">\(1, 3\)</span> (start at row 1, step 2): <span class="math inline">\(\begin{bmatrix} 5&amp;6&amp;7&amp;8\\ 13&amp;14&amp;15&amp;16 \end{bmatrix}\)</span>.</li>
+<li><code>M[:, -1]</code> = last column: <span class="math inline">\([4, 8, 12, 16]\)</span>.</li>
+<li><code>M[M &gt; 12]</code> = flat array of entries <span class="math inline">\(&gt; 12\)</span>, in row-major order: <span class="math inline">\([13, 14, 15, 16]\)</span>. <strong>Note:</strong> a boolean mask always returns a <em>flat</em> (1-D) array — the selected positions don’t form a rectangle, so no shape is preserved.</li>
+<li>Even entries: <code>M[M % 2 == 0]</code> → <span class="math inline">\([2, 4, 6, 8, 10, 12, 14, 16]\)</span>.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — Axis by hand
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math inline">\(M = \begin{bmatrix} 1&amp;2&amp;3&amp;4\\ 5&amp;6&amp;7&amp;8\\ 9&amp;10&amp;11&amp;12 \end{bmatrix}\)</span>.</p>
+<ol type="i">
+<li><code>M.mean(axis=0)</code>: collapse rows — column means <span class="math inline">\([5, 6, 7, 8]\)</span> (e.g.&nbsp;column 0: <span class="math inline">\((1+5+9)/3 = 5\)</span>). <code>M.sum(axis=1)</code>: collapse columns — row sums <span class="math inline">\([10, 26, 42]\)</span> (e.g.&nbsp;row 0: <span class="math inline">\(1+2+3+4 = 10\)</span>).</li>
+<li><code>mean(axis=0)</code> is the per-<em>feature</em> statistic (one number per column); <code>sum(axis=1)</code> is the per-<em>point</em> statistic (one number per row).</li>
+<li>Collapse-rule reading: <code>axis=0</code> eats the row axis, leaving one value per column; <code>axis=1</code> eats the column axis, leaving one value per row. (“Top-bottom” is just a loose name for the same thing — the collapse is what the code does.)</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — Clean the table
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(io.StringIO(csv))   <span class="co"># the §36.8 CSV</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ol type="i">
+<li><p><code>df.isna().sum()</code> → <code>rooms: 1</code>, rest 0. The empty cell in row 9 is read as <code>NaN</code>; since <code>NaN</code> is a float, pandas upcasts the whole column — <code>rooms</code> is <code>float64</code> while <code>id/area/price</code> stay <code>int64</code> (§36.7’s NaN note).</p></li>
+<li><p><code>df['rooms'].median()</code> = <span class="math inline">\(4.0\)</span>; <code>df['rooms'] = df['rooms'].fillna(4.0)</code>; then <code>df.isna().sum().sum()</code> = <span class="math inline">\(0\)</span>. Verified.</p></li>
+<li><p><code>df.groupby('rooms')['price'].mean()</code>:</p></li>
+</ol>
+<ul>
+<li>rooms <span class="math inline">\(2.0 \to 32.00\)</span> (one house: id 2)</li>
+<li>rooms <span class="math inline">\(3.0 \to 52.50\)</span> (ids 1, 7: <span class="math inline">\((50+55)/2\)</span>)</li>
+<li>rooms <span class="math inline">\(4.0 \to 61.75\)</span> (ids 3, 6, 8, 9: <span class="math inline">\((66+69+72+40)/4 = 247/4\)</span>)</li>
+<li>rooms <span class="math inline">\(5.0 \to 91.00\)</span> (ids 4, 5, 10: <span class="math inline">\((98+85+90)/3 = 273/3\)</span>)</li>
+</ul>
+<p><code>df['price'].corr(df['area'])</code> = <span class="math inline">\(0.98\)</span> — area nearly determines price, as the table was built.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — Seeds
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>Identical output both times. Each call builds a <em>fresh</em> generator from the same seed, and a seeded generator is a fixed deterministic stream — same seed, same first three draws: <span class="math inline">\([0.77395605, 0.43887844, 0.85859792]\)</span>. Contrast: on <em>one</em> <code>rng</code> object, the second <code>.random(3)</code> continues the stream (draws 4–6), so the outputs differ.</p></li>
+<li><p>Nothing varies between the two calls: the seed is reset to 42 <em>inside</em> the function, so <code>np.random.permutation</code> replays the identical shuffle and both calls return the same train/test split. Expecting different splits breaks; expecting the <em>same</em> split (reproducibility) is exactly what the slide wants.</p></li>
+<li><p>Cross-validation re-trains on <span class="math inline">\(k\)</span> different folds and compares scores — if the fold assignment isn’t seeded, every re-run shuffles differently and the scores wobble for no reason; you can’t tell a better model from a luckier shuffle. Seeding makes the comparison fair and replayable.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — Course-sourced
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>Feature matrix: <code>pandas.DataFrame</code>; target: <code>pandas.Series</code> (the W1 programming notebook’s recorded solution output for <code>load_diabetes(as_frame=True, return_X_y=True)</code>; sklearn was not installed on this machine, so this is the notebook’s output as recorded, not re-run).</p></li>
+<li><p>In §22.3’s vocabulary: the DataFrame carries the <strong>metadata</strong> — the column names say what each coordinate means (<code>age</code>, <code>bmi</code>, …) — so the table is human-readable while the numbers stay machine-usable; a bare ndarray keeps the numbers but drops the meaning.</p></li>
+</ol>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./35-loss-functions.html" class="pagination-link" aria-label="Chapter 35: Loss functions for classification">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Chapter 35: Loss functions for classification</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./37-sklearn-regression.html" class="pagination-link" aria-label="Chapter 37: scikit-learn: regression workflows">
+        <span class="nav-page-text"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

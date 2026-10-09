@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Chapter 44: CNNs — convolution, pooling, transfer learning – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./45-rnns-sequences-vanishing-gradients.html" rel="next">
+<link href="./43-optimization-neural-nets.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./41-neuron-mlp-scratch.html">Part VI — Bridge to Deep Learning</a></li><li class="breadcrumb-item"><a href="./44-cnns.html"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#why-dense-layers-fail-on-images" id="toc-why-dense-layers-fail-on-images" class="nav-link active" data-scroll-target="#why-dense-layers-fail-on-images">44.1 Why dense layers fail on images</a></li>
+  <li><a href="#convolution-as-local-pattern-matching" id="toc-convolution-as-local-pattern-matching" class="nav-link" data-scroll-target="#convolution-as-local-pattern-matching">44.2 Convolution as local pattern matching</a></li>
+  <li><a href="#eg-a-2d-convolution-worked-by-hand-verified-numpy" id="toc-eg-a-2d-convolution-worked-by-hand-verified-numpy" class="nav-link" data-scroll-target="#eg-a-2d-convolution-worked-by-hand-verified-numpy">44.3 eg: a 2D convolution, worked by hand [verified-NumPy]</a></li>
+  <li><a href="#channels-stride-padding-the-shape-bookkeeping" id="toc-channels-stride-padding-the-shape-bookkeeping" class="nav-link" data-scroll-target="#channels-stride-padding-the-shape-bookkeeping">44.4 Channels, stride, padding: the shape bookkeeping</a></li>
+  <li><a href="#pooling-downsampling-with-a-purpose" id="toc-pooling-downsampling-with-a-purpose" class="nav-link" data-scroll-target="#pooling-downsampling-with-a-purpose">44.5 Pooling: downsampling with a purpose</a></li>
+  <li><a href="#the-cnn-stack-feature-hierarchy-then-a-dense-head" id="toc-the-cnn-stack-feature-hierarchy-then-a-dense-head" class="nav-link" data-scroll-target="#the-cnn-stack-feature-hierarchy-then-a-dense-head">44.6 The CNN stack: feature hierarchy, then a dense head</a></li>
+  <li><a href="#the-parameter-sharing-payoff" id="toc-the-parameter-sharing-payoff" class="nav-link" data-scroll-target="#the-parameter-sharing-payoff">44.7 The parameter-sharing payoff</a></li>
+  <li><a href="#transfer-learning-dont-reinvent-the-wheel" id="toc-transfer-learning-dont-reinvent-the-wheel" class="nav-link" data-scroll-target="#transfer-learning-dont-reinvent-the-wheel">44.8 Transfer learning: don’t reinvent the wheel</a></li>
+  <li><a href="#a-second-head-for-cnns-segmentation-the-u-net-note" id="toc-a-second-head-for-cnns-segmentation-the-u-net-note" class="nav-link" data-scroll-target="#a-second-head-for-cnns-segmentation-the-u-net-note">44.9 A second head for CNNs: segmentation (the U-Net note)</a></li>
+  <li><a href="#where-this-goes-next" id="toc-where-this-goes-next" class="nav-link" data-scroll-target="#where-this-goes-next">44.10 Where this goes next</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./41-neuron-mlp-scratch.html">Part VI — Bridge to Deep Learning</a></li><li class="breadcrumb-item"><a href="./44-cnns.html"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Chapter 41 built the neuron and the MLP; Chapter 42 derived the gradients; Chapter 43 picked the optimizers. This chapter changes what a <em>layer</em> computes. Nothing else changes: the optimizer is layer-agnostic (Chapter 43’s point), and backprop is the same machinery with new local gradients (§42.4). The spine is the GenAI Weeks 3–4 deck (“Introduction to CNN,” Balaji Srinivasan and Ganapathy Krishnamurthi, 91 slides — vision modelling, convolution vs cross-correlation, stride/padding illustrations, pooling, batch normalization walkthrough, famous architectures, transfer learning) plus its three companion notebooks: <em>CNN_Fundamentals</em> (why MLPs fail on images, the convolution definition, pooling, a complete MNIST/Fashion-MNIST CNN in PyTorch), <em>Transfer_Learning</em> (feature extraction vs fine-tuning on FoodVision Mini with EfficientNet-B0), and <em>Image_Segmentation_UNET</em> (U-Net, used briefly in §44.9). Every numpy number in this chapter was re-run here and is marked <strong>[verified-NumPy]</strong>; deck, notebook, and torch numbers are transcriptions, marked <strong>[recorded]</strong>.</p>
+<p><strong>Notation.</strong> <span class="math inline">\(I\)</span> = input image (or feature map), <span class="math inline">\(K\)</span> = convolution kernel (filter), <span class="math inline">\((I * K)\)</span> = output feature map. Image/feature-map shape is written <span class="math inline">\(H \times W \times C\)</span> (height, width, channels), the notebook’s convention — §36.4’s axis semantics apply to every shape question below.</p>
+<section id="why-dense-layers-fail-on-images" class="level2">
+<h2 class="anchored" data-anchor-id="why-dense-layers-fail-on-images">44.1 Why dense layers fail on images</h2>
+<p>The <em>CNN_Fundamentals</em> notebook’s case against feeding images to MLPs has four counts:</p>
+<ol type="i">
+<li><p><strong>Parameter explosion.</strong> “A single <span class="math inline">\(224 \times 224 \times 3\)</span> color image has 150,528 pixels. If the first hidden layer has just 100 neurons, we’d need 15,052,800 parameters (weights) just for the first layer!” [recorded]. Set it next to §41.14(ii)’s <span class="math inline">\(784 \to 50 \to 10\)</span> MNIST net, where “just 1 hidden layer” already had “nearly 40,000 parameters” — §41.14(ii)’s overfitting warning was about a model almost four hundred times smaller than this dense vision layer.</p></li>
+<li><p><strong>Spatial information loss.</strong> “MLPs flatten images into 1D vectors, destroying spatial relationships. The fact that adjacent pixels are related in an image is completely ignored” [recorded]. The deck’s version: the naive approach is “flatten the image… feed into MLP” — a <span class="math inline">\(28 \times 28\)</span> grid becomes a <span class="math inline">\(784 \times 1\)</span> vector and the network never learns that pixel <span class="math inline">\((i,j)\)</span> sits next to pixel <span class="math inline">\((i, j{+}1)\)</span>.</p></li>
+<li><p><strong>Translation variance.</strong> “MLPs don’t handle translations well — an object shifted slightly in an image appears as a completely different input. A dog in the left corner vs.&nbsp;center would require learning separate representations” [recorded]. Every position needs its own copy of every pattern.</p></li>
+<li><p><strong>Data inefficiency.</strong> With no built-in inductive bias for images, the MLP “require[s] enormous datasets” and is “prone to overfitting with limited training data” [recorded].</p></li>
+</ol>
+<p>The CNN fixes all four at once: a small <em>learnable filter</em>, slid across the whole image, with the <em>same weights reused at every position</em>.</p>
+<p><strong>Basically, …</strong> “An MLP sees a photo as a flat list of 150,528 numbers — no neighbours, no ‘left of’. One hidden layer of 100 neurons already costs 15 million weights, and a dog in the corner must be learned separately from a dog in the center. CNNs instead learn small pattern-detectors and slide them everywhere, so one edge detector finds edges at every position.”</p>
+</section>
+<section id="convolution-as-local-pattern-matching" class="level2">
+<h2 class="anchored" data-anchor-id="convolution-as-local-pattern-matching">44.2 Convolution as local pattern matching</h2>
+<p><strong>Def (the notebook’s).</strong> “The convolution operation involves sliding a small filter (or kernel) across an input image and computing element-wise multiplications followed by summation.” For a 2D input <span class="math inline">\(I\)</span> and kernel <span class="math inline">\(K\)</span>: <span class="math display">\[\boxed{(I * K)(i, j) = \sum_m \sum_n I(i+m, j+n) \cdot K(m, n)} \quad \text{[recorded]}.\]</span> Each output pixel is the dot product of the kernel with one small patch of the input; move the window one step, repeat. The output is called a <strong>feature map</strong> (or activation map): at each position it says <em>how strongly the kernel’s pattern matched there</em>.</p>
+<p><strong>A terminology note the deck insists on.</strong> Deep learning’s “convolution” is, mathematically, <strong>cross-correlation</strong>: a true convolution flips the kernel first (<span class="math inline">\(I(i-m, j-n)\)</span>); DL implementations never flip (<span class="math inline">\(I(i+m, j+n)\)</span>). The deck’s slide is blunt: “What we use is technically called cross-correlation,” and then asks “Does it matter?” The honest answer: <strong>no</strong>, because the kernel weights are <em>learned</em>. A flipped copy of a learned kernel is just another learnable kernel — the network finds the same patterns either way. From here on this chapter says “convolution” in the deep-learning sense and means cross-correlation.</p>
+<p>Three ideas travel with the operation:</p>
+<ol type="i">
+<li><p><strong>Local receptive field.</strong> “Each neuron in a convolutional layer connects only to a small region of the input” [recorded]. A neuron in a <span class="math inline">\(3 \times 3\)</span> layer sees 9 pixels, not 150,528 — the locality the MLP threw away is back.</p></li>
+<li><p><strong>Learnable filters.</strong> “The values in each filter are learnable parameters updated during training” [recorded]. The deck’s learning rule is the same gradient-descent step as ever: <span class="math inline">\(W \leftarrow W - \eta\,\partial\mathcal{L}/\partial W\)</span>, “repeated for every image and for multiple iterations till the loss converges” [recorded]. The filters “evolve to detect features (edges, colors, textures, patterns) that are most useful for the specific task” [recorded] — nobody hand-designs the edge detector; §42.4’s backprop machinery computes <span class="math inline">\(\partial\mathcal{L}/\partial W\)</span> for a conv layer exactly as it did for a dense one.</p></li>
+<li><p><strong>Weight sharing.</strong> “The same set of weights is used regardless of where in the image a feature appears” [recorded] — this is the engine of everything else: parameters (§44.7), translation behaviour (§44.5), and data efficiency all follow from one filter being applied everywhere.</p></li>
+</ol>
+<p><strong>Basically, …</strong> “Put a small stencil over the top-left of the image, multiply its numbers with the pixels underneath, add up — that’s one output pixel. Slide the stencil right, repeat; then down, repeat. The full output says, at every position, ‘how much does my stencil match here?’ The stencil’s numbers are learned like any weights. (Pedant corner: this is cross-correlation, not a true convolution — but since the stencil is learned, the missing flip changes nothing.)”</p>
+</section>
+<section id="eg-a-2d-convolution-worked-by-hand-verified-numpy" class="level2">
+<h2 class="anchored" data-anchor-id="eg-a-2d-convolution-worked-by-hand-verified-numpy">44.3 eg: a 2D convolution, worked by hand [verified-NumPy]</h2>
+<p>Input <span class="math inline">\(I\)</span> (<span class="math inline">\(4 \times 4\)</span>), kernel <span class="math inline">\(K\)</span> (<span class="math inline">\(2 \times 2\)</span>), stride <span class="math inline">\(1\)</span>, no padding: <span class="math display">\[I = \begin{bmatrix} 1 &amp; 2 &amp; 3 &amp; 4 \\\\ 5 &amp; 6 &amp; 7 &amp; 8 \\\\ 9 &amp; 10 &amp; 11 &amp; 12 \\\\ 13 &amp; 14 &amp; 15 &amp; 16 \end{bmatrix}, \qquad K = \begin{bmatrix} 1 &amp; 0 \\\\ -1 &amp; 1 \end{bmatrix}.\]</span></p>
+<p>Position <span class="math inline">\((0,0)\)</span>: the top-left <span class="math inline">\(2 \times 2\)</span> patch is <span class="math inline">\(\begin{bmatrix} 1 &amp; 2 \\\\ 5 &amp; 6 \end{bmatrix}\)</span>, element-wise with <span class="math inline">\(K\)</span>: <span class="math display">\[y_{0,0} = 1\cdot 1 + 2\cdot 0 + 5\cdot(-1) + 6\cdot 1 = 1 - 5 + 6 = 2.\]</span> Position <span class="math inline">\((0,1)\)</span>: patch <span class="math inline">\(\begin{bmatrix} 2 &amp; 3 \\\\ 6 &amp; 7 \end{bmatrix}\)</span>, <span class="math inline">\(y_{0,1} = 2 - 6 + 7 = 3\)</span>. Position <span class="math inline">\((0,2)\)</span>: <span class="math inline">\(y_{0,2} = 3 - 7 + 8 = 4\)</span>. Row 1: <span class="math inline">\(y_{1,0} = 5 - 9 + 10 = 6\)</span>, <span class="math inline">\(y_{1,1} = 6 - 10 + 11 = 7\)</span>, <span class="math inline">\(y_{1,2} = 7 - 11 + 12 = 8\)</span>. Row 2: <span class="math inline">\(y_{2,0} = 9 - 13 + 14 = 10\)</span>, <span class="math inline">\(y_{2,1} = 10 - 14 + 15 = 11\)</span>, <span class="math inline">\(y_{2,2} = 11 - 15 + 16 = 12\)</span>. Re-run in numpy:</p>
+<pre><code>[[ 2.  3.  4.]
+ [ 6.  7.  8.]
+ [10. 11. 12.]]</code></pre>
+<p>The output is <span class="math inline">\(3 \times 3\)</span> — smaller than the <span class="math inline">\(4 \times 4\)</span> input, because the <span class="math inline">\(2 \times 2\)</span> window only fits in 3 positions per axis. The next section names that rule.</p>
+<!-- Diagram reference (CC-BY-SA): d2l.ai §7.2.1 shows the same operation with a 3x3 input and 2x2 kernel, with the sliding window shaded — the canonical figure for this eg. Source URL: https://d2l.ai/chapter_convolutional-neural-networks/conv-layer.html -->
+</section>
+<section id="channels-stride-padding-the-shape-bookkeeping" class="level2">
+<h2 class="anchored" data-anchor-id="channels-stride-padding-the-shape-bookkeeping">44.4 Channels, stride, padding: the shape bookkeeping</h2>
+<p>Every shape question about a conv layer is §36.4’s axis semantics applied to <span class="math inline">\(H \times W \times C\)</span>.</p>
+<p><strong>Channels.</strong> A filter is as deep as its input. On a <span class="math inline">\(28 \times 28 \times 1\)</span> grayscale image a <span class="math inline">\(3 \times 3\)</span> filter has <span class="math inline">\(3 \times 3 \times 1 = 9\)</span> weights; on a <span class="math inline">\(224 \times 224 \times 3\)</span> color image it has <span class="math inline">\(3 \times 3 \times 3 = 27\)</span>. The kernel multiplies all three channel-planes at each position and sums to one number — so each <em>filter</em> produces one 2D feature map, and <span class="math inline">\(F\)</span> filters produce an <span class="math inline">\(H' \times W' \times F\)</span> output. The notebook’s numbers: “for a single <span class="math inline">\(3 \times 3\)</span> convolutional filter: only 9 weights (plus 1 bias)” [recorded] — that is per input channel; the <span class="math inline">\(+1\)</span> bias is per filter, added to every position of its feature map.</p>
+<p><strong>Stride.</strong> How many pixels the window moves per step. The deck’s illustration: <span class="math inline">\(5 \times 5\)</span> input, <span class="math inline">\(3 \times 3\)</span> kernel, stride <span class="math inline">\(2\)</span> → <span class="math inline">\(2 \times 2\)</span> output [recorded].</p>
+<p><strong>Padding.</strong> Zeros added around the border so the kernel can cover the edge pixels. The deck’s illustration: <span class="math inline">\(4 \times 4\)</span> input, <span class="math inline">\(3 \times 3\)</span> kernel, no padding (“valid”) → <span class="math inline">\(2 \times 2\)</span> output — “(Output shrinks)” [recorded].</p>
+<p><strong>Theorem (output size, per axis).</strong> With input width <span class="math inline">\(W\)</span>, kernel <span class="math inline">\(K\)</span>, padding <span class="math inline">\(P\)</span> per side, stride <span class="math inline">\(S\)</span>: <span class="math display">\[\boxed{W_{\text{out}} = \left\lfloor \frac{W - K + 2P}{S} \right\rfloor + 1} \quad \text{[verified-NumPy]}.\]</span> Why: the first window starts at pixel <span class="math inline">\(0\)</span>, the last at pixel <span class="math inline">\(W - K + 2P\)</span> (counting padding), in steps of <span class="math inline">\(S\)</span> — <span class="math inline">\((W-K+2P)/S + 1\)</span> positions, floored. <strong>“Same” padding</strong> picks <span class="math inline">\(P\)</span> so the output keeps the input size: for stride <span class="math inline">\(1\)</span> and odd <span class="math inline">\(K\)</span>, <span class="math inline">\(P = (K-1)/2\)</span> (e.g.&nbsp;<span class="math inline">\(3 \times 3\)</span> with <span class="math inline">\(P = 1\)</span> on <span class="math inline">\(28 \times 28\)</span> → <span class="math inline">\(28 \times 28\)</span>). <strong>“Valid”</strong> is <span class="math inline">\(P = 0\)</span>: the size shrinks by <span class="math inline">\(K-1\)</span>.</p>
+<p><strong>eg 4 (the formula against the course’s own diagrams).</strong> - Deck’s padding slide: <span class="math inline">\(W = 4\)</span>, <span class="math inline">\(K = 3\)</span>, <span class="math inline">\(P = 0\)</span>, <span class="math inline">\(S = 1\)</span> → <span class="math inline">\(\lfloor(4-3)/1\rfloor + 1 = 2\)</span>. Output <span class="math inline">\(2 \times 2\)</span> — the slide’s number. - Deck’s stride slide: <span class="math inline">\(W = 5\)</span>, <span class="math inline">\(K = 3\)</span>, <span class="math inline">\(P = 0\)</span>, <span class="math inline">\(S = 2\)</span> → <span class="math inline">\(\lfloor(5-3)/2\rfloor + 1 = 2\)</span>. Output <span class="math inline">\(2 \times 2\)</span> — the slide’s number. - Notebook’s MNIST net: Conv1 (<span class="math inline">\(3 \times 3\)</span>, stride <span class="math inline">\(1\)</span>, valid) on <span class="math inline">\(28 \times 28\)</span> → <span class="math inline">\(26 \times 26\)</span>; 32 filters → <span class="math inline">\(26 \times 26 \times 32\)</span>. Same-padding version would stay <span class="math inline">\(28 \times 28\)</span>.</p>
+<p><strong>Note.</strong> Filter sizes are “typically odd numbers like <span class="math inline">\(3 \times 3, 5 \times 5, 7 \times 7\)</span>” because “an odd size provides a center pixel” [recorded] — symmetric padding around a center is what makes “same” padding exact.</p>
+<p><strong>Basically, …</strong> “The kernel is as deep as the input (<span class="math inline">\(3 \times 3 \times 3\)</span> on color), and one filter = one output sheet, so <span class="math inline">\(F\)</span> filters give <span class="math inline">\(F\)</span> sheets. The output shrinks whenever the kernel is bigger than a pixel and has no padding: <span class="math inline">\((W-K+2P)/S + 1\)</span> positions per side. Want to keep the size? Pad one ring of zeros (<span class="math inline">\(P{=}1\)</span> for a <span class="math inline">\(3 \times 3\)</span>). Want to shrink fast? Stride <span class="math inline">\(2\)</span>.”</p>
+</section>
+<section id="pooling-downsampling-with-a-purpose" class="level2">
+<h2 class="anchored" data-anchor-id="pooling-downsampling-with-a-purpose">44.5 Pooling: downsampling with a purpose</h2>
+<p><strong>Def (the deck’s).</strong> “A pooling layer performs non-linear downsampling to reduce the spatial dimensions (width and height) of the feature maps.” Its two key purposes: “Reduce Computational Cost” and “Increase Receptive Field — allows subsequent convolutional layers to see a larger area of the original input” [recorded].</p>
+<p>The notebook’s three types:</p>
+<ol type="i">
+<li><p><strong>Max pooling.</strong> “Takes the maximum value from a local region. Most commonly used in practice. Helps extract the most prominent features” [recorded]. Has no learned parameters.</p></li>
+<li><p><strong>Average pooling.</strong> “Takes the average value from a local region. Preserves more background information” [recorded].</p></li>
+<li><p><strong>Global pooling.</strong> “Reduces each feature map to a single value (max or average)” [recorded] — a <span class="math inline">\(H \times W \times F\)</span> stack becomes one <span class="math inline">\(F\)</span>-vector, often right before the dense layers.</p></li>
+</ol>
+<p>Typical settings: <span class="math inline">\(2 \times 2\)</span> window, stride <span class="math inline">\(2\)</span> — “halves both dimensions” [recorded]; padding is “rarely used in pooling layers” [recorded].</p>
+<p><strong>eg 5 (the notebook’s pooling diagram, [verified-NumPy]).</strong> <span class="math inline">\(2 \times 2\)</span> max pooling, stride <span class="math inline">\(2\)</span>, on <span class="math display">\[\begin{bmatrix} 1 &amp; 3 &amp; 2 &amp; 5 \\\\ 9 &amp; 7 &amp; 8 &amp; 6 \\\\ 4 &amp; 2 &amp; 7 &amp; 3 \\\\ 1 &amp; 0 &amp; 5 &amp; 2 \end{bmatrix} \longrightarrow \begin{bmatrix} 9 &amp; 8 \\\\ 4 &amp; 7 \end{bmatrix}:\]</span> top-left window <span class="math inline">\(\{1,3,9,7\}\)</span> → <span class="math inline">\(9\)</span>; top-right <span class="math inline">\(\{2,5,8,6\}\)</span> → <span class="math inline">\(8\)</span>; bottom-left <span class="math inline">\(\{4,2,1,0\}\)</span> → <span class="math inline">\(4\)</span>; bottom-right <span class="math inline">\(\{7,3,5,2\}\)</span> → <span class="math inline">\(7\)</span>. Pooling asks “what was the strongest response in this patch?” and throws away <em>exactly where</em> — that is the mechanism behind “invariance to small translations” [recorded].</p>
+<p><strong>What pooling buys, in three lines.</strong></p>
+<ol type="i">
+<li><p><strong>Translation robustness.</strong> Convolution is <em>equivariant</em> — “if a feature moves in the input, its representation moves correspondingly in the feature maps” [recorded]. Pooling then summarizes each patch, which <em>enhances translational invariance</em> [recorded]: the exact position matters less after a max.</p></li>
+<li><p><strong>Downsampling.</strong> Halving <span class="math inline">\(H\)</span> and <span class="math inline">\(W\)</span> quarters the computation of every later layer, and (§44.7’s point) keeps the parameter count in check.</p></li>
+<li><p><strong>Bigger receptive fields downstream.</strong> After pooling, the next conv layer’s <span class="math inline">\(3 \times 3\)</span> window covers twice as much of the original image — deep layers see larger patterns built from the small ones.</p></li>
+</ol>
+<p><strong>Note (pooling vs PCA, §24’s contrast).</strong> Both shrink representations, but by opposite means. PCA (§24) <em>learns</em> a global linear projection from the data’s covariance — optimal reconstruction, but it flattens everything (§24.5) and knows nothing about 2D layout. Pooling is a <em>fixed</em>, <em>local</em>, <em>nonlinear</em> summary that preserves the spatial grid. Pooling throws away position-within-patch; PCA throws away low-variance directions. Different losses, different keepers.</p>
+<p><strong>Basically, …</strong> “Pooling is the network deliberately squinting: take each <span class="math inline">\(2 \times 2\)</span> patch, keep only its loudest pixel (max) or its average. It shrinks the map (cheap!), makes exact positions matter less (robust!), and lets deeper layers see bigger picture chunks through the same small window. Compared to Chapter 24’s PCA: PCA learns one global linear squish from the data; pooling is a fixed local squish that keeps the 2D layout.”</p>
+</section>
+<section id="the-cnn-stack-feature-hierarchy-then-a-dense-head" class="level2">
+<h2 class="anchored" data-anchor-id="the-cnn-stack-feature-hierarchy-then-a-dense-head">44.6 The CNN stack: feature hierarchy, then a dense head</h2>
+<p>The notebook’s “standard layer sequence,” with its own MNIST example traced end to end:</p>
+<ol type="i">
+<li><p><strong>Input:</strong> <span class="math inline">\(H \times W \times C\)</span> raw pixels (<span class="math inline">\(28 \times 28 \times 1\)</span> grayscale, <span class="math inline">\(224 \times 224 \times 3\)</span> color).</p></li>
+<li><p><strong>Conv + activation:</strong> filters extract features, “typically ReLU” [recorded] for the non-linearity (§41.7’s activation logic applies unchanged).</p></li>
+<li><p><strong>Pool:</strong> downsample.</p></li>
+<li><p><strong>Repeat</strong> — conv→pool blocks stacked. The design pattern: “increase filters, decrease spatial dimensions. As we go deeper, number of filters increases while spatial dimensions decrease” [recorded].</p></li>
+<li><p><strong>Flatten → dense → output:</strong> “converts 2D feature maps to 1D feature vector” [recorded], then “traditional neural network layers” for the final prediction — §41.4’s two equations (<span class="math inline">\(Z^l = A^{l-1}W^l + b^l\)</span>, <span class="math inline">\(A^l = g(Z^l)\)</span>) are back, with dropout (<span class="math inline">\(p = 0.5\)</span> in the example, §41.14(ii)’s dropout) between dense layers.</p></li>
+</ol>
+<p><strong>eg 6 (the notebook’s MNIST architecture, shapes traced — [verified-NumPy]).</strong></p>
+<pre><code>Input: 28x28x1
+Conv1: 3x3, 32 filters, stride 1, valid -&gt; 26x26x32
+Pool1: 2x2, stride 2                    -&gt; 13x13x32
+Conv2: 3x3, 64 filters, stride 1, valid -&gt; 11x11x64
+Pool2: 2x2, stride 2                    -&gt; 5x5x64
+Conv3: 3x3, 128 filters, stride 1, valid -&gt; 3x3x128
+Flatten -&gt; 1152
+FC1: 128, ReLU; Dropout 0.5; FC2: 10, softmax</code></pre>
+<p>Every arrow is §44.4’s formula: <span class="math inline">\((28-3)/1+1 = 26\)</span>, <span class="math inline">\((26-2)/2+1 = 13\)</span>, <span class="math inline">\((13-3)/1+1 = 11\)</span>, <span class="math inline">\((11-2)/2+1 = 5\)</span>, <span class="math inline">\((5-3)/1+1 = 3\)</span>, <span class="math inline">\(3 \times 3 \times 128 = 1152\)</span>.</p>
+<p>What each level <em>learns</em> is the hierarchy the notebook states plainly: “early layers: detect simple features (edges, corners); middle layers: textures, patterns; later layers: complex objects, parts” [recorded]. The notebook backs it with feature-map and filter visualizations — free from the architecture: first-layer filters are readable directly because they act on raw pixels.</p>
+<p><strong>Basically, …</strong> “Stack conv+ReLU+pool blocks: each block shrinks the map and doubles down on features, early blocks finding edges, late blocks finding parts of objects. Then flatten and hand the <span class="math inline">\(F\)</span>-vector to an ordinary dense network (§41.4’s equations, dropout included) for the final call. The traced MNIST stack: <span class="math inline">\(28{\times}28 \to 26{\times}26{\times}32 \to 13{\times}13{\times}32 \to 11{\times}11{\times}64 \to 5{\times}5{\times}64 \to 3{\times}3{\times}128 \to 1152 \to 128 \to 10\)</span>.”</p>
+</section>
+<section id="the-parameter-sharing-payoff" class="level2">
+<h2 class="anchored" data-anchor-id="the-parameter-sharing-payoff">44.7 The parameter-sharing payoff</h2>
+<p>The notebook does the count twice, and both are worth keeping:</p>
+<ol type="i">
+<li><p><strong>64 filters on <span class="math inline">\(28 \times 28\)</span>.</strong> “For 64 filters: CNN = 640 parameters vs MLP = 50,176 parameters” [recorded]: CNN <span class="math inline">\(= 64 \times (3 \times 3 + 1) = 640\)</span> (the <span class="math inline">\(+1\)</span> is the bias per filter); MLP <span class="math inline">\(= 784 \times 64 = 50{,}176\)</span> (one weight per input–neuron pair). Roughly an <span class="math inline">\(80\times\)</span> saving — and the CNN’s count does not grow with image size.</p></li>
+<li><p><strong>The big one, re-run here.</strong> A <span class="math inline">\(224 \times 224 \times 3\)</span> image into 100 hidden neurons costs the dense layer <span class="math inline">\(224 \cdot 224 \cdot 3 \cdot 100 + 100 = 15{,}052{,}900\)</span> parameters [verified-NumPy]. The same first layer as a 64-filter <span class="math inline">\(3 \times 3\)</span> conv on 3 channels: <span class="math inline">\(64 \cdot (3 \cdot 3 \cdot 3 + 1) = 1{,}792\)</span> parameters [verified-NumPy]. A <span class="math inline">\(8{,}400\times\)</span> reduction — that is the whole of §44.1(i) answered by one subtraction.</p></li>
+</ol>
+<p><strong>Why sharing is legal.</strong> A filter that detects a vertical edge in the top-left detects the same vertical edge in the bottom-right — “the same feature detector applied across entire image” [recorded]. §41.14(ii) counted parameters to warn about overfitting; convolution is the structural answer to that warning: fewer parameters, and they mean the same thing everywhere.</p>
+<p><strong>What does not change.</strong> The deck’s transfer-learning slides train these layers with the machinery of Chapter 43 — the optimizer is layer-agnostic (Chapter 43’s closing point). And §43.9’s flagged gap is now partly closed: the Weeks 3–4 deck <em>does</em> walk through batch normalization — normalize each activation, <span class="math inline">\(\hat x_i = (x_i - \mu_B)/\sqrt{\sigma_B^2 + \epsilon}\)</span>, then scale-and-shift <span class="math inline">\(y_i = \gamma \hat x_i + \beta\)</span> with two learned parameters [recorded; deck slide 54]. The full BN treatment (why <span class="math inline">\(\gamma, \beta\)</span> restore representational power, train/test behaviour) stays a candidate for its own note.</p>
+<p><strong>Basically, …</strong> “Same patterns, fewer numbers. A <span class="math inline">\(3 \times 3\)</span> filter has 9 weights no matter how big the image is, and one edge detector works at every position — so a conv layer that replaces a 15-million-parameter dense layer needs under two thousand. That is §41.14(ii)’s overfitting warning being answered by the architecture itself. (Bonus: the CNN deck’s slide 54 fills in the batch-norm formula §43.9 said was missing.)”</p>
+</section>
+<section id="transfer-learning-dont-reinvent-the-wheel" class="level2">
+<h2 class="anchored" data-anchor-id="transfer-learning-dont-reinvent-the-wheel">44.8 Transfer learning: don’t reinvent the wheel</h2>
+<p><strong>Def (the deck’s).</strong> “Transfer Learning is the process of taking a model pre-trained on a large dataset and fine-tuning it for a new, specific task.” The motivation: “Training a large CNN from scratch requires massive datasets (like ImageNet) and huge computational resources” [recorded]. The notebook’s framing: pre-trained weights are “superior initialization points for optimization” (§43.10’s initialization problem, solved by borrowing someone else’s answer).</p>
+<p><strong>When it works.</strong> Early conv layers learn generic features — edges, colors, textures — that are useful for almost any vision task; only the late layers are task-specific. So the bottom of the network transfers across domains, and you only teach the top what your classes look like. The standard backbone: “a network (like ResNet50 or MobileNet) that has been pre-trained on the massive ImageNet dataset (1.4 million images, 1000 classes)” [recorded].</p>
+<p><strong>The three strategies (notebook’s table, [recorded]).</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Strategy</th>
+<th>Method</th>
+<th>Use case</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Feature extraction</strong></td>
+<td>Freeze pre-trained layers, train only classifier</td>
+<td>Small target datasets</td>
+</tr>
+<tr class="even">
+<td><strong>Fine-tuning</strong></td>
+<td>Update all parameters with reduced learning rates</td>
+<td>Moderate target datasets</td>
+</tr>
+<tr class="odd">
+<td><strong>Progressive fine-tuning</strong></td>
+<td>Gradual unfreezing of network layers</td>
+<td>Large target datasets</td>
+</tr>
+</tbody>
+</table>
+<p>“To <em>freeze</em> layers means to keep them how they are during training” — in PyTorch, <code>requires_grad=False</code>, “so PyTorch doesn’t track gradient updates and these parameters won’t be changed by our optimizer” [recorded].</p>
+<p><strong>eg 7 (the notebook’s recipe, [recorded] torch).</strong> The <em>Transfer_Learning</em> notebook classifies pizza/steak/sushi (FoodVision Mini) with an ImageNet-pretrained <strong>EfficientNet-B0</strong>:</p>
+<ol type="1">
+<li><code>weights = EfficientNet_B0_Weights.DEFAULT</code>, <code>model = efficientnet_b0(weights=weights)</code>.</li>
+<li>The model has three parts: <code>features</code> (“a collection of convolutional layers… to learn a base representation of vision data”), <code>avgpool</code> (“takes the average of the output of the <code>features</code> layer(s) and turns it into a feature vector”), <code>classifier</code> (turns the feature vector into class scores — <code>out_features=1000</code> for ImageNet).</li>
+<li>Freeze <code>features</code> (<code>requires_grad=False</code>) — the feature-extraction strategy.</li>
+<li>Replace <code>classifier</code> with a new head for 3 classes (the old head is exactly §44.6(v)’s dense head, rebuilt for the new task).</li>
+<li>Feed it ImageNet-preprocessed inputs: <span class="math inline">\(224 \times 224\)</span> resize, normalize with ImageNet mean <span class="math inline">\([0.485, 0.456, 0.406]\)</span> and std <span class="math inline">\([0.229, 0.224, 0.225]\)</span> [recorded] — “the custom data going into the model should be prepared in the same way as the original training data.”</li>
+<li>Train the head with Adam (<span class="math inline">\(\eta = 0.001\)</span>, Chapter 43’s defaults) on the small dataset.</li>
+</ol>
+<p><strong>The notebook’s one-line rule.</strong> The “custom data” warning is the whole discipline: a pre-trained backbone only helps if its input distribution matches training — wrong normalization silently degrades the transferred features.</p>
+<p><strong>Basically, …</strong> “Don’t train from scratch on a mountain of images when someone already did it on ImageNet. Take their conv stack (it already knows edges and textures), freeze it (set <code>requires_grad=False</code>), bolt on your own small classifier for your classes, and train just that head — on your tiny dataset, with Adam at the usual settings. When you have more data, unfreeze and fine-tune the whole thing with a small learning rate. Rule: preprocess your images exactly like ImageNet’s, or the borrowed features go stale.”</p>
+</section>
+<section id="a-second-head-for-cnns-segmentation-the-u-net-note" class="level2">
+<h2 class="anchored" data-anchor-id="a-second-head-for-cnns-segmentation-the-u-net-note">44.9 A second head for CNNs: segmentation (the U-Net note)</h2>
+<p>The <em>Image_Segmentation_UNET</em> notebook applies this chapter’s layers to a different output shape: <strong>segmentation</strong> assigns a class to <em>every pixel</em> (the notebook’s case study is leaf-disease segmentation), not one label to the whole image. Its <strong>U-Net</strong> is an encoder (the §44.6 conv+pool stack, shrinking) followed by a decoder (upsampling back to full resolution), with <strong>skip connections</strong> joining matching resolutions — early fine-grained maps guide the upsampling. Evaluate with the Dice coefficient, not accuracy [recorded]. The architecture detail is kept for a later pass; the takeaway now: conv and pooling are Lego for more than classification — reshape the head, change the loss, and the same stack segments.</p>
+</section>
+<section id="where-this-goes-next" class="level2">
+<h2 class="anchored" data-anchor-id="where-this-goes-next">44.10 Where this goes next</h2>
+<ol type="i">
+<li><p><strong>RNNs (Chapter 45).</strong> The same idea, one new dimension: weight sharing across <em>time</em> instead of <em>space</em>. Chapter 44’s filter is reused at every pixel; Chapter 45’s cell is reused at every timestep — and the price of sharing (vanishing gradients, §42.8’s other half) arrives with it.</p></li>
+<li><p><strong>Attention (Chapter 46).</strong> The hierarchy of §44.6 — local patterns building up to global ones — gets a shortcut: attention lets any position talk to any other directly, instead of waiting for pooling to bring them together.</p></li>
+<li><p><strong>Generative models (Chapter 47).</strong> GANs and diffusion models are built on conv stacks like this chapter’s — the discriminator is a CNN classifier, and the generator is the §44.9 decoder run in reverse.</p></li>
+<li><p><strong>The debugging playbook rides along.</strong> §40.5(i): “shapes first” — for a CNN that means running every layer through §44.4’s formula before training, exactly as eg 6 did. Wrong flatten size is the transpose bug’s (§41.4) convolutional cousin.</p></li>
+</ol>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li><strong>Parameter explosion, quantified.</strong> A <span class="math inline">\(224 \times 224 \times 3\)</span> image feeds a dense layer with 100 neurons. (i) Count the weights and biases. (ii) Replace it with a conv layer of 64 <span class="math inline">\(3 \times 3\)</span> filters: count weights and biases. (iii) Compare with §41.14(ii)’s <span class="math inline">\(39{,}760\)</span> and say in one line what this implies about overfitting risk.</li>
+<li><strong>The convolution, by hand.</strong> <span class="math inline">\(I = \begin{bmatrix} 1 &amp; 0 &amp; 2 \\\\ 3 &amp; 1 &amp; 1 \\\\ 0 &amp; 2 &amp; 1 \end{bmatrix}\)</span>, <span class="math inline">\(K = \begin{bmatrix} 1 &amp; 1 \\\\ 0 &amp; -1 \end{bmatrix}\)</span>, stride <span class="math inline">\(1\)</span>, no padding. (i) Compute the <span class="math inline">\(2 \times 2\)</span> output entry by entry. (ii) Which input position contributes to all four output entries, and why does that matter for “local pattern matching”? (iii) Add one learned bias <span class="math inline">\(b\)</span> (same for all four output positions): how many learned parameters does this layer have?</li>
+<li><strong>Name the operation.</strong> (i) Write the true-convolution formula (flipped kernel) and the deep-learning formula side by side. (ii) In two lines, explain why the missing flip does not hurt a network whose kernels are learned. (iii) The deck asks “Does it matter?” — give your one-line verdict.</li>
+<li><strong>Stride and padding.</strong> (i) <span class="math inline">\(W = 7\)</span>, <span class="math inline">\(K = 3\)</span>, <span class="math inline">\(P = 0\)</span>, <span class="math inline">\(S = 2\)</span>: compute <span class="math inline">\(W_{\text{out}}\)</span>. (ii) Same <span class="math inline">\(W, K, S\)</span> with <span class="math inline">\(P = 1\)</span>: compute <span class="math inline">\(W_{\text{out}}\)</span>. (iii) A <span class="math inline">\(32 \times 32\)</span> image passes through conv (<span class="math inline">\(3 \times 3\)</span>, stride 1, “same”) then <span class="math inline">\(2 \times 2\)</span> max-pool (stride 2): give the feature-map size after each step.</li>
+<li><strong>Trace the MNIST stack.</strong> (i) Reproduce eg 6’s <span class="math inline">\(28 \to 26 \to 13 \to 11 \to 5 \to 3\)</span> shape chain from the output-size formula. (ii) Why does MaxPool2 give <span class="math inline">\(5\)</span> and not <span class="math inline">\(5.5\)</span>? (iii) If Conv2 used <span class="math inline">\(128\)</span> filters instead of <span class="math inline">\(64\)</span>, how would the flatten size change, and how many weights would Conv2 then have (per <span class="math inline">\(3 \times 3 \times C_{\text{in}} + 1\)</span>)?</li>
+<li><strong>Pooling vs PCA.</strong> (i) Pooling a <span class="math inline">\(4 \times 4\)</span> map with <span class="math inline">\(2 \times 2\)</span> max-pool gives <span class="math inline">\(2 \times 2\)</span>: how many numbers are discarded, and what information exactly is lost? (ii) In two lines, contrast with §24’s PCA: what does PCA keep that pooling throws away, and vice versa? (iii) Name one task where you’d pick PCA over pooling, and one where you’d pick pooling over PCA.</li>
+<li><strong>Equivariance, then invariance.</strong> (i) In one line each, define translation <em>equivariance</em> and translation <em>invariance</em>. (ii) Say which one a conv layer has and which one pooling adds, in the notebook’s terms. (iii) A cat photo is shifted right by 10 pixels: trace what happens to the conv feature map and then to the pooled map, in words.</li>
+<li><strong>Freeze vs fine-tune.</strong> (i) In the notebook’s three-row table: which strategy for 200 training images, and why? (ii) What does <code>requires_grad=False</code> on <code>features</code> do to the §42.4 backward pass, mechanically? (iii) Why does the notebook insist on ImageNet normalization of the <em>new</em> dataset?</li>
+<li><strong>The transfer-learning head.</strong> EfficientNet-B0’s <code>classifier</code> outputs 1000 scores. (i) For FoodVision Mini (3 classes), what shape must the replacement head have? (ii) Name the model-construction call and the freeze mechanism used in eg 7. (iii) If you unfreeze everything with the same <span class="math inline">\(\eta = 0.001\)</span>, name the risk (Chapter 43’s vocabulary) and the fix (fine-tuning row of the table).</li>
+<li><strong>Design a small CNN.</strong> Input <span class="math inline">\(64 \times 64 \times 3\)</span>, classes <span class="math inline">\(= 10\)</span>. (i) Propose conv/pool blocks ending with a flatten size <span class="math inline">\(\le 2000\)</span>, showing the shape chain. (ii) Count the conv parameters (assume <span class="math inline">\(3 \times 3\)</span> filters, <span class="math inline">\(+1\)</span> bias each). (iii) Name the §41.14(ii) guardrail you would add before the output layer, and why.</li>
+</ol>
+<hr>
+<p><em>Sources: GenAI Weeks 3–4 “Introduction to CNN” deck (Balaji Srinivasan, Ganapathy Krishnamurthi), 91 slides — naive-MLP-flatten slide, translation-invariance principle, convolution-vs-cross-correlation terminology slide, edge-detection slide, kernel-learning slide (<span class="math inline">\(W \leftarrow W - \eta\,\partial\mathcal{L}/\partial W\)</span>), kernel-size note (odd sizes), stride illustration (<span class="math inline">\(5 \times 5\)</span>, <span class="math inline">\(3 \times 3\)</span>, <span class="math inline">\(S = 2\)</span> → <span class="math inline">\(2 \times 2\)</span>), padding illustration (“valid” <span class="math inline">\(4 \times 4\)</span>, <span class="math inline">\(3 \times 3\)</span> → <span class="math inline">\(2 \times 2\)</span>, “output shrinks”), pooling definition + purposes, batch-normalization walkthrough (slide 54), data augmentation, ImageNet challenge, ResNet degradation, transfer-learning slides (“don’t reinvent the wheel”, ResNet50/MobileNet backbone, ImageNet 1.4M/1000 classes); CNN_Fundamentals.ipynb — MLP limitations (§44.1’s four counts, 15,052,800 parameters), convolution definition + hyperparameters, weight sharing (64 filters: 640 vs 50,176), equivariance vs invariance, pooling types + worked <span class="math inline">\(4 \times 4\)</span>→<span class="math inline">\(2 \times 2\)</span> example, MNIST CNN architecture and shape chain, Fashion-MNIST training, feature-map/filter visualizations; Transfer_Learning.ipynb — transfer objective framing, three-strategy table, freeze mechanics (<code>requires_grad=False</code>), EfficientNet-B0 anatomy (features/avgpool/classifier), ImageNet preprocessing (means, stds), FoodVision Mini recipe (all torch code [recorded]); Image_Segmentation_UNET.ipynb — U-Net encoder/decoder + skip connections, leaf-disease case study, Dice coefficient (brief §44.9); Week3-CNN.pdf and Week4-CNN notes — mirror of the deck; book chapters 24 (§24.5), 36 (§36.3–§36.4), 40 (§40.5(i)), 41 (§§41.4, 41.7, 41.14(ii)), 42 (§42.4), 43 (layer-agnostic optimizers, §43.9–§43.10, §43.12 defaults).</em></p>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — Parameter explosion, quantified
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>Dense layer: weights <span class="math inline">\(224 \cdot 224 \cdot 3 \cdot 100 = 15{,}052{,}800\)</span>, biases <span class="math inline">\(100\)</span>. Total <span class="math inline">\(15{,}052{,}900\)</span> [verified-NumPy].</p></li>
+<li><p>Conv layer: each filter is <span class="math inline">\(3 \times 3 \times 3 = 27\)</span> weights (as deep as the 3 input channels) plus 1 bias; 64 filters: <span class="math inline">\(64 \cdot (27 + 1) = 1{,}792\)</span> [verified-NumPy].</p></li>
+<li><p>§41.14(ii) already warned that <span class="math inline">\(39{,}760\)</span> parameters made a one-hidden-layer MNIST net “prone to overfitting.” The dense vision layer is <span class="math inline">\(378\times\)</span> that; the conv layer is <span class="math inline">\(22\times\)</span> <em>smaller</em> than the MNIST net. Parameter count alone says the dense version will memorize, not generalize — the conv architecture is the structural answer to §41.14(ii)’s warning.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — The convolution, by hand
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[I = \begin{bmatrix} 1 &amp; 0 &amp; 2 \\\\ 3 &amp; 1 &amp; 1 \\\\ 0 &amp; 2 &amp; 1 \end{bmatrix}, \qquad K = \begin{bmatrix} 1 &amp; 1 \\\\ 0 &amp; -1 \end{bmatrix}, \qquad \text{stride } 1, \text{ valid} \Rightarrow 2 \times 2 \text{ output}.\]</span></p>
+<ol type="i">
+<li>Entry by entry:</li>
+</ol>
+<ul>
+<li><span class="math inline">\(y_{0,0}\)</span>: patch <span class="math inline">\(\begin{bmatrix} 1 &amp; 0 \\\\ 3 &amp; 1 \end{bmatrix}\)</span> → <span class="math inline">\(1\cdot1 + 0\cdot1 + 3\cdot0 + 1\cdot(-1) = 1 - 1 = 0\)</span>.</li>
+<li><span class="math inline">\(y_{0,1}\)</span>: patch <span class="math inline">\(\begin{bmatrix} 0 &amp; 2 \\\\ 1 &amp; 1 \end{bmatrix}\)</span> → <span class="math inline">\(0 + 2 + 0 - 1 = 1\)</span>.</li>
+<li><span class="math inline">\(y_{1,0}\)</span>: patch <span class="math inline">\(\begin{bmatrix} 3 &amp; 1 \\\\ 0 &amp; 2 \end{bmatrix}\)</span> → <span class="math inline">\(3 + 1 + 0 - 2 = 2\)</span>.</li>
+<li><span class="math inline">\(y_{1,1}\)</span>: patch <span class="math inline">\(\begin{bmatrix} 1 &amp; 1 \\\\ 2 &amp; 1 \end{bmatrix}\)</span> → <span class="math inline">\(1 + 1 + 0 - 1 = 1\)</span>.</li>
+</ul>
+<p>Output <span class="math inline">\(\begin{bmatrix} 0 &amp; 1 \\\\ 2 &amp; 1 \end{bmatrix}\)</span> [verified-NumPy].</p>
+<ol start="2" type="i">
+<li><p>The center pixel <span class="math inline">\(I_{1,1} = 1\)</span> sits in all four <span class="math inline">\(2 \times 2\)</span> windows, so it contributes to all four outputs (corners contribute to one each, edge-middles to two). That overlap is the mechanism of “local pattern matching”: neighbouring output positions share evidence, so a pattern is judged by consensus across nearby patches, not by one isolated pixel.</p></li>
+<li><p><span class="math inline">\(2 \times 2 = 4\)</span> kernel weights plus 1 bias <span class="math inline">\(= 5\)</span> learned parameters. The same 5 numbers are reused at all four positions — weight sharing in one sentence.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — Name the operation
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>True (mathematical) convolution: <span class="math inline">\((I * K)(i,j) = \sum_m\sum_n I(i-m, j-n)\,K(m,n)\)</span>. Deep-learning “convolution”: <span class="math inline">\((I * K)(i,j) = \sum_m\sum_n I(i+m, j+n)\,K(m,n)\)</span> — cross-correlation, no flip.</p></li>
+<li><p>If <span class="math inline">\(K\)</span> is learned, define <span class="math inline">\(K'(m,n) = K(-m,-n)\)</span> (the flipped kernel). The true convolution with <span class="math inline">\(K\)</span> equals cross-correlation with <span class="math inline">\(K'\)</span>; since training searches over all <span class="math inline">\(K\)</span>, it searches over all <span class="math inline">\(K'\)</span> too. The flip is absorbed into the learned values.</p></li>
+<li><p>The deck’s “Does it matter?” — <strong>no</strong>: a flip is a re-indexing of weights the optimizer would have found anyway.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — Stride and padding
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><span class="math inline">\(W_{\text{out}} = \lfloor(7 - 3 + 0)/2\rfloor + 1 = \lfloor 2 \rfloor + 1 = 3\)</span>.</p></li>
+<li><p>With <span class="math inline">\(P = 1\)</span>: <span class="math inline">\(\lfloor(7 - 3 + 2)/2\rfloor + 1 = \lfloor 3 \rfloor + 1 = 4\)</span>. Padding bought one extra position per side.</p></li>
+<li><p>Conv <span class="math inline">\(3 \times 3\)</span>, stride 1, “same” on <span class="math inline">\(32 \times 32\)</span>: <span class="math inline">\(32 \times 32\)</span> (same padding preserves size for odd <span class="math inline">\(K\)</span>, stride 1). Then <span class="math inline">\(2 \times 2\)</span> max-pool, stride 2: <span class="math inline">\(\lfloor(32-2)/2\rfloor + 1 = 16\)</span> → <span class="math inline">\(16 \times 16\)</span> (channels unchanged by pooling).</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — Trace the MNIST stack
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>Conv1: <span class="math inline">\(\lfloor(28-3)/1\rfloor + 1 = 26\)</span>; Pool1: <span class="math inline">\(\lfloor(26-2)/2\rfloor + 1 = 13\)</span>; Conv2: <span class="math inline">\(\lfloor(13-3)/1\rfloor + 1 = 11\)</span>; Pool2: <span class="math inline">\(\lfloor(11-2)/2\rfloor + 1 = \lfloor 4.5 \rfloor + 1 = 5\)</span>; Conv3: <span class="math inline">\(\lfloor(5-3)/1\rfloor + 1 = 3\)</span>. Chain <span class="math inline">\(28 \to 26 \to 13 \to 11 \to 5 \to 3\)</span> [verified-NumPy].</p></li>
+<li><p>Because the output size is a <em>count of window positions</em>, an integer: <span class="math inline">\(\lfloor 4.5 \rfloor = 4\)</span> full steps plus the starting position <span class="math inline">\(= 5\)</span>. The last column of the <span class="math inline">\(11 \times 11\)</span> map is simply never covered by a <span class="math inline">\(2 \times 2\)</span> stride-2 window (it would start at index 10 and need index 11).</p></li>
+<li><p>Conv2 with 128 filters on 32 input channels: <span class="math inline">\(128 \cdot (3 \cdot 3 \cdot 32 + 1) = 128 \cdot 289 = 36{,}992\)</span> weights [verified-NumPy]. The flatten size does <em>not</em> change: Conv3 still has 128 filters on the <span class="math inline">\(5 \times 5\)</span> map, giving <span class="math inline">\(3 \times 3 \times 128 = 1152\)</span>.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — Pooling vs PCA
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><span class="math inline">\(16 \to 4\)</span>: 12 numbers discarded. What is lost is <em>position within each <span class="math inline">\(2 \times 2\)</span> patch</em> — the output records that the max was <span class="math inline">\(9\)</span>, not that it sat at the bottom-left of its patch.</p></li>
+<li><p>PCA (§24.5) <em>learns</em> a global linear projection keeping the top-variance directions and discards low-variance structure — but it flattens the image, losing the 2D layout entirely. Pooling is a <em>fixed, local, nonlinear</em> summary that <em>keeps</em> the spatial grid and discards within-patch position. PCA keeps variance directions and throws layout; pooling keeps layout and throws exact positions.</p></li>
+<li><p>PCA over pooling: tabular or already-vectorized data with no spatial layout (e.g.&nbsp;compressing 100 correlated features to 10). Pooling over PCA: any image CNN — flattening for PCA would destroy the neighbour structure the conv layers need.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — Equivariance, then invariance
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><strong>Equivariance:</strong> shifting the input shifts the output by the same amount. <strong>Invariance:</strong> shifting the input leaves the output (approximately) unchanged.</p></li>
+<li><p>A conv layer is <em>equivariant</em> — “if a feature moves in the input, its representation moves correspondingly in the feature maps” [recorded]. Pooling <em>enhances invariance</em> — summarizing each patch means the exact position of a feature matters less [recorded].</p></li>
+<li><p>Shift the cat 10 px right: every conv feature map shifts ~10 px right too (equivariance — the cat detector still fires, just 10 px over). After pooling, the pooled values barely change: the strongest response in each <span class="math inline">\(2 \times 2\)</span> patch is still the strongest, unless the shift moves a feature <em>across a pool boundary</em> — which is why pooling gives <em>approximate</em> invariance, not perfect.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 8 — Freeze vs fine-tune
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>200 images → <strong>feature extraction</strong>: freeze the backbone, train only the classifier. The backbone’s millions of parameters cannot be re-estimated from 200 images; the classifier’s few thousand can.</p></li>
+<li><p>Mechanically: <code>requires_grad=False</code> tells autograd not to track or accumulate gradients for those parameters, so the optimizer has nothing to update for them. Note the forward pass is unchanged, and the <em>deltas still flow through</em> the frozen layers to reach earlier trainable layers if any exist — freezing stops <span class="math inline">\(\partial\mathcal{L}/\partial W\)</span> from being computed, not <span class="math inline">\(\partial\mathcal{L}/\partial x\)</span> from propagating.</p></li>
+<li><p>The backbone’s filters were learned on ImageNet-normalized inputs; its feature detectors expect that distribution. Feed raw <span class="math inline">\([0,255]\)</span> or wrongly-scaled pixels and the activations land in a regime the weights never saw — the transferred features silently degrade. The notebook’s rule: “the custom data going into the model should be prepared in the same way as the original training data.”</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 9 — The transfer-learning head
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>The head must output 3 scores: a linear map from the feature-vector dimension to 3 (plus 3 biases). The pretrained 1000-class head is discarded and replaced.</p></li>
+<li><p><code>efficientnet_b0(weights=EfficientNet_B0_Weights.DEFAULT)</code> builds the pretrained model; then set <code>requires_grad=False</code> on every parameter in <code>model.features</code> to freeze the base [recorded].</p></li>
+<li><p>Same LR everywhere risks <strong>destroying the pretrained features</strong> — large updates to carefully tuned backbone weights (in Chapter 43’s terms: divergence/forgetting of a good initialization). The fine-tuning row’s fix: unfreeze with a <em>reduced</em> learning rate so the backbone moves gently while the new head learns fast.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 10 — Design a small CNN
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li>One valid design (<span class="math inline">\(3 \times 3\)</span> convs, valid, stride 1; <span class="math inline">\(2 \times 2\)</span> pools, stride 2):</li>
+</ol>
+<pre><code>64x64x3 -&gt; Conv1 (16 filters) -&gt; 62x62x16 -&gt; Pool -&gt; 31x31x16
+-&gt; Conv2 (32 filters) -&gt; 29x29x32 -&gt; Pool -&gt; 14x14x32
+-&gt; Conv3 (32 filters) -&gt; 12x12x32 -&gt; Pool -&gt; 6x6x32
+-&gt; Flatten 1152 -&gt; FC 10, softmax</code></pre>
+<p>Chain check: <span class="math inline">\((64-3)+1 = 62\)</span>; <span class="math inline">\((62-2)/2+1 = 31\)</span>; <span class="math inline">\((31-3)+1 = 29\)</span>; <span class="math inline">\((29-2)/2+1 = 14\)</span>; <span class="math inline">\((14-3)+1 = 12\)</span>; <span class="math inline">\((12-2)/2+1 = 6\)</span>; <span class="math inline">\(6 \cdot 6 \cdot 32 = 1152 \le 2000\)</span> ✓ [verified-NumPy].</p>
+<ol start="2" type="i">
+<li><p>Conv1: <span class="math inline">\(16 \cdot (3\cdot3\cdot3 + 1) = 448\)</span>. Conv2: <span class="math inline">\(32 \cdot (3\cdot3\cdot16 + 1) = 4{,}640\)</span>. Conv3: <span class="math inline">\(32 \cdot (3\cdot3\cdot32 + 1) = 9{,}248\)</span>. Total conv parameters <span class="math inline">\(= 14{,}336\)</span> [verified-NumPy] — versus a dense <span class="math inline">\(64\cdot64\cdot3 \to 1152\)</span> layer’s <span class="math inline">\(14{,}156{,}928\)</span> weights, same moral as §44.7.</p></li>
+<li><p>§41.14(ii)‘s guardrail: <strong>dropout</strong> (e.g.&nbsp;<span class="math inline">\(p = 0.5\)</span>) before the output dense layer — with only 1152 flattened features and a small dataset, the dense head is the overfitting risk; dropout “modifies the network,” complementing the conv layers’ parameter efficiency.</p></li>
+</ol>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./43-optimization-neural-nets.html" class="pagination-link" aria-label="Chapter 43: Optimization for neural nets — SGD variants, init, normalization">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./45-rnns-sequences-vanishing-gradients.html" class="pagination-link" aria-label="Chapter 45: RNNs — sequences and vanishing gradients">
+        <span class="nav-page-text"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

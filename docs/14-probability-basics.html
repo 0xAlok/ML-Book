@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>14. Probability basics: experiments, sample spaces, Bayes – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./15-discrete-random-variables.html" rel="next">
+<link href="./13-duality-kkt.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./14-probability-basics.html">Part II — Probability and Statistics</a></li><li class="breadcrumb-item"><a href="./14-probability-basics.html"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#experiments-and-outcomes" id="toc-experiments-and-outcomes" class="nav-link active" data-scroll-target="#experiments-and-outcomes">14.1 Experiments and outcomes</a></li>
+  <li><a href="#the-sample-space" id="toc-the-sample-space" class="nav-link" data-scroll-target="#the-sample-space">14.2 The sample space</a></li>
+  <li><a href="#events-subsets-of-the-sample-space" id="toc-events-subsets-of-the-sample-space" class="nav-link" data-scroll-target="#events-subsets-of-the-sample-space">14.3 Events: subsets of the sample space</a></li>
+  <li><a href="#combining-events-union-intersection-complement" id="toc-combining-events-union-intersection-complement" class="nav-link" data-scroll-target="#combining-events-union-intersection-complement">14.4 Combining events: union, intersection, complement</a></li>
+  <li><a href="#disjoint-events-and-partitions" id="toc-disjoint-events-and-partitions" class="nav-link" data-scroll-target="#disjoint-events-and-partitions">14.5 Disjoint events and partitions</a></li>
+  <li><a href="#the-probability-function-and-its-three-axioms" id="toc-the-probability-function-and-its-three-axioms" class="nav-link" data-scroll-target="#the-probability-function-and-its-three-axioms">14.6 The probability function and its three axioms</a></li>
+  <li><a href="#consequences-of-the-axioms" id="toc-consequences-of-the-axioms" class="nav-link" data-scroll-target="#consequences-of-the-axioms">14.7 Consequences of the axioms</a></li>
+  <li><a href="#equally-likely-outcomes-and-counting" id="toc-equally-likely-outcomes-and-counting" class="nav-link" data-scroll-target="#equally-likely-outcomes-and-counting">14.8 Equally likely outcomes and counting</a></li>
+  <li><a href="#conditional-probability" id="toc-conditional-probability" class="nav-link" data-scroll-target="#conditional-probability">14.9 Conditional probability</a></li>
+  <li><a href="#the-law-of-total-probability" id="toc-the-law-of-total-probability" class="nav-link" data-scroll-target="#the-law-of-total-probability">14.10 The law of total probability</a></li>
+  <li><a href="#bayes-theorem" id="toc-bayes-theorem" class="nav-link" data-scroll-target="#bayes-theorem">14.11 Bayes’ theorem</a></li>
+  <li><a href="#independence" id="toc-independence" class="nav-link" data-scroll-target="#independence">14.12 Independence</a></li>
+  <li><a href="#repeated-independent-trials" id="toc-repeated-independent-trials" class="nav-link" data-scroll-target="#repeated-independent-trials">14.13 Repeated independent trials</a></li>
+  <li><a href="#why-this-matters-the-language-every-later-chapter-speaks" id="toc-why-this-matters-the-language-every-later-chapter-speaks" class="nav-link" data-scroll-target="#why-this-matters-the-language-every-later-chapter-speaks">14.14 Why this matters: the language every later chapter speaks</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./14-probability-basics.html">Part II — Probability and Statistics</a></li><li class="breadcrumb-item"><a href="./14-probability-basics.html"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Part I built the machinery of optimization: follow the gradient down, fold constraints into the Lagrangian, exploit convexity, certify with KKT (§13.15 closed the arc: “Part II puts probability underneath it”). Why underneath? Because machine learning runs on uncertainty — noisy measurements, random sampling, models that output beliefs rather than certainties. Before any of that machinery can touch data, we need a mathematical language for <em>chance</em>. That is Part II, and it starts here, at the very beginning: what does it mean to assign a number to how likely something is?</p>
+<p>The Stats 2 lectures frame the whole course with a running example — IPL cricket, 2008–2020, 816 matches of ball-by-ball data. The first step is descriptive: average runs per powerplay over climb from <span class="math inline">\(6.00\)</span> (Over 1) to <span class="math inline">\(8.30\)</span> (Over 6), with standard deviations around <span class="math inline">\(4\)</span>. The next step is modeling: “Are there models that explain the observed patterns in the data? How will you simulate powerplay overs in an IPL innings?” Simulation needs probability — a “mathematical” theory that assigns chances to events: define the basic objects precisely, assume a few things (the <strong>axioms</strong>), and deduce everything else by logical proof. This chapter builds exactly that.</p>
+<section id="experiments-and-outcomes" class="level2">
+<h2 class="anchored" data-anchor-id="experiments-and-outcomes">14.1 Experiments and outcomes</h2>
+<p><strong>Def.</strong> An <strong>experiment</strong> = a process or phenomenon we wish to study statistically. An <strong>outcome</strong> = the result of the experiment, described in as much detail as necessary.</p>
+<ol type="i">
+<li>Toss a coin: outcomes heads, tails.</li>
+<li>Throw a die: outcomes <span class="math inline">\(1, 2, 3, 4, 5, 6\)</span>.</li>
+<li>IPL powerplay: the outcome could be the full yaml file of ball-by-ball data — “lots of details”. What counts as an outcome depends on what you are studying.</li>
+</ol>
+<p><strong>Basically, …</strong> The experiment is “what you do”; the outcome is “what happened”. The same real-world process can be a different experiment depending on how much detail you record — one delivery’s runs, or the whole match file.</p>
+</section>
+<section id="the-sample-space" class="level2">
+<h2 class="anchored" data-anchor-id="the-sample-space">14.2 The sample space</h2>
+<p><strong>Def.</strong> The <strong>sample space</strong> <span class="math inline">\(S\)</span> = the set of <em>all</em> outcomes of an experiment.</p>
+<ol type="i">
+<li>Toss a coin: <span class="math inline">\(S = \{\text{heads}, \text{tails}\}\)</span>.</li>
+<li>Throw a die: <span class="math inline">\(S = \{1, 2, 3, 4, 5, 6\}\)</span>.</li>
+<li>IPL: runs scored off one delivery: <span class="math inline">\(S = \{0, 1, 2, 3, \dots\}\)</span>. Winner of a season: <span class="math inline">\(S = \{\text{CSK}, \text{MI}, \text{DC}, \dots\}\)</span>.</li>
+<li>Urn with <span class="math inline">\(3\)</span> red, <span class="math inline">\(3\)</span> white, <span class="math inline">\(3\)</span> blue marbles; draw one: <span class="math inline">\(S = \{\text{red}, \text{white}, \text{blue}\}\)</span>.</li>
+<li>Draw a card from a shuffled pack: <span class="math inline">\(S = \{\text{spades}, \text{hearts}, \text{diamonds}, \text{clubs}\} \times \{2, 3, \dots, 10, J, Q, K, A\}\)</span> — a Cartesian product (§1.6).</li>
+</ol>
+<p>Sample spaces come in three sizes: <strong>finite</strong> (a die); <strong>countably infinite</strong> (the number of coin tosses until the first head: <span class="math inline">\(\{1, 2, 3, \dots\}\)</span> — the outcomes can be listed first, second, third, <span class="math inline">\(\dots\)</span>); and <strong>uncountably infinite</strong> (the exact landing point of a thrown dart, or the exact rainfall in a year — a continuum, no listing possible).</p>
+<p><strong>Note:</strong> In practice you rarely write <span class="math inline">\(S\)</span> down completely — for the IPL it is “too big to write down”. Quite often it is enough to <em>imagine</em> a sample space. But the lectures give good advice: when interpreting probabilities becomes confusing, thinking of the sample space can be of use.</p>
+<p><strong>Basically, …</strong> The sample space is the guest list: every possible result, listed once. It can be tiny (<span class="math inline">\(2\)</span> outcomes), infinite but listable, or a continuum. You don’t always write the whole list — but you should always know the list exists.</p>
+</section>
+<section id="events-subsets-of-the-sample-space" class="level2">
+<h2 class="anchored" data-anchor-id="events-subsets-of-the-sample-space">14.3 Events: subsets of the sample space</h2>
+<p><strong>Def.</strong> An <strong>event</strong> = a subset of the sample space. An event is said to have <strong>occurred</strong> if the actual outcome belongs to the subset.</p>
+<ol type="i">
+<li>Coin: <span class="math inline">\(S = \{H, T\}\)</span> has <span class="math inline">\(2^2 = 4\)</span> events: <span class="math inline">\(\emptyset, \{H\}, \{T\}, \{H, T\}\)</span>.</li>
+<li>Die: <span class="math inline">\(S = \{1, \dots, 6\}\)</span> has <span class="math inline">\(2^6 = 64\)</span> events — e.g.&nbsp;“even number” <span class="math inline">\(= \{2, 4, 6\}\)</span>, “multiple of 3” <span class="math inline">\(= \{3, 6\}\)</span>.</li>
+<li>Fisherman: “catch is more than <span class="math inline">\(100\)</span> Kg”, “pomfret is in the catch” — perfectly good events, even though nobody wrote down <span class="math inline">\(S\)</span>.</li>
+</ol>
+<p><strong>Note (the technical restriction).</strong> The lectures mention “a technical restriction on what subsets can be events”, ignored “for now, and pointed out later when necessary”. Its standard name: the events must form a <strong><span class="math inline">\(\sigma\)</span>-algebra</strong> — a collection closed under complements and countable unions, so anything you build with set operations stays an event. For every finite or countable sample space in this chapter, “every subset is an event” works fine; the restriction only bites for uncountable sample spaces (Chapter 16 will say more).</p>
+<p><strong>Basically, …</strong> An event is a <em>question</em> about the outcome, phrased as a set: “did the outcome land in this set?” If yes, the event occurred. That’s all an event is.</p>
+</section>
+<section id="combining-events-union-intersection-complement" class="level2">
+<h2 class="anchored" data-anchor-id="combining-events-union-intersection-complement">14.4 Combining events: union, intersection, complement</h2>
+<p>Events are sets, so all of §1.5 applies:</p>
+<ol type="i">
+<li><strong>Union</strong> <span class="math inline">\(A \cup B\)</span> = “or”: outcomes in <span class="math inline">\(A\)</span> or in <span class="math inline">\(B\)</span> (or both). Die: “even or a multiple of 3” <span class="math inline">\(= \{2, 3, 4, 6\}\)</span>.</li>
+<li><strong>Intersection</strong> <span class="math inline">\(A \cap B\)</span> = “and”: outcomes in both. Die: “even and a multiple of 3” <span class="math inline">\(= \{6\}\)</span>.</li>
+<li><strong>Complement</strong> <span class="math inline">\(A^c = S \setminus A\)</span> = “not”: outcomes not in <span class="math inline">\(A\)</span>. Die: <span class="math inline">\(\text{even}^c = \text{odd} = \{1, 3, 5\}\)</span>. If <span class="math inline">\(A\)</span> occurred, <span class="math inline">\(A^c\)</span> did not, and vice versa.</li>
+</ol>
+<p>Translating English into events is a core skill. The lectures’ IPL example: one over of six deliveries, each worth <span class="math inline">\(0, 1, 2, 3, 4\)</span> or <span class="math inline">\(6\)</span> runs. Let <span class="math inline">\(A =\)</span> “no 4s in the over”, <span class="math inline">\(B =\)</span> “no 6s in the over”, <span class="math inline">\(C =\)</span> “exactly <span class="math inline">\(20\)</span> runs scored”. Then <span class="math inline">\(A \cup B\)</span> = “the over had no 4s or no 6s”, <span class="math inline">\(A \cap B\)</span> = “no 4s and no 6s”. Complements follow <strong>De Morgan’s laws</strong>: <span class="math display">\[(A \cup B)^c = A^c \cap B^c, \qquad (A \cap B)^c = A^c \cup B^c.\]</span> So <span class="math inline">\((A \cup B)^c\)</span> = “at least one 4 <em>and</em> at least one 6”, and <span class="math inline">\((A \cap B)^c\)</span> = “at least one 4 <em>or</em> at least one 6”. (Problem 3 asks whether <span class="math inline">\(A \cap B \cap C\)</span> can occur.)</p>
+<p><strong>eg 1.</strong> Let <span class="math inline">\(S = \{a, b, c, d, e\}\)</span>, <span class="math inline">\(E = \{a, b, e\}\)</span>, <span class="math inline">\(F = \{b, c\}\)</span>. Then <span class="math inline">\(E^c = \{c, d\}\)</span>, <span class="math inline">\(F^c = \{a, d, e\}\)</span>, <span class="math inline">\(E \cup F = \{a, b, c, e\}\)</span>, <span class="math inline">\(E \cap F = \{b\}\)</span>, <span class="math inline">\(E \setminus F = E \cap F^c = \{a, e\}\)</span>, <span class="math inline">\(F \setminus E = \{c\}\)</span>.</p>
+<p><strong>Basically, …</strong> “Or” = union, “and” = intersection, “not” = complement. De Morgan says: the opposite of “A or B” is “not A <em>and</em> not B” — the and/or <em>flip</em> when you negate.</p>
+</section>
+<section id="disjoint-events-and-partitions" class="level2">
+<h2 class="anchored" data-anchor-id="disjoint-events-and-partitions">14.5 Disjoint events and partitions</h2>
+<p><strong>Def.</strong> Two events are <strong>disjoint</strong> (mutually exclusive) if <span class="math inline">\(A \cap B = \emptyset\)</span>.</p>
+<ol type="i">
+<li>Die: even and odd are disjoint. Fisherman: “more than <span class="math inline">\(200\)</span> Kg” and “less than <span class="math inline">\(50\)</span> Kg” are disjoint.</li>
+<li><span class="math inline">\(A\)</span> and <span class="math inline">\(A^c\)</span> are disjoint, and together they cover everything: <span class="math inline">\(A \cup A^c = S\)</span> — either <span class="math inline">\(A\)</span> occurs or <span class="math inline">\(A^c\)</span> occurs.</li>
+<li>Events <span class="math inline">\(E_1, E_2, \dots\)</span> are (pairwise) disjoint if <span class="math inline">\(E_i \cap E_j = \emptyset\)</span> for every <span class="math inline">\(i \ne j\)</span>. Drawing a card: spades, hearts, diamonds, clubs are disjoint.</li>
+</ol>
+<p><strong>Def.</strong> A <strong>partition</strong> of <span class="math inline">\(S\)</span> = a collection of disjoint events whose union is <span class="math inline">\(S\)</span>. The simplest partition is <span class="math inline">\(\{B, B^c\}\)</span>; a finer one is <span class="math inline">\(B_1, B_2, B_3, B_4\)</span> (panel (b) of the figure).</p>
+<p><strong>Basically, …</strong> Disjoint events can’t happen together. A partition chops the whole sample space into non-overlapping pieces that cover everything — like cutting a cake with no crumbs left over. Partitions are the scaffolding the law of total probability (§14.10) is built on.</p>
+</section>
+<section id="the-probability-function-and-its-three-axioms" class="level2">
+<h2 class="anchored" data-anchor-id="the-probability-function-and-its-three-axioms">14.6 The probability function and its three axioms</h2>
+<p><strong>Def.</strong> <strong>Probability</strong> <span class="math inline">\(P\)</span> = a function that assigns to each event a real number in <span class="math inline">\([0, 1]\)</span>, satisfying:</p>
+<ol type="1">
+<li><strong>Non-negativity:</strong> <span class="math inline">\(P(E) \ge 0\)</span> for every event <span class="math inline">\(E\)</span>.</li>
+<li><strong>Normalization:</strong> <span class="math inline">\(P(S) = 1\)</span>.</li>
+<li><strong>Countable additivity:</strong> if <span class="math inline">\(E_1, E_2, \dots\)</span> are disjoint, then <span class="math display">\[P(E_1 \cup E_2 \cup \cdots) = P(E_1) + P(E_2) + \cdots\]</span></li>
+</ol>
+<p>The sample space, the events, and <span class="math inline">\(P\)</span> together are called a <strong>probability space</strong>. (The lectures present Axioms 2 and 3 as “the two axioms”, with the <span class="math inline">\([0, 1]\)</span> codomain stated in the definition itself; written as three, these are Kolmogorov’s axioms — the standard form used everywhere.)</p>
+<p><span class="math inline">\(0\)</span> means the event cannot occur, <span class="math inline">\(1\)</span> means it always occurs; a higher value means a higher chance. One warning from the lectures, worth keeping: this <em>meaning</em> of probability is not part of the mathematics. The theory assumes only the axioms — everything else is deduced by proof.</p>
+<p><strong>eg 2.</strong> Coin, <span class="math inline">\(S = \{H, T\}\)</span>. Valid: <span class="math inline">\(P(\emptyset) = 0\)</span>, <span class="math inline">\(P(\{H\}) = p\)</span>, <span class="math inline">\(P(\{T\}) = 1 - p\)</span>, <span class="math inline">\(P(S) = 1\)</span> for any <span class="math inline">\(0 \le p \le 1\)</span> — a <em>fair</em> coin is <span class="math inline">\(p = 1/2\)</span>. <strong>Invalid:</strong> <span class="math inline">\(P(\{H\}) = 0.5\)</span>, <span class="math inline">\(P(\{T\}) = 0.6\)</span>: the singletons are disjoint with union <span class="math inline">\(S\)</span>, so Axiom 3 forces <span class="math inline">\(P(S) = 0.5 + 0.6 = 1.1 \ne 1\)</span>, contradicting Axiom 2.</p>
+<p><strong>Basically, …</strong> The axioms are the rules of the game: chances can’t be negative, <em>something</em> must happen (total chance <span class="math inline">\(1\)</span>), and chances of non-overlapping events add up. Every formula in this chapter is a logical consequence of these three.</p>
+</section>
+<section id="consequences-of-the-axioms" class="level2">
+<h2 class="anchored" data-anchor-id="consequences-of-the-axioms">14.7 Consequences of the axioms</h2>
+<p>Four properties, each proved from the axioms alone (the lectures’ proofs, in the lectures’ order):</p>
+<ol type="i">
+<li><p><strong>Empty set.</strong> <span class="math inline">\(P(\emptyset) = 0\)</span>. <em>Proof.</em> <span class="math inline">\(\emptyset^c = S\)</span>, and <span class="math inline">\(\emptyset, S\)</span> are disjoint with <span class="math inline">\(\emptyset \cup S = S\)</span>. By Axiom 3, <span class="math inline">\(P(S) = P(\emptyset) + P(S)\)</span>, so <span class="math inline">\(P(\emptyset) = 0\)</span>.</p></li>
+<li><p><strong>Complement.</strong> <span class="math inline">\(P(E^c) = 1 - P(E)\)</span>. <em>Proof.</em> <span class="math inline">\(E, E^c\)</span> are disjoint and <span class="math inline">\(E \cup E^c = S\)</span>, so <span class="math inline">\(1 = P(S) = P(E) + P(E^c)\)</span>.</p></li>
+<li><p><strong>Subset / monotonicity.</strong> If <span class="math inline">\(E \subseteq F\)</span> then <span class="math inline">\(P(F) = P(E) + P(F \setminus E)\)</span>, hence <span class="math inline">\(P(E) \le P(F)\)</span>. <em>Proof.</em> <span class="math inline">\(E\)</span> and <span class="math inline">\(F \setminus E = F \cap E^c\)</span> are disjoint with union <span class="math inline">\(F\)</span>; apply Axiom 3. (The lectures’ intuition check: if <span class="math inline">\(A \subseteq B\)</span>, <span class="math inline">\(P(B)\)</span> “should be higher than” <span class="math inline">\(P(A)\)</span> — and it is.)</p></li>
+<li><p><strong>Difference form.</strong> <span class="math inline">\(P(E) = P(E \cap F) + P(E \setminus F)\)</span> (and symmetrically <span class="math inline">\(P(F) = P(E \cap F) + P(F \setminus E)\)</span>). <em>Proof.</em> <span class="math inline">\(E \cap F \subseteq E\)</span>; apply (iii), noting <span class="math inline">\(E \setminus (E \cap F) = E \setminus F\)</span>.</p></li>
+<li><p><strong>Inclusion–exclusion (union formula).</strong> <span class="math display">\[P(E \cup F) = P(E) + P(F) - P(E \cap F).\]</span> <em>Proof.</em> <span class="math inline">\(E \cup F\)</span> splits into <em>three</em> disjoint pieces — <span class="math inline">\(E \setminus F\)</span>, <span class="math inline">\(E \cap F\)</span>, <span class="math inline">\(F \setminus E\)</span> (panel (a) of the figure) — so by Axiom 3, <span class="math inline">\(P(E \cup F) = P(E \setminus F) + P(E \cap F) + P(F \setminus E)\)</span>. Substituting <span class="math inline">\(P(E \setminus F) = P(E) - P(E \cap F)\)</span> and <span class="math inline">\(P(F \setminus E) = P(F) - P(E \cap F)\)</span> from (iv) gives the formula.</p></li>
+</ol>
+<p><strong>eg 3 (fishing town).</strong> Chance of catching more than <span class="math inline">\(400\)</span> Kg of fish in a day: <span class="math inline">\(35\%\)</span>; more than <span class="math inline">\(500\)</span> Kg: <span class="math inline">\(10\%\)</span>. Let <span class="math inline">\(F =\)</span> “catch <span class="math inline">\(&gt; 400\)</span>”, <span class="math inline">\(E =\)</span> “catch <span class="math inline">\(&gt; 500\)</span>”; then <span class="math inline">\(E \subseteq F\)</span>. By (iii), <span class="math inline">\(P(F \setminus E) = P(F) - P(E) = 0.35 - 0.10 = 0.25\)</span>. So the chance of catching <em>between</em> <span class="math inline">\(400\)</span> and <span class="math inline">\(500\)</span> Kg is <span class="math inline">\(\boxed{25\%}\)</span>.</p>
+<p><strong>eg 4 (weather forecast).</strong> <span class="math inline">\(P(\text{rain}) = 0.6\)</span>, <span class="math inline">\(P(\text{max temp above } 30^\circ) = 0.7\)</span>, <span class="math inline">\(P(\text{rain and temp above } 30^\circ) = 0.4\)</span>. By inclusion–exclusion, <span class="math inline">\(P(\text{rain} \cup \text{hot}) = 0.6 + 0.7 - 0.4 = 0.9\)</span>. “No rain and temp below <span class="math inline">\(30^\circ\)</span>” is the complement, so <span class="math inline">\(P = 1 - 0.9 = \boxed{0.10}\)</span> — a <span class="math inline">\(10\%\)</span> chance.</p>
+<p><strong>Basically, …</strong> Never add probabilities of overlapping events naively — that double-counts the overlap. Inclusion–exclusion says: add both, then subtract the overlap once. And “A but not B” is just <span class="math inline">\(P(A) - P(\text{both})\)</span>.</p>
+<!-- Original matplotlib illustration drawn for this chapter (not reused from any URL) -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/14-probability-basics.png" class="img-fluid figure-img"></p>
+<figcaption>(a) Two events E and F inside the sample space S, split into the three disjoint pieces E minus F, E intersect F, F minus E — the picture behind inclusion–exclusion. (b) A partition B1..B4 of S with an event A overlaid; A is the disjoint union of the pieces A intersect Bi — the picture behind the law of total probability.</figcaption>
+</figure>
+</div>
+</section>
+<section id="equally-likely-outcomes-and-counting" class="level2">
+<h2 class="anchored" data-anchor-id="equally-likely-outcomes-and-counting">14.8 Equally likely outcomes and counting</h2>
+<p>When the sample space is countable, one can assign probabilities to <em>individual outcomes</em> — and for a finite <span class="math inline">\(S\)</span> with symmetry, the natural choice is the <strong>uniform distribution</strong>: every outcome gets probability <span class="math inline">\(1/|S|\)</span>, and <span class="math display">\[P(\text{event}) = \frac{\text{number of outcomes in the event}}{\text{number of outcomes in } S}.\]</span> Why this works: the <span class="math inline">\(|S|\)</span> singleton outcomes are disjoint with union <span class="math inline">\(S\)</span>, so Axiom 3 forces their probabilities to sum to <span class="math inline">\(1\)</span>; “equally likely” makes them all equal, hence <span class="math inline">\(1/|S|\)</span> each.</p>
+<p><strong>eg 5 (two dice).</strong> <span class="math inline">\(S\)</span> = the <span class="math inline">\(36\)</span> ordered pairs — a Cartesian product (§1.6). “Sum is <span class="math inline">\(8\)</span>”: <span class="math inline">\(\{(2,6), (3,5), (4,4), (5,3), (6,2)\}\)</span> — <span class="math inline">\(5\)</span> outcomes. <span class="math inline">\(P = \boxed{5/36}\)</span>.</p>
+<p><strong>eg 6 (urn).</strong> <span class="math inline">\(5\)</span> red and <span class="math inline">\(8\)</span> blue marbles; draw one at random. <span class="math inline">\(S\)</span> has <span class="math inline">\(13\)</span> equally likely outcomes, so <span class="math inline">\(P(\text{red}) = \boxed{5/13}\)</span>.</p>
+<p><strong>eg 7 (mixed-up hats, 3 persons).</strong> Three identical hats get mixed; each person picks one at random. <span class="math inline">\(S\)</span> = the <span class="math inline">\(3! = 6\)</span> orderings, equally likely. “Nobody gets their own hat” = the derangements <span class="math inline">\((2,3,1)\)</span> and <span class="math inline">\((3,1,2)\)</span> — <span class="math inline">\(2\)</span> outcomes. <span class="math inline">\(P = \boxed{2/6 = 1/3}\)</span>.</p>
+<p><strong>eg 8 (lost keys).</strong> An apartment key is lost; security hands over <span class="math inline">\(50\)</span> possible keys, tried one after another until the match. The natural outcome is <em>which</em> key is the matching one: <span class="math inline">\(S = \{1, 2, \dots, 50\}\)</span>. Is the uniform distribution reasonable? Yes — with no information distinguishing the keys, symmetry gives each <span class="math inline">\(P = 1/50\)</span>. (The uniform choice is an <em>assumption</em> justified by symmetry; real information, like remembering the key was bent, would change it.)</p>
+<p><strong>Basically, …</strong> “Picked at random” almost always means “every outcome equally likely”. Then probability is just counting: how many outcomes you like, divided by how many there are. The whole game is setting up the <em>right</em> sample space — the counting after that is mechanical.</p>
+</section>
+<section id="conditional-probability" class="level2">
+<h2 class="anchored" data-anchor-id="conditional-probability">14.9 Conditional probability</h2>
+<p>Many experiments run in <em>steps</em> — toss a coin three times, throw a die twice, one IPL delivery after another. The initial sample space for three tosses is <span class="math inline">\(S = \{HHH, HHT, \dots, TTT\}\)</span> (<span class="math inline">\(8\)</span> outcomes). Now suppose you <em>observe</em> the first toss: event <span class="math inline">\(B\)</span> = “first toss is tails” occurred. For the remaining tosses the relevant sample space shrinks to <span class="math inline">\(B = \{THH, THT, TTH, TTT\}\)</span> — and the events and probabilities must be redefined to account for <span class="math inline">\(B\)</span> having occurred. This is the <strong>conditional probability space given <span class="math inline">\(B\)</span></strong>.</p>
+<p><strong>Def.</strong> For an event <span class="math inline">\(B\)</span> with <span class="math inline">\(P(B) &gt; 0\)</span>, the <strong>conditional probability of <span class="math inline">\(A\)</span> given <span class="math inline">\(B\)</span></strong> = <span class="math display">\[P(A \mid B) = \frac{P(A \cap B)}{P(B)}.\]</span> Equivalently, the <strong>multiplication rule</strong>: <span class="math inline">\(P(A \cap B) = P(B)\,P(A \mid B)\)</span>. Read <span class="math inline">\(P(A \mid B)\)</span> as “the probability of <span class="math inline">\(A\)</span> in the world where <span class="math inline">\(B\)</span> is known to have occurred”.</p>
+<p><strong>Note:</strong> In ordinary language the word “conditional” is often dropped — “the probability both are girls, given at least one is a girl” is stated as if it were unconditional. Watch for the hidden “given”.</p>
+<p><strong>eg 9 (die, given even).</strong> Fair die, <span class="math inline">\(E = \{2, 4, 6\}\)</span>, <span class="math inline">\(P(E) = 1/2\)</span>. Then <span class="math inline">\(P(\{2\} \mid E) = P(\{2\} \cap E)/P(E) = (1/6)/(1/2) = \boxed{1/3}\)</span>; likewise <span class="math inline">\(P(\{4\} \mid E) = P(\{6\} \mid E) = 1/3\)</span>, while <span class="math inline">\(P(\{1\} \mid E) = P(\emptyset)/P(E) = 0\)</span>. Also <span class="math inline">\(P(\{2,5\} \mid E) = 1/3\)</span> and <span class="math inline">\(P(\{2,3,4\} \mid E) = P(\{2,4\})/P(E) = (1/3)/(1/2) = \boxed{2/3}\)</span>.</p>
+<p><strong>eg 10 (family with two children).</strong> <span class="math inline">\(S = \{GG, GB, BG, BB\}\)</span> (birth order), equally likely. <span class="math inline">\(B =\)</span> “at least one girl” <span class="math inline">\(= \{GG, GB, BG\}\)</span>, <span class="math inline">\(P(B) = 3/4\)</span>. <span class="math inline">\(A =\)</span> “both girls” <span class="math inline">\(= \{GG\}\)</span>. Then <span class="math inline">\(P(A \mid B) = (1/4)/(3/4) = \boxed{1/3}\)</span> — <em>not</em> <span class="math inline">\(1/2\)</span>. Conditioning shrinks the denominator, not just the numerator.</p>
+<p><strong>eg 11 (sequential draws: the multiplication chain).</strong> A class of <span class="math inline">\(15\)</span> students: <span class="math inline">\(4\)</span> from State 1, <span class="math inline">\(8\)</span> from State 2, <span class="math inline">\(3\)</span> from State 3. Three different students are chosen one after another. <span class="math inline">\(P(\text{State 1, then State 3, then State 1})\)</span>: <span class="math display">\[\frac{4}{15} \cdot \frac{3}{14} \cdot \frac{3}{13} = \frac{36}{2730} = \boxed{\frac{6}{455} \approx 0.0132}.\]</span> Each factor is a conditional probability given the earlier draws — the multiplication rule applied twice. (Drawing <em>without</em> replacement changes the conditional probabilities at each step; that shrinking denominator is the whole content of “without replacement”.)</p>
+<p><strong>Basically, …</strong> Conditioning = zooming in. Once <span class="math inline">\(B\)</span> is known, throw away every outcome outside <span class="math inline">\(B\)</span>, and rescale the survivors’ probabilities so they still sum to <span class="math inline">\(1\)</span> — the rescaling factor is <span class="math inline">\(1/P(B)\)</span>.</p>
+</section>
+<section id="the-law-of-total-probability" class="level2">
+<h2 class="anchored" data-anchor-id="the-law-of-total-probability">14.10 The law of total probability</h2>
+<p><span class="math inline">\(A\)</span> is the disjoint union of <span class="math inline">\(A \cap B\)</span> and <span class="math inline">\(A \cap B^c\)</span>, so by Axiom 3 and the multiplication rule: <span class="math display">\[\boxed{P(A) = P(A \cap B) + P(A \cap B^c) = P(A \mid B)\,P(B) + P(A \mid B^c)\,P(B^c).}\]</span> More generally, for a partition <span class="math inline">\(B_1, B_2, \dots\)</span> of <span class="math inline">\(S\)</span> (panel (b) of the figure): <span class="math display">\[\boxed{P(A) = \sum_i P(A \cap B_i) = \sum_i P(A \mid B_i)\,P(B_i).}\]</span> The law computes an <em>unconditional</em> probability by cases: weigh each case’s conditional probability by the case’s own probability.</p>
+<p><strong>eg 12 (two urns).</strong> Pick an urn at random, then pick a marble from it. <span class="math inline">\(P(\text{red} \mid \text{urn 1}) = 7/13\)</span>, <span class="math inline">\(P(\text{red} \mid \text{urn 2}) = 5/13\)</span>, <span class="math inline">\(P(\text{urn 1}) = P(\text{urn 2}) = 1/2\)</span>. Then <span class="math display">\[P(\text{red}) = \frac{7}{13}\cdot\frac{1}{2} + \frac{5}{13}\cdot\frac{1}{2} = \frac{12}{26} = \boxed{\frac{6}{13}}.\]</span></p>
+<p><strong>eg 13 (economic model).</strong> If interest rates rise, <span class="math inline">\(60\%\)</span> chance unemployment rises; if not, <span class="math inline">\(30\%\)</span> chance. The economist believes rates rise with <span class="math inline">\(40\%\)</span> chance. <span class="math inline">\(P(\text{unemployment rises}) = 0.6 \cdot 0.4 + 0.3 \cdot 0.6 = 0.24 + 0.18 = \boxed{0.42}\)</span>.</p>
+<p><strong>eg 14 (tricks with coins).</strong> <span class="math inline">\(5\)</span> coins: <span class="math inline">\(2\)</span> double-headed, <span class="math inline">\(1\)</span> double-tailed, <span class="math inline">\(2\)</span> normal. Pick one at random and toss it. Partitioning by which coin was picked: <span class="math display">\[P(\text{head}) = 1\cdot\frac{2}{5} + 0\cdot\frac{1}{5} + \frac{1}{2}\cdot\frac{2}{5} = \frac{2}{5} + \frac{1}{5} = \boxed{\frac{3}{5}}.\]</span></p>
+<p><strong>Basically, …</strong> The law of total probability is “compute by cases”. You don’t know which urn, coin, or scenario you’re in, so you average over all possibilities — each weighted by how likely it is.</p>
+</section>
+<section id="bayes-theorem" class="level2">
+<h2 class="anchored" data-anchor-id="bayes-theorem">14.11 Bayes’ theorem</h2>
+<p>The law of total probability goes from <em>causes to effects</em> (<span class="math inline">\(P(A \mid B)\)</span> known, want <span class="math inline">\(P(A)\)</span>). Bayes’ theorem goes <em>backwards</em> — from an observed effect to the probable cause: <span class="math display">\[\boxed{P(B \mid A) = \frac{P(B)\,P(A \mid B)}{P(A)}}, \qquad P(A) &gt; 0,\; P(B) &gt; 0.\]</span> <em>Proof.</em> <span class="math inline">\(P(A \cap B) = P(B)\,P(A \mid B) = P(A)\,P(B \mid A)\)</span> — the multiplication rule written two ways. Divide by <span class="math inline">\(P(A)\)</span>. ∎</p>
+<p>The denominator <span class="math inline">\(P(A)\)</span> is usually expanded by the law of total probability over <span class="math inline">\(\{B, B^c\}\)</span> or a finer partition — the two results always travel together.</p>
+<p><strong>eg 15 (two urns, reversed).</strong> Same setup as eg 12. A red marble was drawn — which urn did it likely come from? <span class="math display">\[P(\text{urn 1} \mid \text{red}) = \frac{P(\text{urn 1})\,P(\text{red} \mid \text{urn 1})}{P(\text{red})} = \frac{\tfrac{1}{2}\cdot\tfrac{7}{13}}{\tfrac{6}{13}} = \boxed{\frac{7}{12}}.\]</span> Slightly above <span class="math inline">\(1/2\)</span> — urn 1 is redder, so a red draw is weak evidence for urn 1.</p>
+<p><strong>eg 16 (diagnostic test: the flu test, full steps).</strong> <span class="math inline">\(1\%\)</span> of people in a city have Swine Flu. The test detects <span class="math inline">\(95\%\)</span> of true cases (<span class="math inline">\(P(\text{positive} \mid \text{flu}) = 0.95\)</span>), but <span class="math inline">\(2\%\)</span> of healthy people also test positive (<span class="math inline">\(P(\text{positive} \mid \text{no flu}) = 0.02\)</span>). A randomly chosen person tests positive. What is <span class="math inline">\(P(\text{flu} \mid \text{positive})\)</span>?</p>
+<ol type="i">
+<li>Name the events: <span class="math inline">\(B =\)</span> “has Swine Flu”, <span class="math inline">\(A =\)</span> “tests positive”. Given: <span class="math inline">\(P(B) = 0.01\)</span>, <span class="math inline">\(P(B^c) = 0.99\)</span>, <span class="math inline">\(P(A \mid B) = 0.95\)</span>, <span class="math inline">\(P(A \mid B^c) = 0.02\)</span>.</li>
+<li>Denominator by the law of total probability: <span class="math display">\[P(A) = P(A \mid B)P(B) + P(A \mid B^c)P(B^c) = 0.95 \cdot 0.01 + 0.02 \cdot 0.99 = 0.0095 + 0.0198 = 0.0293.\]</span></li>
+<li>Bayes: <span class="math display">\[P(B \mid A) = \frac{0.01 \cdot 0.95}{0.0293} = \frac{0.0095}{0.0293} \approx \boxed{0.3242 = 32.42\%}.\]</span></li>
+</ol>
+<p>The surprise is genuine: a <span class="math inline">\(95\%\)</span>-accurate test, a positive result — and still only about one in three actually has the flu. Why? The disease is rare (<span class="math inline">\(1\%\)</span> base rate): the <span class="math inline">\(2\%\)</span> false-positive rate, applied to the <span class="math inline">\(99\%\)</span> healthy majority, produces <em>more</em> positives (<span class="math inline">\(0.0198\)</span>) than the true cases do (<span class="math inline">\(0.0095\)</span>). <strong>Base rates dominate.</strong> This is the single most important intuition Bayes’ theorem teaches — and it recurs in medical testing, spam filters (Chapter 30), and Bayesian inference (Chapter 20).</p>
+<p><strong>eg 17 (die, then coins).</strong> Roll a fair die, then toss as many fair coins as the number shown. Given <span class="math inline">\(5\)</span> heads were obtained, what is <span class="math inline">\(P(\text{die showed } 5)\)</span>?</p>
+<ol type="i">
+<li>Let <span class="math inline">\(D =\)</span> “die showed 5”, <span class="math inline">\(F =\)</span> “5 heads obtained”. <span class="math inline">\(P(D) = 1/6\)</span>. Given the die shows <span class="math inline">\(5\)</span>: <span class="math inline">\(P(F \mid D) = \binom{5}{5}(1/2)^5 = 1/32\)</span>.</li>
+<li>Denominator: partition over die faces <span class="math inline">\(k = 1, \dots, 6\)</span>. <span class="math inline">\(P(F \mid k) = \binom{k}{5}(1/2)^k\)</span> for <span class="math inline">\(k \ge 5\)</span>, and <span class="math inline">\(0\)</span> otherwise: <span class="math display">\[P(F) = \frac{1}{6}\left[\binom{5}{5}\left(\tfrac{1}{2}\right)^5 + \binom{6}{5}\left(\tfrac{1}{2}\right)^6\right] = \frac{1}{6}\left[\frac{1}{32} + \frac{6}{64}\right] = \frac{1}{6}\cdot\frac{4}{32} = \frac{1}{48}.\]</span></li>
+<li>Bayes: <span class="math inline">\(P(D \mid F) = \dfrac{(1/32)(1/6)}{1/48} = \dfrac{1/192}{1/48} = \boxed{\dfrac{1}{4}}\)</span>.</li>
+</ol>
+<p><strong>Basically, …</strong> Bayes’ theorem flips a conditional around: you know how likely the evidence is <em>under each hypothesis</em> (the easy direction — the test’s specs), and you want how likely <em>each hypothesis is, given the evidence</em> (what you actually care about). The price of the flip is the denominator — the total probability of the evidence, computed by cases.</p>
+</section>
+<section id="independence" class="level2">
+<h2 class="anchored" data-anchor-id="independence">14.12 Independence</h2>
+<p>Motivation: if <span class="math inline">\(P(B) &gt; 0\)</span> and <span class="math inline">\(P(A \mid B) = P(A)\)</span>, then learning that <span class="math inline">\(B\)</span> occurred tells you <em>nothing</em> about <span class="math inline">\(A\)</span> — the conditional world agrees with the original on <span class="math inline">\(A\)</span>.</p>
+<p><strong>Def.</strong> Events <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> are <strong>independent</strong> if <span class="math display">\[\boxed{P(A \cap B) = P(A)\,P(B).}\]</span></p>
+<p>Two rules of thumb from the lectures — keep them on different shelves: - Independent <span class="math inline">\(E_1, E_2\)</span>: <strong>multiply</strong> for “and”: <span class="math inline">\(P(E_1 \cap E_2) = P(E_1)P(E_2)\)</span>. - Disjoint <span class="math inline">\(A, B\)</span>: <strong>add</strong> for “or”: <span class="math inline">\(P(A \cup B) = P(A) + P(B)\)</span>.</p>
+<p><strong>eg 18 (coin, three tosses).</strong> <span class="math inline">\(S\)</span> = the <span class="math inline">\(8\)</span> equally likely outcomes. <span class="math inline">\(A =\)</span> “first toss heads” <span class="math inline">\(= \{HHH, HHT, HTH, HTT\}\)</span>, <span class="math inline">\(P(A) = 1/2\)</span>; <span class="math inline">\(B =\)</span> “second toss heads” <span class="math inline">\(= \{HHH, HHT, THH, THT\}\)</span>, <span class="math inline">\(P(B) = 1/2\)</span>; <span class="math inline">\(A \cap B = \{HHH, HHT\}\)</span>, <span class="math inline">\(P = 1/4 = \tfrac{1}{2}\cdot\tfrac{1}{2}\)</span> — independent, as intuition demands. (<span class="math inline">\(A\)</span> and <span class="math inline">\(B^c\)</span> are independent too: <span class="math inline">\(A \cap B^c = \{HTH, HTT\}\)</span>, <span class="math inline">\(P = 1/4\)</span>. No accident — see the theorem below.)</p>
+<p><strong>eg 19 (die: even and multiple of 3).</strong> <span class="math inline">\(A = \{2, 4, 6\}\)</span>, <span class="math inline">\(P(A) = 1/2\)</span>; <span class="math inline">\(B = \{3, 6\}\)</span>, <span class="math inline">\(P(B) = 1/3\)</span>; <span class="math inline">\(A \cap B = \{6\}\)</span>, <span class="math inline">\(P = 1/6 = \tfrac{1}{2}\cdot\tfrac{1}{3}\)</span> — <strong>independent</strong>. Two typical confusions, answered: (1) yes, they have an intersection — independence is about <em>probabilities multiplying</em>, not about sets avoiding each other; (2) yes, with a single throw of one die — the two events are two <em>questions</em> about the same outcome, and the questions can be independent of each other.</p>
+<p><strong>eg 20 (card: spade and king).</strong> <span class="math inline">\(P(\text{spade}) = 13/52 = 1/4\)</span>, <span class="math inline">\(P(\text{king}) = 4/52 = 1/13\)</span>, <span class="math inline">\(P(\text{spade-king}) = 1/52 = \tfrac{1}{4}\cdot\tfrac{1}{13}\)</span> — independent, despite there being exactly one spade-king card. Same lesson as eg 19.</p>
+<p><strong>Disjoint <span class="math inline">\(\ne\)</span> independent — the crucial contrast.</strong> Die: <span class="math inline">\(A =\)</span> even, <span class="math inline">\(B =\)</span> odd. <span class="math inline">\(A \cap B = \emptyset\)</span>, so <span class="math inline">\(P(A \cap B) = 0 \ne \tfrac{1}{2}\cdot\tfrac{1}{2}\)</span>. Disjoint events of positive probability are <em>never</em> independent: if <span class="math inline">\(B\)</span> occurs, <span class="math inline">\(A\)</span> definitely did not — <span class="math inline">\(B\)</span>’s occurrence maximally informs <span class="math inline">\(A\)</span>. (Fine print: this needs <span class="math inline">\(P(A), P(B) &gt; 0\)</span>. The empty set is disjoint from everything <em>and</em> independent of everything, since <span class="math inline">\(P(\emptyset \cap B) = 0 = 0 \cdot P(B)\)</span>. A degenerate case worth knowing, not worth worrying about.)</p>
+<p><strong>Theorem (independence survives complementing).</strong> <span class="math inline">\(A, B\)</span> independent <span class="math inline">\(\Rightarrow\)</span> <span class="math inline">\(A\)</span> and <span class="math inline">\(B^c\)</span> independent; applying twice, <span class="math inline">\(A^c\)</span> and <span class="math inline">\(B^c\)</span> independent. <em>Proof.</em> <span class="math inline">\(P(A \cap B^c) = P(A \setminus B) = P(A) - P(A \cap B)\)</span> (by §14.7(iv)) <span class="math inline">\(= P(A) - P(A)P(B) = P(A)(1 - P(B)) = P(A)P(B^c)\)</span>. ∎ Intuition: if <span class="math inline">\(B\)</span> tells you nothing about <span class="math inline">\(A\)</span>, then “not <span class="math inline">\(B\)</span>” tells you nothing either.</p>
+<p><strong>Mutual independence (stronger than pairwise).</strong> Three events are <strong>mutually independent</strong> if every sub-collection multiplies: <span class="math display">\[P(A \cap B) = P(A)P(B),\; P(A \cap C) = P(A)P(C),\; P(B \cap C) = P(B)P(C),\; \textbf{and}\; P(A \cap B \cap C) = P(A)P(B)P(C).\]</span> The last condition is <em>not</em> redundant. <strong>eg 21:</strong> toss a fair coin twice, <span class="math inline">\(S = \{HH, HT, TH, TT\}\)</span>. <span class="math inline">\(A = \{HH, TT\}\)</span> (“tosses agree”), <span class="math inline">\(B = \{HH, HT\}\)</span> (“first is heads”), <span class="math inline">\(C = \{HH, TH\}\)</span> (“second is heads”). <span class="math inline">\(P(A) = P(B) = P(C) = 1/2\)</span>; <span class="math inline">\(A \cap B = A \cap C = B \cap C = \{HH\}\)</span>, each with <span class="math inline">\(P = 1/4\)</span> — pairwise independent. But <span class="math inline">\(A \cap B \cap C = \{HH\}\)</span>, <span class="math inline">\(P = 1/4 \ne 1/8 = P(A)P(B)P(C)\)</span>. Pairwise independent, <strong>not</strong> mutually independent.</p>
+<p>For <span class="math inline">\(n\)</span> events: mutually independent means the intersection of <em>any</em> sub-collection has probability equal to the product of the probabilities — “almost <span class="math inline">\(2^n\)</span> constraints”, as the lectures put it. And the complement theorem extends: any sub-collection, with or without complementing, stays independent.</p>
+<p><strong>Basically, …</strong> Independence = “knowing one tells you nothing about the other”, made precise as “the ‘and’ probability is the product”. Disjoint is about <em>sets</em> (no overlap); independence is about <em>information</em> (no influence) — they are nearly opposites. And “pairwise independent” is weaker than “mutually independent”: always check the full intersection too.</p>
+</section>
+<section id="repeated-independent-trials" class="level2">
+<h2 class="anchored" data-anchor-id="repeated-independent-trials">14.13 Repeated independent trials</h2>
+<p>Repeat the same experiment <span class="math inline">\(n\)</span> times independently — toss a coin <span class="math inline">\(n\)</span> times, test <span class="math inline">\(n\)</span> people for a disease, send <span class="math inline">\(n\)</span> bits. Call one trial a success with probability <span class="math inline">\(p\)</span> (failure <span class="math inline">\(1 - p\)</span>); write <span class="math inline">\(1\)</span> for success, <span class="math inline">\(0\)</span> for failure.</p>
+<ol type="i">
+<li>Sample space: all <span class="math inline">\(2^n\)</span> binary strings; e.g.&nbsp;<span class="math inline">\(n = 3\)</span>: <span class="math inline">\(S = \{000, 001, 010, 011, 100, 101, 110, 111\}\)</span>.</li>
+<li>Probability of one <em>specific</em> sequence — multiply by independence. For <span class="math inline">\(n = 3\)</span>: <span class="math inline">\(P(000) = (1-p)^3\)</span>, <span class="math inline">\(P(101) = p(1-p)p = p^2(1-p)\)</span>. In general <span class="math inline">\(P(b_1\dots b_n) = p^{w}(1-p)^{\,n-w}\)</span> where <span class="math inline">\(w\)</span> = the number of <span class="math inline">\(1\)</span>s. Only the <em>count</em> of successes matters, not their positions.</li>
+<li>Fair coin, <span class="math inline">\(n = 5\)</span> (<span class="math inline">\(p = 1/2\)</span>): all <span class="math inline">\(32\)</span> sequences equally likely, each <span class="math inline">\(1/32\)</span>. <span class="math inline">\(P(0 \text{ tails}) = P(HHHHH) = 1/32\)</span>. <span class="math inline">\(P(1 \text{ tail}) = P(\{THHHH, HTHHH, HHTHH, HHHTH, HHHTT\}) = 5/32\)</span> — the five sequences are disjoint, so add (Axiom 3). <span class="math inline">\(P(\text{at least } 4 \text{ tails}) = P(4 \text{ tails}) + P(5 \text{ tails}) = 5/32 + 1/32 = 6/32\)</span>.</li>
+<li>Biased coin, <span class="math inline">\(n = 5\)</span>, <span class="math inline">\(P(H) = 1/3\)</span>, <span class="math inline">\(P(T) = 2/3\)</span>: <span class="math inline">\(P(HHHHH) = (1/3)^5\)</span>, <span class="math inline">\(P(TTTTT) = (2/3)^5\)</span>, and <span class="math inline">\(P(1 \text{ tail}) = 5 \cdot \tfrac{2}{3}\left(\tfrac{1}{3}\right)^4\)</span> — five disjoint sequences, each with probability <span class="math inline">\(\tfrac{2}{3}\left(\tfrac{1}{3}\right)^4\)</span>.</li>
+</ol>
+<p><strong>Note:</strong> Counting “how many sequences have exactly <span class="math inline">\(k\)</span> successes” in general, and naming the resulting distributions (Bernoulli, Binomial, Geometric), is Chapter 15’s job — this section only sets up the <em>machinery</em> (product sample spaces plus independence) that makes those distributions tick.</p>
+<p><strong>Basically, …</strong> <span class="math inline">\(n\)</span> independent trials = <span class="math inline">\(2^n\)</span> sequences, and each sequence’s probability is just the product of its trials. Add up the sequences you like (they’re disjoint). That is the entire engine behind every “repeated experiment” calculation.</p>
+</section>
+<section id="why-this-matters-the-language-every-later-chapter-speaks" class="level2">
+<h2 class="anchored" data-anchor-id="why-this-matters-the-language-every-later-chapter-speaks">14.14 Why this matters: the language every later chapter speaks</h2>
+<p>This chapter built the vocabulary — experiment, sample space, event, probability, conditioning, independence, Bayes — that the rest of Part II (and the ML chapters) speak fluently:</p>
+<ol type="i">
+<li><strong>Bayes’ theorem</strong> is the engine of <em>Bayesian inference</em>: Chapter 20’s MAP estimation is Bayes’ theorem with the parameters as the hypothesis; Chapter 30’s naive Bayes classifier is Bayes’ theorem with a strong independence assumption doing the heavy lifting.</li>
+<li><strong>Independence</strong> is the “iid” in “iid data” — the assumption, used in nearly every ML chapter, that datapoints are independent and identically distributed. §14.13’s repeated trials are the prototype.</li>
+<li><strong>The law of total probability</strong> becomes <em>marginalization</em>: summing (or integrating) out the variables you don’t care about — the central move of Chapters 17–18 on joint distributions.</li>
+<li><strong>Conditional probability</strong> is how ML models express uncertainty: <span class="math inline">\(P(\text{label} \mid \text{features})\)</span> is a conditional distribution, and Chapters 15–19 develop the random-variable machinery to work with it.</li>
+</ol>
+<p><strong>Part II, opening shot.</strong> Part I assumed the world hands you a function to optimize. The real world hands you <em>data</em> — noisy, partial, random. Probability is the mathematics of reasoning under that randomness, and statistics is its application: collect data, use probabilistic analysis, make inferences. The next chapter introduces the workhorse object of the whole enterprise: the <strong>random variable</strong> (Chapter 15).</p>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li>(Restaurant hiring) Four applicants: David and Megha from Delhi, Rajesh and Veronica from Mumbai. One is hired at random as waiter, another from the remaining as cashier. (a) Write the sample space (<span class="math inline">\(12\)</span> ordered pairs). (b) Write as subsets: <span class="math inline">\(A =\)</span> “cashier is from Delhi”, <span class="math inline">\(B =\)</span> “exactly one position is filled by a Delhiite”, <span class="math inline">\(C =\)</span> “neither position is filled by a Delhiite”. (c) Under the uniform distribution, find <span class="math inline">\(P(A)\)</span>, <span class="math inline">\(P(B)\)</span>, <span class="math inline">\(P(C)\)</span>.</li>
+<li>(Mixed-up hats, 5 persons) Five identical hats get mixed; each person picks one at random. <span class="math inline">\(A =\)</span> “no person gets their own hat”, <span class="math inline">\(B =\)</span> “every person gets their own hat”, <span class="math inline">\(C =\)</span> “at least one person does not get their own hat”, <span class="math inline">\(D =\)</span> “at least one person gets their own hat”. (a) What are <span class="math inline">\(A^c\)</span> and <span class="math inline">\(B^c\)</span>? (b) Are <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> disjoint? (c) What is <span class="math inline">\(A \cap B^c\)</span>?</li>
+<li>(IPL over) One over, six deliveries, each worth <span class="math inline">\(0, 1, 2, 3, 4\)</span> or <span class="math inline">\(6\)</span> runs. <span class="math inline">\(A =\)</span> “no 4s in the over”, <span class="math inline">\(B =\)</span> “no 6s in the over”, <span class="math inline">\(C =\)</span> “exactly <span class="math inline">\(20\)</span> runs scored”. (a) Describe <span class="math inline">\(A \cup B\)</span> and <span class="math inline">\(A \cap B\)</span> in words. (b) Can <span class="math inline">\(A \cap B \cap C\)</span> occur? Justify. (c) Write <span class="math inline">\((A \cup B)^c\)</span> and <span class="math inline">\((A \cap B)^c\)</span> in words, using De Morgan’s laws.</li>
+<li>(Fishing town) <span class="math inline">\(P(\text{catch} &gt; 400\text{ Kg}) = 0.35\)</span>, <span class="math inline">\(P(\text{catch} &gt; 500\text{ Kg}) = 0.10\)</span>. Find <span class="math inline">\(P(400 &lt; \text{catch} \le 500\text{ Kg})\)</span>, naming the property used.</li>
+<li>(Weather forecast) <span class="math inline">\(P(\text{rain}) = 0.6\)</span>, <span class="math inline">\(P(\text{max temp above } 30^\circ) = 0.7\)</span>, <span class="math inline">\(P(\text{both}) = 0.4\)</span>. Find <span class="math inline">\(P(\text{no rain and temp below } 30^\circ)\)</span>.</li>
+<li>(Independence and complements) Prove: if <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> are independent, then <span class="math inline">\(A\)</span> and <span class="math inline">\(B^c\)</span> are independent, and hence <span class="math inline">\(A^c\)</span> and <span class="math inline">\(B^c\)</span> are independent.</li>
+<li>(Two urns) <span class="math inline">\(P(\text{red} \mid \text{urn 1}) = 7/13\)</span>, <span class="math inline">\(P(\text{red} \mid \text{urn 2}) = 5/13\)</span>, and the urn is picked at random. (a) Find <span class="math inline">\(P(\text{red})\)</span>. (b) Find <span class="math inline">\(P(\text{urn 1} \mid \text{red})\)</span>. (c) Find <span class="math inline">\(P(\text{urn 2} \mid \text{blue})\)</span>.</li>
+<li>(Economic model) <span class="math inline">\(P(\text{unemployment rises} \mid \text{rates rise}) = 0.6\)</span>, <span class="math inline">\(P(\text{unemployment rises} \mid \text{rates don't rise}) = 0.3\)</span>, <span class="math inline">\(P(\text{rates rise}) = 0.4\)</span>. Find <span class="math inline">\(P(\text{unemployment rises})\)</span>.</li>
+<li>(Tricks with coins) <span class="math inline">\(2\)</span> double-headed, <span class="math inline">\(1\)</span> double-tailed, <span class="math inline">\(2\)</span> normal coins; one is picked at random and tossed. Find <span class="math inline">\(P(\text{head})\)</span>.</li>
+<li>(MCQ) A student knows the answer to a 4-choice MCQ with probability <span class="math inline">\(3/4\)</span>; otherwise she guesses uniformly at random. Given she answered correctly, find <span class="math inline">\(P(\text{she knew the answer})\)</span>.</li>
+<li>(Die, then coins) Roll a fair die, then toss as many fair coins as the number shown. Given <span class="math inline">\(5\)</span> heads were obtained, find <span class="math inline">\(P(\text{die showed } 5)\)</span>.</li>
+<li>(Pairwise vs mutual) A fair coin is tossed twice; <span class="math inline">\(A = \{HH, TT\}\)</span>, <span class="math inline">\(B = \{HH, HT\}\)</span>, <span class="math inline">\(C = \{HH, TH\}\)</span>. (a) Verify pairwise independence. (b) Show the three are not mutually independent.</li>
+<li>(Basketball free throws) Player 1 (a <span class="math inline">\(40\%\)</span> free-throw shooter) and Player 2 (a <span class="math inline">\(70\%\)</span> shooter) alternate throws, Player 1 first, until the first basket is scored; throws are independent. (a) Find <span class="math inline">\(P(\text{Player 1 wins before the 3rd round})\)</span>. (b) Find <span class="math inline">\(P(\text{Player 1 eventually wins})\)</span>.</li>
+</ol>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — Restaurant hiring. Write <span class="math inline">\(D\)</span> = David, <span class="math inline">\(M\)</span> = Megha (Delhi); <span class="math inline">\(R\)</span> = Rajesh, <span class="math inline">\(V\)</span> = Veronica (Mumbai). Ordered pairs are (waiter, cashier).
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>1.</strong> Restaurant hiring. Write <span class="math inline">\(D\)</span> = David, <span class="math inline">\(M\)</span> = Megha (Delhi); <span class="math inline">\(R\)</span> = Rajesh, <span class="math inline">\(V\)</span> = Veronica (Mumbai). Ordered pairs are (waiter, cashier).</p>
+<ol type="a">
+<li><span class="math inline">\(S = \{(D,M), (D,R), (D,V), (M,D), (M,R), (M,V), (R,D), (R,M), (R,V), (V,D), (V,M), (V,R)\}\)</span> — <span class="math inline">\(4 \cdot 3 = 12\)</span> outcomes, equally likely.</li>
+<li><span class="math inline">\(A =\)</span> cashier <span class="math inline">\(\in \{D, M\}\)</span>: <span class="math inline">\(\{(D,M), (M,D), (R,D), (R,M), (V,D), (V,M)\}\)</span> — <span class="math inline">\(6\)</span> outcomes. <span class="math inline">\(B =\)</span> exactly one of the two positions is Delhi: waiter Delhi &amp; cashier Mumbai <span class="math inline">\(\{(D,R), (D,V), (M,R), (M,V)\}\)</span> plus waiter Mumbai &amp; cashier Delhi <span class="math inline">\(\{(R,D), (R,M), (V,D), (V,M)\}\)</span> — <span class="math inline">\(8\)</span> outcomes. <span class="math inline">\(C =\)</span> neither is Delhi: <span class="math inline">\(\{(R,V), (V,R)\}\)</span> — <span class="math inline">\(2\)</span> outcomes.</li>
+<li><span class="math inline">\(P(A) = 6/12 = 1/2\)</span>; <span class="math inline">\(P(B) = 8/12 = 2/3\)</span>; <span class="math inline">\(P(C) = 2/12 = 1/6\)</span>.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — Mixed-up hats, 5 persons.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>2.</strong> Mixed-up hats, 5 persons.</p>
+<ol type="a">
+<li><span class="math inline">\(A^c =\)</span> “at least one person gets their own hat” <span class="math inline">\(= D\)</span>. <span class="math inline">\(B^c =\)</span> “at least one person does not get their own hat” <span class="math inline">\(= C\)</span>.</li>
+<li>Yes, disjoint. <span class="math inline">\(B\)</span> is the single identity ordering (everyone keeps their own hat), which is not a derangement, so <span class="math inline">\(A \cap B = \emptyset\)</span>.</li>
+<li>Since <span class="math inline">\(A \cap B = \emptyset\)</span>, <span class="math inline">\(A \subseteq B^c\)</span>, so <span class="math inline">\(A \cap B^c = A\)</span>.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — IPL over.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>3.</strong> IPL over.</p>
+<ol type="a">
+<li><span class="math inline">\(A \cup B\)</span>: “the over had no 4s or no 6s” (at least one of the two holds). <span class="math inline">\(A \cap B\)</span>: “the over had no 4s and no 6s”.</li>
+<li>No.&nbsp;Under <span class="math inline">\(A \cap B\)</span>, every delivery scores at most <span class="math inline">\(3\)</span> runs, so the over total is at most <span class="math inline">\(6 \cdot 3 = 18 &lt; 20\)</span>; <span class="math inline">\(C\)</span> requires exactly <span class="math inline">\(20\)</span>. Hence <span class="math inline">\(A \cap B \cap C = \emptyset\)</span>.</li>
+<li><span class="math inline">\((A \cup B)^c = A^c \cap B^c\)</span>: “the over had at least one 4 <em>and</em> at least one 6”. <span class="math inline">\((A \cap B)^c = A^c \cup B^c\)</span>: “the over had at least one 4 <em>or</em> at least one 6”.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — Let <span class="math inline">\(F =\)</span> “catch <span class="math inline">\(&gt; 400\)</span>”, <span class="math inline">\(E =\)</span> “catch <span class="math inline">\(&gt; 500\)</span>”. Then <span class="math inline">\(E \subseteq F\)</span>, and “between 400 and 500 Kg” is <span class="math inline">\(F \setminus E\)</span>. By the subset property (§14.7(iii)): <span class="math inline">\(P(F \setminus E) = P(F) - P(E) = 0.35 - 0.10 = \boxed{0.25}\)</span> (<span class="math inline">\(25\%\)</span>).
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>4.</strong> Let <span class="math inline">\(F =\)</span> “catch <span class="math inline">\(&gt; 400\)</span>”, <span class="math inline">\(E =\)</span> “catch <span class="math inline">\(&gt; 500\)</span>”. Then <span class="math inline">\(E \subseteq F\)</span>, and “between 400 and 500 Kg” is <span class="math inline">\(F \setminus E\)</span>. By the subset property (§14.7(iii)): <span class="math inline">\(P(F \setminus E) = P(F) - P(E) = 0.35 - 0.10 = \boxed{0.25}\)</span> (<span class="math inline">\(25\%\)</span>).</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — Let <span class="math inline">\(R =\)</span> rain, <span class="math inline">\(H =\)</span> temp above <span class="math inline">\(30^\circ\)</span>. Inclusion–exclusion: <span class="math inline">\(P(R \cup H) = 0.6 + 0.7 - 0.4 = 0.9\)</span>. “No rain and temp at most <span class="math inline">\(30^\circ\)</span>” <span class="math inline">\(= (R \cup H)^c\)</span>, so by the complement property: <span class="math inline">\(P = 1 - 0.9 = \boxed{0.10}\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>5.</strong> Let <span class="math inline">\(R =\)</span> rain, <span class="math inline">\(H =\)</span> temp above <span class="math inline">\(30^\circ\)</span>. Inclusion–exclusion: <span class="math inline">\(P(R \cup H) = 0.6 + 0.7 - 0.4 = 0.9\)</span>. “No rain and temp at most <span class="math inline">\(30^\circ\)</span>” <span class="math inline">\(= (R \cup H)^c\)</span>, so by the complement property: <span class="math inline">\(P = 1 - 0.9 = \boxed{0.10}\)</span>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — Given <span class="math inline">\(P(A \cap B) = P(A)P(B)\)</span>. Then
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>6.</strong> Given <span class="math inline">\(P(A \cap B) = P(A)P(B)\)</span>. Then <span class="math display">\[P(A \cap B^c) = P(A \setminus B) = P(A) - P(A \cap B) = P(A) - P(A)P(B) = P(A)(1 - P(B)) = P(A)P(B^c),\]</span> using §14.7(iv) for <span class="math inline">\(P(A \setminus B) = P(A) - P(A \cap B)\)</span> and §14.7(ii) for <span class="math inline">\(P(B^c) = 1 - P(B)\)</span>. So <span class="math inline">\(A\)</span> and <span class="math inline">\(B^c\)</span> are independent. Applying the same argument to the independent pair <span class="math inline">\((A, B^c)\)</span>: <span class="math inline">\(A^c\)</span> and <span class="math inline">\((B^c)^c = B\)</span> are independent; applying once more to <span class="math inline">\((A^c, B)\)</span>: <span class="math inline">\(A^c\)</span> and <span class="math inline">\(B^c\)</span> are independent. ∎</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — Two urns, <span class="math inline">\(P(\text{urn 1}) = P(\text{urn 2}) = 1/2\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>7.</strong> Two urns, <span class="math inline">\(P(\text{urn 1}) = P(\text{urn 2}) = 1/2\)</span>.</p>
+<ol type="a">
+<li>Law of total probability: <span class="math inline">\(P(\text{red}) = P(\text{red} \mid \text{urn 1})P(\text{urn 1}) + P(\text{red} \mid \text{urn 2})P(\text{urn 2}) = \tfrac{7}{13}\cdot\tfrac{1}{2} + \tfrac{5}{13}\cdot\tfrac{1}{2} = \tfrac{12}{26} = \boxed{6/13}\)</span>.</li>
+<li>Bayes: <span class="math inline">\(P(\text{urn 1} \mid \text{red}) = \dfrac{P(\text{urn 1})P(\text{red} \mid \text{urn 1})}{P(\text{red})} = \dfrac{\tfrac{1}{2}\cdot\tfrac{7}{13}}{\tfrac{6}{13}} = \boxed{7/12}\)</span>.</li>
+<li><span class="math inline">\(P(\text{blue} \mid \text{urn 1}) = 6/13\)</span>, <span class="math inline">\(P(\text{blue} \mid \text{urn 2}) = 8/13\)</span>. <span class="math inline">\(P(\text{blue}) = \tfrac{6}{13}\cdot\tfrac{1}{2} + \tfrac{8}{13}\cdot\tfrac{1}{2} = \tfrac{14}{26} = 7/13\)</span>. Bayes: <span class="math inline">\(P(\text{urn 2} \mid \text{blue}) = \dfrac{\tfrac{1}{2}\cdot\tfrac{8}{13}}{\tfrac{7}{13}} = \boxed{4/7}\)</span>. (Sanity: <span class="math inline">\(P(\text{urn 1} \mid \text{blue}) = 3/7\)</span>, and <span class="math inline">\(3/7 + 4/7 = 1\)</span>. ✓)</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 8 — Let <span class="math inline">\(U =\)</span> unemployment rises, <span class="math inline">\(R =\)</span> rates rise. Law of total probability: <span class="math inline">\(P(U) = P(U \mid R)P(R) + P(U \mid R^c)P(R^c) = 0.6 \cdot 0.4 + 0.3 \cdot 0.6 = 0.24 + 0.18 = \boxed{0.42}\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>8.</strong> Let <span class="math inline">\(U =\)</span> unemployment rises, <span class="math inline">\(R =\)</span> rates rise. Law of total probability: <span class="math inline">\(P(U) = P(U \mid R)P(R) + P(U \mid R^c)P(R^c) = 0.6 \cdot 0.4 + 0.3 \cdot 0.6 = 0.24 + 0.18 = \boxed{0.42}\)</span>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 9 — Partition by coin type: <span class="math inline">\(P(\text{double-headed}) = 2/5\)</span>, <span class="math inline">\(P(\text{double-tailed}) = 1/5\)</span>, <span class="math inline">\(P(\text{normal}) = 2/5\)</span>. <span class="math inline">\(P(\text{head}) = 1\cdot\tfrac{2}{5} + 0\cdot\tfrac{1}{5} + \tfrac{1}{2}\cdot\tfrac{2}{5} = \tfrac{2}{5} + \tfrac{1}{5} = \boxed{3/5}\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>9.</strong> Partition by coin type: <span class="math inline">\(P(\text{double-headed}) = 2/5\)</span>, <span class="math inline">\(P(\text{double-tailed}) = 1/5\)</span>, <span class="math inline">\(P(\text{normal}) = 2/5\)</span>. <span class="math inline">\(P(\text{head}) = 1\cdot\tfrac{2}{5} + 0\cdot\tfrac{1}{5} + \tfrac{1}{2}\cdot\tfrac{2}{5} = \tfrac{2}{5} + \tfrac{1}{5} = \boxed{3/5}\)</span>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 10 — Let <span class="math inline">\(K =\)</span> knows the answer, <span class="math inline">\(C =\)</span> answered correctly. <span class="math inline">\(P(K) = 3/4\)</span>, <span class="math inline">\(P(K^c) = 1/4\)</span>, <span class="math inline">\(P(C \mid K) = 1\)</span>, <span class="math inline">\(P(C \mid K^c) = 1/4\)</span>. Denominator: <span class="math inline">\(P(C) = 1\cdot\tfrac{3}{4} + \tfrac{1}{4}\cdot\tfrac{1}{4} = \tfrac{3}{4} + \tfrac{1}{16} = \tfrac{13}{16}\)</span>. Bayes: <span class="math inline">\(P(K \mid C) = \dfrac{(3/4)\cdot 1}{13/16} = \dfrac{3}{4}\cdot\dfrac{16}{13} = \boxed{12/13 \approx 0.923}\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>10.</strong> Let <span class="math inline">\(K =\)</span> knows the answer, <span class="math inline">\(C =\)</span> answered correctly. <span class="math inline">\(P(K) = 3/4\)</span>, <span class="math inline">\(P(K^c) = 1/4\)</span>, <span class="math inline">\(P(C \mid K) = 1\)</span>, <span class="math inline">\(P(C \mid K^c) = 1/4\)</span>. Denominator: <span class="math inline">\(P(C) = 1\cdot\tfrac{3}{4} + \tfrac{1}{4}\cdot\tfrac{1}{4} = \tfrac{3}{4} + \tfrac{1}{16} = \tfrac{13}{16}\)</span>. Bayes: <span class="math inline">\(P(K \mid C) = \dfrac{(3/4)\cdot 1}{13/16} = \dfrac{3}{4}\cdot\dfrac{16}{13} = \boxed{12/13 \approx 0.923}\)</span>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 11 — Let <span class="math inline">\(D =\)</span> “die showed 5”, <span class="math inline">\(F =\)</span> “5 heads obtained”. <span class="math inline">\(P(D) = 1/6\)</span>, <span class="math inline">\(P(F \mid D) = \binom{5}{5}(1/2)^5 = 1/32\)</span>. Partition over die faces <span class="math inline">\(k = 1,\dots,6\)</span>: <span class="math inline">\(P(F \mid k) = \binom{k}{5}(1/2)^k\)</span> for <span class="math inline">\(k \ge 5\)</span>, else <span class="math inline">\(0\)</span>. So <span class="math inline">\(P(F) = \tfrac{1}{6}\left[\tbinom{5}{5}(1/2)^5 + \tbinom{6}{5}(1/2)^6\right] = \tfrac{1}{6}\left[\tfrac{1}{32} + \tfrac{6}{64}\right] = \tfrac{1}{6}\cdot\tfrac{4}{32} = \tfrac{1}{48}\)</span>. Bayes: <span class="math inline">\(P(D \mid F) = \dfrac{(1/32)(1/6)}{1/48} = \dfrac{1/192}{1/48} = \boxed{1/4}\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-11" class="callout-11-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>11.</strong> Let <span class="math inline">\(D =\)</span> “die showed 5”, <span class="math inline">\(F =\)</span> “5 heads obtained”. <span class="math inline">\(P(D) = 1/6\)</span>, <span class="math inline">\(P(F \mid D) = \binom{5}{5}(1/2)^5 = 1/32\)</span>. Partition over die faces <span class="math inline">\(k = 1,\dots,6\)</span>: <span class="math inline">\(P(F \mid k) = \binom{k}{5}(1/2)^k\)</span> for <span class="math inline">\(k \ge 5\)</span>, else <span class="math inline">\(0\)</span>. So <span class="math inline">\(P(F) = \tfrac{1}{6}\left[\tbinom{5}{5}(1/2)^5 + \tbinom{6}{5}(1/2)^6\right] = \tfrac{1}{6}\left[\tfrac{1}{32} + \tfrac{6}{64}\right] = \tfrac{1}{6}\cdot\tfrac{4}{32} = \tfrac{1}{48}\)</span>. Bayes: <span class="math inline">\(P(D \mid F) = \dfrac{(1/32)(1/6)}{1/48} = \dfrac{1/192}{1/48} = \boxed{1/4}\)</span>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 12 — <span class="math inline">\(S = \{HH, HT, TH, TT\}\)</span>, uniform, so each singleton has <span class="math inline">\(P = 1/4\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-12" class="callout-12-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>12.</strong> <span class="math inline">\(S = \{HH, HT, TH, TT\}\)</span>, uniform, so each singleton has <span class="math inline">\(P = 1/4\)</span>.</p>
+<ol type="a">
+<li><span class="math inline">\(P(A) = P(\{HH, TT\}) = 1/2\)</span>, <span class="math inline">\(P(B) = P(\{HH, HT\}) = 1/2\)</span>, <span class="math inline">\(P(C) = P(\{HH, TH\}) = 1/2\)</span>. <span class="math inline">\(A \cap B = \{HH\}\)</span>, <span class="math inline">\(P = 1/4 = \tfrac{1}{2}\cdot\tfrac{1}{2}\)</span> ✓; <span class="math inline">\(A \cap C = \{HH\}\)</span>, <span class="math inline">\(P = 1/4\)</span> ✓; <span class="math inline">\(B \cap C = \{HH\}\)</span>, <span class="math inline">\(P = 1/4\)</span> ✓. All three pairs independent.</li>
+<li><span class="math inline">\(A \cap B \cap C = \{HH\}\)</span>, <span class="math inline">\(P = 1/4 \ne 1/8 = P(A)P(B)P(C)\)</span>. The triple-product condition fails, so <span class="math inline">\(A, B, C\)</span> are pairwise but not mutually independent.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-13-contents" aria-controls="callout-13" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 13 — Let <span class="math inline">\(q_1 = 0.4\)</span> (Player 1 scores), <span class="math inline">\(q_2 = 0.7\)</span> (Player 2 scores); misses <span class="math inline">\(0.6, 0.3\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-13" class="callout-13-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong>13.</strong> Let <span class="math inline">\(q_1 = 0.4\)</span> (Player 1 scores), <span class="math inline">\(q_2 = 0.7\)</span> (Player 2 scores); misses <span class="math inline">\(0.6, 0.3\)</span>.</p>
+<ol type="a">
+<li>“Wins before the 3rd round” = wins in round 1 or round 2. Round 1: <span class="math inline">\(P = 0.4\)</span>. Round 2: Player 1 misses, Player 2 misses, Player 1 scores: <span class="math inline">\(0.6 \cdot 0.3 \cdot 0.4 = 0.072\)</span>. Total: <span class="math inline">\(0.4 + 0.072 = \boxed{0.472}\)</span>.</li>
+<li>Player 1 wins in round <span class="math inline">\(r\)</span> iff both miss the first <span class="math inline">\(r-1\)</span> rounds and he scores in round <span class="math inline">\(r\)</span>: <span class="math inline">\(P_r = (0.6 \cdot 0.3)^{r-1} \cdot 0.4 = 0.4 \cdot 0.18^{\,r-1}\)</span> (rounds are disjoint events). Sum the geometric series: <span class="math inline">\(\sum_{r=1}^{\infty} 0.4 \cdot 0.18^{r-1} = \dfrac{0.4}{1 - 0.18} = \dfrac{0.4}{0.82} = \boxed{\dfrac{20}{41} \approx 0.4878}\)</span>.</li>
+</ol>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./13-duality-kkt.html" class="pagination-link" aria-label="13. Duality and KKT conditions">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">13. Duality and KKT conditions</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./15-discrete-random-variables.html" class="pagination-link" aria-label="15. Discrete random variables and key distributions">
+        <span class="nav-page-text"><span class="chapter-title">15. Discrete random variables and key distributions</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

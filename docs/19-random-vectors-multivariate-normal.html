@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>19. Random vectors and the multivariate normal – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./20-estimation-mle-map.html" rel="next">
+<link href="./18-joint-continuous-distributions.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./14-probability-basics.html">Part II — Probability and Statistics</a></li><li class="breadcrumb-item"><a href="./19-random-vectors-multivariate-normal.html"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#random-vectors-the-mean-vector-and-the-covariance-matrix" id="toc-random-vectors-the-mean-vector-and-the-covariance-matrix" class="nav-link active" data-scroll-target="#random-vectors-the-mean-vector-and-the-covariance-matrix">19.1 Random vectors: the mean vector and the covariance matrix</a></li>
+  <li><a href="#affine-transformations-mathbfy-mathbfamathbfx-mathbfb" id="toc-affine-transformations-mathbfy-mathbfamathbfx-mathbfb" class="nav-link" data-scroll-target="#affine-transformations-mathbfy-mathbfamathbfx-mathbfb">19.2 Affine transformations: <span class="math inline">\(\mathbf{Y} = \mathbf{A}\mathbf{X} + \mathbf{b}\)</span></a></li>
+  <li><a href="#the-standard-normal-vector" id="toc-the-standard-normal-vector" class="nav-link" data-scroll-target="#the-standard-normal-vector">19.3 The standard normal vector</a></li>
+  <li><a href="#the-bivariate-normal-the-sources-construction" id="toc-the-bivariate-normal-the-sources-construction" class="nav-link" data-scroll-target="#the-bivariate-normal-the-sources-construction">19.4 The bivariate normal: the source’s construction</a></li>
+  <li><a href="#marginals-and-conditionals-of-the-bivariate-normal" id="toc-marginals-and-conditionals-of-the-bivariate-normal" class="nav-link" data-scroll-target="#marginals-and-conditionals-of-the-bivariate-normal">19.5 Marginals and conditionals of the bivariate normal</a></li>
+  <li><a href="#the-general-multivariate-normal-definition" id="toc-the-general-multivariate-normal-definition" class="nav-link" data-scroll-target="#the-general-multivariate-normal-definition">19.6 The general multivariate normal: definition</a></li>
+  <li><a href="#affine-maps-stay-normal-properties" id="toc-affine-maps-stay-normal-properties" class="nav-link" data-scroll-target="#affine-maps-stay-normal-properties">19.7 Affine maps stay normal: properties</a></li>
+  <li><a href="#marginal-and-conditional-distributions-in-d-dimensions" id="toc-marginal-and-conditional-distributions-in-d-dimensions" class="nav-link" data-scroll-target="#marginal-and-conditional-distributions-in-d-dimensions">19.8 Marginal and conditional distributions in <span class="math inline">\(d\)</span> dimensions</a></li>
+  <li><a href="#why-this-matters-the-normal-workhorse" id="toc-why-this-matters-the-normal-workhorse" class="nav-link" data-scroll-target="#why-this-matters-the-normal-workhorse">19.9 Why this matters: the normal workhorse</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./14-probability-basics.html">Part II — Probability and Statistics</a></li><li class="breadcrumb-item"><a href="./19-random-vectors-multivariate-normal.html"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">19. Random vectors and the multivariate normal</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Chapter 18 worked with a pair <span class="math inline">\((X, Y)\)</span>; this chapter stacks <span class="math inline">\(d\)</span> variables into one column vector <span class="math inline">\(\mathbf{X} = (X_1, \ldots, X_d)^T\)</span> and builds the single most-used distribution in machine learning on top of it: the multivariate normal. Chapter 18’s §18.6 already showed the <em>sum</em> of independent normals is normal; here the <em>whole vector</em> is normal, the covariance becomes a matrix, and everything — affine maps, marginals, conditionals, standardization — stays inside the normal family. The core construction is exactly the source’s: start from independent standard normals and apply a linear map.</p>
+<section id="random-vectors-the-mean-vector-and-the-covariance-matrix" class="level2">
+<h2 class="anchored" data-anchor-id="random-vectors-the-mean-vector-and-the-covariance-matrix">19.1 Random vectors: the mean vector and the covariance matrix</h2>
+<p><strong>Def.</strong> A <strong>random vector</strong> is <span class="math inline">\(\mathbf{X} = (X_1, \ldots, X_d)^T\)</span>, a column of <span class="math inline">\(d\)</span> random variables on the same experiment. Its joint PDF <span class="math inline">\(f_{\mathbf{X}}(\mathbf{x})\)</span> works exactly like §17.12’s joint PDF, one dimension higher: <span class="math display">\[P(\mathbf{X} \in A) = \int_A f_{\mathbf{X}}(\mathbf{x})\, d\mathbf{x}.\]</span></p>
+<p>Two summaries replace the scalar mean and variance:</p>
+<p><strong>Def (mean vector).</strong> <span class="math inline">\(\boxed{E[\mathbf{X}] = (E[X_1], \ldots, E[X_d])^T = \boldsymbol{\mu}}\)</span> — expectation acts coordinate-wise.</p>
+<p><strong>Def (covariance matrix).</strong> With <span class="math inline">\(\boldsymbol{\mu} = E[\mathbf{X}]\)</span>, <span class="math display">\[\boxed{\boldsymbol{\Sigma} = \operatorname{Cov}(\mathbf{X}) = E\big[(\mathbf{X} - \boldsymbol{\mu})(\mathbf{X} - \boldsymbol{\mu})^T\big]},\]</span> a <span class="math inline">\(d \times d\)</span> matrix whose <span class="math inline">\((i, j)\)</span> entry is <span class="math display">\[\Sigma_{ij} = E\big[(X_i - \mu_i)(X_j - \mu_j)\big] = \operatorname{Cov}(X_i, X_j) = E[X_i X_j] - E[X_i]E[X_j] \quad \text{(§17.9)}.\]</span></p>
+<ol type="i">
+<li><strong>The diagonal is variance:</strong> <span class="math inline">\(\Sigma_{ii} = \operatorname{Var}(X_i) \ge 0\)</span>.</li>
+<li><strong>Symmetry:</strong> <span class="math inline">\(\Sigma_{ij} = \Sigma_{ji}\)</span>, so <span class="math inline">\(\boldsymbol{\Sigma}^T = \boldsymbol{\Sigma}\)</span> — the matrix is symmetric.</li>
+<li><strong>The short form.</strong> Expanding the outer product, <span class="math display">\[\boxed{\boldsymbol{\Sigma} = E[\mathbf{X}\mathbf{X}^T] - \boldsymbol{\mu}\boldsymbol{\mu}^T}\]</span> (proof: <span class="math inline">\(E[(\mathbf{X}-\boldsymbol{\mu})(\mathbf{X}-\boldsymbol{\mu})^T] = E[\mathbf{X}\mathbf{X}^T] - \boldsymbol{\mu}\boldsymbol{\mu}^T - \boldsymbol{\mu}\boldsymbol{\mu}^T + \boldsymbol{\mu}\boldsymbol{\mu}^T\)</span> — Problem 2 asks you to write it out).</li>
+</ol>
+<p><strong>Theorem (a covariance matrix is always positive semi-definite).</strong> For <em>any</em> fixed vector <span class="math inline">\(\mathbf{a} \in \mathbb{R}^d\)</span>, <span class="math display">\[\mathbf{a}^T\boldsymbol{\Sigma}\mathbf{a} = \operatorname{Var}(\mathbf{a}^T\mathbf{X}) \ge 0,\]</span> so <span class="math inline">\(\boldsymbol{\Sigma}\)</span> is positive semi-definite (§7.9’s PSD concept).</p>
+<p><em>Proof.</em> <span class="math inline">\(\mathbf{a}^T\boldsymbol{\Sigma}\mathbf{a} = \mathbf{a}^T E[(\mathbf{X}-\boldsymbol{\mu})(\mathbf{X}-\boldsymbol{\mu})^T]\mathbf{a} = E[\mathbf{a}^T(\mathbf{X}-\boldsymbol{\mu})(\mathbf{X}-\boldsymbol{\mu})^T\mathbf{a}] = E\big[(\mathbf{a}^T(\mathbf{X}-\boldsymbol{\mu}))^2\big]\)</span>. But <span class="math inline">\(\mathbf{a}^T(\mathbf{X}-\boldsymbol{\mu}) = \mathbf{a}^T\mathbf{X} - \mathbf{a}^T\boldsymbol{\mu}\)</span> is a scalar random variable with mean <span class="math inline">\(0\)</span>, so its second moment is its variance, and a variance is never negative. ∎</p>
+<p><strong>Note.</strong> This is the same argument as §7.9’s Problem 7 (<span class="math inline">\(\mathbf{A}^T\mathbf{A}\)</span> is PSD for any real <span class="math inline">\(\mathbf{A}\)</span>): a covariance is a sum/average of outer products <span class="math inline">\(\mathbf{v}\mathbf{v}^T\)</span>, and <span class="math inline">\(\mathbf{a}^T\mathbf{v}\mathbf{v}^T\mathbf{a} = (\mathbf{a}^T\mathbf{v})^2 \ge 0\)</span> term by term. Consequences: every eigenvalue of <span class="math inline">\(\boldsymbol{\Sigma}\)</span> is <span class="math inline">\(\ge 0\)</span> (§7.9), and <span class="math inline">\(\det(\boldsymbol{\Sigma}) \ge 0\)</span>.</p>
+<p><strong>Note (correlation form).</strong> Dividing by the standard deviations recovers §17.10’s correlation coefficient entry-wise: <span class="math inline">\(\rho_{ij} = \Sigma_{ij}/(\sigma_i\sigma_j)\)</span>, i.e.&nbsp;<span class="math inline">\(\boldsymbol{\Sigma} = \mathbf{D}\mathbf{R}\mathbf{D}\)</span> with <span class="math inline">\(\mathbf{D} = \operatorname{diag}(\sigma_1, \ldots, \sigma_d)\)</span> and <span class="math inline">\(\mathbf{R}\)</span> the correlation matrix (<span class="math inline">\(R_{ii} = 1\)</span>, <span class="math inline">\(|R_{ij}| \le 1\)</span>).</p>
+<p><strong>eg 1 (from a joint table).</strong> <span class="math inline">\((X, Y)\)</span> discrete with <span class="math inline">\(P(0,0) = 0.1\)</span>, <span class="math inline">\(P(0,1) = 0.2\)</span>, <span class="math inline">\(P(1,0) = 0.3\)</span>, <span class="math inline">\(P(1,1) = 0.4\)</span> (first index <span class="math inline">\(X\)</span>, second <span class="math inline">\(Y\)</span>). - Means: <span class="math inline">\(E[X] = 0(0.3) + 1(0.7) = 0.7\)</span>; <span class="math inline">\(E[Y] = 0(0.4) + 1(0.6) = 0.6\)</span>. So <span class="math inline">\(\boldsymbol{\mu} = (0.7,\ 0.6)^T\)</span>. - Variances: <span class="math inline">\(E[X^2] = E[X] = 0.7\)</span> (since <span class="math inline">\(X^2 = X\)</span> for <span class="math inline">\(0\)</span>–<span class="math inline">\(1\)</span> values), <span class="math inline">\(\operatorname{Var}(X) = 0.7 - 0.7^2 = 0.21\)</span>; <span class="math inline">\(\operatorname{Var}(Y) = 0.6 - 0.6^2 = 0.24\)</span>. - <span class="math inline">\(E[XY] = P(X=1, Y=1) = 0.4\)</span>; <span class="math inline">\(\operatorname{Cov}(X, Y) = 0.4 - 0.7\cdot0.6 = -0.02\)</span>. <span class="math display">\[\boxed{\boldsymbol{\Sigma} = \begin{pmatrix} 0.21 &amp; -0.02 \\ -0.02 &amp; 0.24 \end{pmatrix}}.\]</span> Symmetric ✓. PSD check: diagonal <span class="math inline">\(&gt; 0\)</span> and <span class="math inline">\(\det = 0.21\cdot0.24 - 0.0004 = 0.05 &gt; 0\)</span> (§7.9’s <span class="math inline">\(2\times2\)</span> test) ✓. Correlation <span class="math inline">\(\rho = -0.02/\sqrt{0.21\cdot0.24} \approx -0.089\)</span> — nearly uncorrelated.</p>
+<p><strong>Basically, …</strong> A random vector’s covariance matrix is just “§17.9’s covariance, arranged in a table”: diagonal = each variable’s variance, off-diagonal = each pair’s covariance. It is always symmetric and positive semi-definite (the PSD fact is just “<span class="math inline">\(\mathbf{a}^T\boldsymbol{\Sigma}\mathbf{a}\)</span> is a variance, and variances are non-negative”). If you remember one thing: <em>a covariance matrix can never have a negative eigenvalue</em>.</p>
+</section>
+<section id="affine-transformations-mathbfy-mathbfamathbfx-mathbfb" class="level2">
+<h2 class="anchored" data-anchor-id="affine-transformations-mathbfy-mathbfamathbfx-mathbfb">19.2 Affine transformations: <span class="math inline">\(\mathbf{Y} = \mathbf{A}\mathbf{X} + \mathbf{b}\)</span></h2>
+<p>Every later result in this chapter is an application of two formulas. Let <span class="math inline">\(\mathbf{X}\)</span> have mean <span class="math inline">\(\boldsymbol{\mu}\)</span> and covariance <span class="math inline">\(\boldsymbol{\Sigma}\)</span>, <span class="math inline">\(\mathbf{A}\)</span> an <span class="math inline">\(m \times d\)</span> matrix, <span class="math inline">\(\mathbf{b}\)</span> a vector.</p>
+<p><strong>Theorem.</strong> For <span class="math inline">\(\mathbf{Y} = \mathbf{A}\mathbf{X} + \mathbf{b}\)</span>: <span class="math display">\[\boxed{E[\mathbf{Y}] = \mathbf{A}\boldsymbol{\mu} + \mathbf{b}}, \qquad \boxed{\operatorname{Cov}(\mathbf{Y}) = \mathbf{A}\boldsymbol{\Sigma}\mathbf{A}^T}.\]</span></p>
+<p><em>Proof.</em> Mean: <span class="math inline">\(E[\mathbf{A}\mathbf{X} + \mathbf{b}] = \mathbf{A}E[\mathbf{X}] + \mathbf{b}\)</span> by linearity of expectation, coordinate-wise. Covariance: <span class="math inline">\(\mathbf{Y} - E[\mathbf{Y}] = \mathbf{A}(\mathbf{X} - \boldsymbol{\mu})\)</span> (the <span class="math inline">\(\mathbf{b}\)</span> cancels), so <span class="math display">\[\operatorname{Cov}(\mathbf{Y}) = E\big[\mathbf{A}(\mathbf{X}-\boldsymbol{\mu})(\mathbf{X}-\boldsymbol{\mu})^T\mathbf{A}^T\big] = \mathbf{A}\,E\big[(\mathbf{X}-\boldsymbol{\mu})(\mathbf{X}-\boldsymbol{\mu})^T\big]\,\mathbf{A}^T = \mathbf{A}\boldsymbol{\Sigma}\mathbf{A}^T,\]</span> pulling the constant matrices out of the expectation. ∎</p>
+<ol type="i">
+<li>Scalar special case: for <span class="math inline">\(\mathbf{a}^T\mathbf{X}\)</span> (one linear combination), <span class="math inline">\(\operatorname{Var}(\mathbf{a}^T\mathbf{X}) = \mathbf{a}^T\boldsymbol{\Sigma}\mathbf{a}\)</span> — exactly the PSD proof’s quantity in §19.1.</li>
+<li>§17.11 is the <span class="math inline">\(d = 2\)</span> case: <span class="math inline">\(\operatorname{Var}(X + Y)\)</span> is <span class="math inline">\((1,\ 1)\,\boldsymbol{\Sigma}\,(1,\ 1)^T = \sigma_1^2 + \sigma_2^2 + 2\operatorname{Cov}(X, Y)\)</span>.</li>
+<li>The shift <span class="math inline">\(\mathbf{b}\)</span> moves the mean but never touches the covariance — spreading is translation-invariant.</li>
+</ol>
+<p><strong>eg 2.</strong> <span class="math inline">\(\boldsymbol{\mu} = (0,\ 1)^T\)</span>, <span class="math inline">\(\boldsymbol{\Sigma} = \begin{pmatrix} 2 &amp; 1 \\ 1 &amp; 1 \end{pmatrix}\)</span>, and <span class="math inline">\(\mathbf{Y} = \begin{pmatrix} 1 &amp; 1 \\ 1 &amp; -1 \end{pmatrix}\mathbf{X}\)</span> (sum and difference — §18.5’s eg 9 transform, no shift). - <span class="math inline">\(E[\mathbf{Y}] = \mathbf{A}\boldsymbol{\mu} = \begin{pmatrix} 1 &amp; 1 \\ 1 &amp; -1 \end{pmatrix}\begin{pmatrix} 0 \\ 1 \end{pmatrix} = \boxed{\begin{pmatrix} 1 \\ -1 \end{pmatrix}}\)</span>. - <span class="math inline">\(\boldsymbol{\Sigma}\mathbf{A}^T = \begin{pmatrix} 2 &amp; 1 \\ 1 &amp; 1 \end{pmatrix}\begin{pmatrix} 1 &amp; 1 \\ 1 &amp; -1 \end{pmatrix} = \begin{pmatrix} 3 &amp; 1 \\ 2 &amp; 0 \end{pmatrix}\)</span>; then <span class="math display">\[\operatorname{Cov}(\mathbf{Y}) = \mathbf{A}(\boldsymbol{\Sigma}\mathbf{A}^T) = \begin{pmatrix} 1 &amp; 1 \\ 1 &amp; -1 \end{pmatrix}\begin{pmatrix} 3 &amp; 1 \\ 2 &amp; 0 \end{pmatrix} = \boxed{\begin{pmatrix} 5 &amp; 1 \\ 1 &amp; 3 \end{pmatrix}}.\]</span> Sanity: <span class="math inline">\(\operatorname{Var}(X_1 + X_2) = 2 + 1 + 2(1) = 5\)</span> ✓ (§17.11); symmetric ✓; <span class="math inline">\(\det = 15 - 1 = 14 &gt; 0\)</span>, still PSD ✓.</p>
+<p><strong>Basically, …</strong> An affine map does the obvious thing to the mean (map it, then shift) and sandwiches the covariance (<span class="math inline">\(\mathbf{A}\boldsymbol{\Sigma}\mathbf{A}^T\)</span>). The sandwich is the whole story of this chapter: the multivariate normal is <em>built</em> by sandwiching the identity covariance.</p>
+</section>
+<section id="the-standard-normal-vector" class="level2">
+<h2 class="anchored" data-anchor-id="the-standard-normal-vector">19.3 The standard normal vector</h2>
+<p><strong>Def.</strong> Let <span class="math inline">\(Z_1, \ldots, Z_d \stackrel{\text{i.i.d.}}{\sim} N(0, 1)\)</span> (§16.9). The <strong>standard normal vector</strong> is <span class="math inline">\(\mathbf{Z} = (Z_1, \ldots, Z_d)^T\)</span>. By independence the joint density is the product: <span class="math display">\[\boxed{f_{\mathbf{Z}}(\mathbf{z}) = \prod_{i=1}^{d} \frac{1}{\sqrt{2\pi}}e^{-z_i^2/2} = \frac{1}{(2\pi)^{d/2}}\exp\!\left(-\frac{1}{2}\lVert\mathbf{z}\rVert^2\right)}.\]</span></p>
+<ol type="i">
+<li><span class="math inline">\(E[\mathbf{Z}] = \mathbf{0}\)</span> and <span class="math inline">\(\operatorname{Cov}(\mathbf{Z}) = \mathbf{I}\)</span> — variance <span class="math inline">\(1\)</span> on the diagonal, independence ⇒ <span class="math inline">\(0\)</span> off it (§17.9).</li>
+<li>The density depends on <span class="math inline">\(\mathbf{z}\)</span> only through <span class="math inline">\(\lVert\mathbf{z}\rVert^2 = \mathbf{z}^T\mathbf{z}\)</span>: it is <strong>rotationally symmetric</strong> — rotating <span class="math inline">\(\mathbf{z}\)</span> changes nothing. (This is why the construction in §19.6 works with <em>any</em> square root <span class="math inline">\(\mathbf{A}\)</span> of <span class="math inline">\(\boldsymbol{\Sigma}\)</span>.)</li>
+</ol>
+<p><strong>Basically, …</strong> The standard normal vector = “<span class="math inline">\(d\)</span> independent copies of the bell curve, packed into one column”. Its density is a perfect round hill: <span class="math inline">\((2\pi)^{-d/2}\)</span> normalizer, <span class="math inline">\(\exp(-\lVert\mathbf{z}\rVert^2/2)\)</span> shape. Mean zero, covariance the identity — the blank canvas everything else is painted on.</p>
+</section>
+<section id="the-bivariate-normal-the-sources-construction" class="level2">
+<h2 class="anchored" data-anchor-id="the-bivariate-normal-the-sources-construction">19.4 The bivariate normal: the source’s construction</h2>
+<p>The MLF deck builds the bivariate normal in one concrete case, then generalizes — this chapter follows the same path. Take <span class="math inline">\(Z_1, Z_2 \stackrel{\text{i.i.d.}}{\sim} N(0,1)\)</span> and, for a fixed <span class="math inline">\(\rho \in (-1, 1)\)</span>, <span class="math display">\[\boxed{X_1 = Z_1, \qquad X_2 = \rho Z_1 + \sqrt{1 - \rho^2}\,Z_2}, \qquad\text{i.e. }\mathbf{X} = \mathbf{A}\mathbf{Z},\ \ \mathbf{A} = \begin{pmatrix} 1 &amp; 0 \\ \rho &amp; \sqrt{1-\rho^2} \end{pmatrix}.\]</span></p>
+<p><strong>Step 1 — mean and covariance (§19.2).</strong> <span class="math inline">\(E[X_1] = E[Z_1] = 0\)</span>; <span class="math inline">\(E[X_2] = \rho\cdot0 + \sqrt{1-\rho^2}\cdot0 = 0\)</span>. <span class="math inline">\(\operatorname{Var}(X_1) = 1\)</span>. <span class="math inline">\(\operatorname{Var}(X_2) = \rho^2\operatorname{Var}(Z_1) + (1-\rho^2)\operatorname{Var}(Z_2) = \rho^2 + 1 - \rho^2 = 1\)</span> (independence kills the cross term, §17.11). And <span class="math display">\[\operatorname{Cov}(X_1, X_2) = E[X_1X_2] = E\big[Z_1(\rho Z_1 + \sqrt{1-\rho^2}\,Z_2)\big] = \rho\,E[Z_1^2] + \sqrt{1-\rho^2}\,E[Z_1]E[Z_2] = \rho\cdot1 + 0 = \rho.\]</span> So the parameter <span class="math inline">\(\rho\)</span> <em>is</em> the correlation coefficient (§17.10), and <span class="math display">\[\boxed{\boldsymbol{\Sigma} = \begin{pmatrix} 1 &amp; \rho \\ \rho &amp; 1 \end{pmatrix}}.\]</span> Check against the sandwich: <span class="math inline">\(\mathbf{A}\mathbf{A}^T = \begin{pmatrix} 1 &amp; 0 \\ \rho &amp; \sqrt{1-\rho^2} \end{pmatrix}\begin{pmatrix} 1 &amp; \rho \\ 0 &amp; \sqrt{1-\rho^2} \end{pmatrix} = \begin{pmatrix} 1 &amp; \rho \\ \rho &amp; \rho^2 + 1 - \rho^2 \end{pmatrix} = \boldsymbol{\Sigma}\)</span> ✓.</p>
+<p><strong>Step 2 — the density via the Jacobian (§18.5).</strong> <span class="math inline">\(\mathbf{A}\)</span> is invertible (<span class="math inline">\(\det\mathbf{A} = \sqrt{1-\rho^2} &gt; 0\)</span>), with <span class="math display">\[\mathbf{A}^{-1} = \begin{pmatrix} 1 &amp; 0 \\ -\rho/\sqrt{1-\rho^2} &amp; 1/\sqrt{1-\rho^2} \end{pmatrix}, \qquad |\det\mathbf{A}^{-1}| = \frac{1}{\sqrt{1-\rho^2}}.\]</span> The linear change of variables (§18.5, constant-Jacobian case) gives <span class="math display">\[f_{\mathbf{X}}(\mathbf{x}) = f_{\mathbf{Z}}(\mathbf{A}^{-1}\mathbf{x})\,|\det\mathbf{A}^{-1}| = \frac{1}{2\pi\sqrt{1-\rho^2}}\exp\!\left(-\frac{1}{2}\lVert\mathbf{A}^{-1}\mathbf{x}\rVert^2\right).\]</span> Since <span class="math inline">\(\lVert\mathbf{A}^{-1}\mathbf{x}\rVert^2 = \mathbf{x}^T\mathbf{A}^{-T}\mathbf{A}^{-1}\mathbf{x}\)</span> and <span class="math inline">\(\mathbf{A}^{-T}\mathbf{A}^{-1} = (\mathbf{A}\mathbf{A}^T)^{-1} = \boldsymbol{\Sigma}^{-1}\)</span>, <span class="math display">\[\boxed{f_{\mathbf{X}}(\mathbf{x}) = \frac{1}{2\pi\sqrt{\det\boldsymbol{\Sigma}}}\exp\!\left(-\frac{1}{2}\,\mathbf{x}^T\boldsymbol{\Sigma}^{-1}\mathbf{x}\right)}, \qquad \boldsymbol{\Sigma}^{-1} = \frac{1}{1-\rho^2}\begin{pmatrix} 1 &amp; -\rho \\ -\rho &amp; 1 \end{pmatrix}.\]</span> Note <span class="math inline">\(\det\boldsymbol{\Sigma} = 1 - \rho^2 = (\det\mathbf{A})^2\)</span> — the Jacobian factor is exactly <span class="math inline">\(1/\sqrt{\det\boldsymbol{\Sigma}}\)</span>.</p>
+<p><strong>eg 3 (the density written out, <span class="math inline">\(\rho = 1/2\)</span>).</strong> <span class="math inline">\(\det\boldsymbol{\Sigma} = 3/4\)</span>, <span class="math inline">\(\boldsymbol{\Sigma}^{-1} = \frac{4}{3}\begin{pmatrix} 1 &amp; -1/2 \\ -1/2 &amp; 1 \end{pmatrix} = \begin{pmatrix} 4/3 &amp; -2/3 \\ -2/3 &amp; 4/3 \end{pmatrix}\)</span>. Hence <span class="math display">\[\boxed{f(x_1, x_2) = \frac{1}{\pi\sqrt{3}}\exp\!\left(-\frac{2}{3}\big(x_1^2 - x_1x_2 + x_2^2\big)\right)}\]</span> (normalizer: <span class="math inline">\(2\pi\sqrt{3/4} = \pi\sqrt{3}\)</span> ✓; exponent: <span class="math inline">\(-\tfrac12\cdot\tfrac43(x_1^2 - x_1x_2 + x_2^2)\)</span> ✓).</p>
+<p>The figure shows this family for <span class="math inline">\(\rho \in \{-0.7, 0, 0.7\}\)</span>: the contours are ellipses whose tilt follows the sign of <span class="math inline">\(\rho\)</span>; at <span class="math inline">\(\rho = 0\)</span> they are circles and the two coordinates are independent.</p>
+<p><strong>Basically, …</strong> The bivariate normal = “take two independent standard normals, tilt one into the other by the correlation <span class="math inline">\(\rho\)</span>”. Everything — the <span class="math inline">\(\begin{pmatrix}1&amp;\rho\\\rho&amp;1\end{pmatrix}\)</span> covariance, the <span class="math inline">\(1/\sqrt{1-\rho^2}\)</span> normalizer, the elliptical contours — falls out of that one construction plus the Jacobian rule. The general multivariate normal is the same idea with a <span class="math inline">\(d \times d\)</span> matrix.</p>
+</section>
+<section id="marginals-and-conditionals-of-the-bivariate-normal" class="level2">
+<h2 class="anchored" data-anchor-id="marginals-and-conditionals-of-the-bivariate-normal">19.5 Marginals and conditionals of the bivariate normal</h2>
+<p>The deck’s payoff move: factor the §19.4 density. Since <span class="math inline">\(\lVert\mathbf{A}^{-1}\mathbf{x}\rVert^2 = x_1^2 + (x_2 - \rho x_1)^2/(1-\rho^2)\)</span>, <span class="math display">\[\begin{aligned}
+f_{\mathbf{X}}(x_1, x_2) &amp;= \frac{1}{2\pi\sqrt{1-\rho^2}}\exp\!\left(-\frac{x_1^2}{2}\right)\exp\!\left(-\frac{(x_2-\rho x_1)^2}{2(1-\rho^2)}\right) \\
+&amp;= \underbrace{\frac{1}{\sqrt{2\pi}}e^{-x_1^2/2}}_{N(0,1)\text{ density in }x_1} \cdot \underbrace{\frac{1}{\sqrt{2\pi}\sqrt{1-\rho^2}}\exp\!\left(-\frac{(x_2-\rho x_1)^2}{2(1-\rho^2)}\right)}_{N(\rho x_1,\ 1-\rho^2)\text{ density in }x_2}.
+\end{aligned}\]</span> The joint factors as marginal <span class="math inline">\(\times\)</span> conditional (§17.4’s multiplication rule), and both factors are normal:</p>
+<p><span class="math display">\[\boxed{X_1 \sim N(0, 1)}, \qquad \boxed{X_2 \mid X_1 = x_1 \sim N\big(\rho x_1,\ 1 - \rho^2\big)}.\]</span></p>
+<ol type="i">
+<li>The conditional <em>mean</em> <span class="math inline">\(E[X_2 \mid X_1 = x_1] = \rho x_1\)</span> is a straight line through the origin — the green line in the figure. Observing <span class="math inline">\(x_1\)</span> shifts your best guess of <span class="math inline">\(X_2\)</span> toward it, scaled by <span class="math inline">\(\rho\)</span>.</li>
+<li>The conditional <em>variance</em> <span class="math inline">\(1 - \rho^2\)</span> is <em>smaller</em> than the marginal variance <span class="math inline">\(1\)</span> (unless <span class="math inline">\(\rho = 0\)</span>): knowing <span class="math inline">\(X_1\)</span> removes the <span class="math inline">\(\rho^2\)</span> share of <span class="math inline">\(X_2\)</span>’s uncertainty.</li>
+<li>By symmetry of the joint density in <span class="math inline">\(x_1, x_2\)</span> (swap the labels — the deck leaves this as an exercise): <span class="math inline">\(X_2 \sim N(0,1)\)</span> and <span class="math inline">\(\boxed{X_1 \mid X_2 = x_2 \sim N(\rho x_2,\ 1-\rho^2)}\)</span>.</li>
+</ol>
+<p><strong>General bivariate normal.</strong> Rescaling (§19.7) lifts this to <span class="math inline">\(X_i \sim N(\mu_i, \sigma_i^2)\)</span> with correlation <span class="math inline">\(\rho\)</span>: <span class="math display">\[\boxed{X_1 \sim N(\mu_1, \sigma_1^2)}, \qquad \boxed{X_2 \mid X_1 = x_1 \sim N\!\left(\mu_2 + \rho\frac{\sigma_2}{\sigma_1}(x_1 - \mu_1),\ \ \sigma_2^2(1-\rho^2)\right)}.\]</span> (Hand-derived from the standard case by <span class="math inline">\(X_i = \mu_i + \sigma_i Z_i\)</span>-style scaling; logged in the review.)</p>
+<p><strong>eg 4 (conditioning, <span class="math inline">\(\rho = 0.5\)</span>, standard case).</strong> Observe <span class="math inline">\(X_1 = 2\)</span>. Then <span class="math inline">\(X_2 \mid X_1 = 2 \sim N(0.5\cdot2,\ 1 - 0.25) = \boxed{N(1,\ 0.75)}\)</span>. Hence <span class="math display">\[P(X_2 &gt; 1.5 \mid X_1 = 2) = P\!\left(Z &gt; \frac{1.5 - 1}{\sqrt{0.75}}\right) = P(Z &gt; 0.5774) = 1 - \Phi(0.5774) \approx \boxed{0.282}.\]</span> Note how conditioning <em>helped</em>: the marginal <span class="math inline">\(P(X_2 &gt; 1.5) = P(Z &gt; 1.5) \approx 0.067\)</span>; the observation <span class="math inline">\(X_1 = 2\)</span> more than quadruples it.</p>
+<p><strong>Basically, …</strong> For the bivariate normal, marginals and conditionals are all normal — that is the special property the deck highlights. Condition on <span class="math inline">\(X_1 = x_1\)</span> and <span class="math inline">\(X_2\)</span> is still a bell curve, just recentered at <span class="math inline">\(\rho x_1\)</span> (the regression line) and squeezed to variance <span class="math inline">\(1-\rho^2\)</span>. Correlation = “how much of <span class="math inline">\(X_2\)</span>’s wiggle <span class="math inline">\(X_1\)</span> explains”.</p>
+<!-- Original matplotlib illustration drawn for this chapter (not reused from any URL) -->
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="assets/19-random-vectors-multivariate-normal.png" class="img-fluid figure-img"></p>
+<figcaption>Bivariate normal (standard form) for rho = -0.7, 0, 0.7: density contour ellipses plus 1500 samples per panel drawn via the chapter’s construction X1=Z1, X2=rho<em>Z1+sqrt(1-rho^2)</em>Z2; the green line in each panel is the conditional mean E[X2|X1=x1]=rho*x1. At rho=0 the contours are circles and X1, X2 are independent.</figcaption>
+</figure>
+</div>
+</section>
+<section id="the-general-multivariate-normal-definition" class="level2">
+<h2 class="anchored" data-anchor-id="the-general-multivariate-normal-definition">19.6 The general multivariate normal: definition</h2>
+<p>Nothing in §19.4 used that <span class="math inline">\(d = 2\)</span> except the matrix size. Let <span class="math inline">\(\mathbf{Z} \in \mathbb{R}^d\)</span> be the standard normal vector (§19.3), <span class="math inline">\(\mathbf{A}\)</span> any invertible <span class="math inline">\(d \times d\)</span> matrix, <span class="math inline">\(\boldsymbol{\mu} \in \mathbb{R}^d\)</span>:</p>
+<p><span class="math display">\[\boxed{\mathbf{X} = \mathbf{A}\mathbf{Z} + \boldsymbol{\mu} \sim \mathcal{N}_d(\boldsymbol{\mu}, \boldsymbol{\Sigma})}, \qquad \boldsymbol{\Sigma} = \mathbf{A}\mathbf{A}^T.\]</span></p>
+<p><strong>Def (multivariate normal PDF).</strong> For positive <em>definite</em> <span class="math inline">\(\boldsymbol{\Sigma}\)</span>, <span class="math display">\[\boxed{f_{\mathbf{X}}(\mathbf{x}) = \frac{1}{(2\pi)^{d/2}\,\sqrt{\det\boldsymbol{\Sigma}}}\exp\!\left(-\frac{1}{2}\,(\mathbf{x}-\boldsymbol{\mu})^T\boldsymbol{\Sigma}^{-1}(\mathbf{x}-\boldsymbol{\mu})\right)}.\]</span> The derivation is §19.4’s Jacobian computation with <span class="math inline">\(d\)</span> in place of <span class="math inline">\(2\)</span>: <span class="math inline">\(f_{\mathbf{X}}(\mathbf{x}) = f_{\mathbf{Z}}(\mathbf{A}^{-1}(\mathbf{x}-\boldsymbol{\mu}))\,|\det\mathbf{A}^{-1}|\)</span>, and <span class="math inline">\(|\det\mathbf{A}^{-1}| = 1/\sqrt{\det\boldsymbol{\Sigma}}\)</span> since <span class="math inline">\(\det\boldsymbol{\Sigma} = (\det\mathbf{A})^2\)</span>. Then <span class="math inline">\(E[\mathbf{X}] = \boldsymbol{\mu}\)</span> and <span class="math inline">\(\operatorname{Cov}(\mathbf{X}) = \mathbf{A}\mathbf{I}\mathbf{A}^T = \boldsymbol{\Sigma}\)</span> by §19.2.</p>
+<ol type="i">
+<li><strong>Two parameters only.</strong> The whole distribution is fixed by the mean vector <span class="math inline">\(\boldsymbol{\mu}\)</span> (<span class="math inline">\(d\)</span> numbers) and the covariance matrix <span class="math inline">\(\boldsymbol{\Sigma}\)</span> (<span class="math inline">\(d(d+1)/2\)</span> numbers by symmetry).</li>
+<li><strong>The density sees <span class="math inline">\(\mathbf{A}\)</span> only through <span class="math inline">\(\boldsymbol{\Sigma}\)</span>.</strong> Different square roots of the same <span class="math inline">\(\boldsymbol{\Sigma}\)</span> give different random vectors with the <em>same</em> density — the deck’s scalar example: <span class="math inline">\(Z\)</span> and <span class="math inline">\(-Z\)</span> are different variables with identical <span class="math inline">\(N(0,1)\)</span> densities.</li>
+<li><strong><span class="math inline">\(\boldsymbol{\Sigma}\)</span> must be positive definite</strong> (§7.9): <span class="math inline">\(\boldsymbol{\Sigma} = \mathbf{A}\mathbf{A}^T\)</span> with <span class="math inline">\(\mathbf{A}\)</span> invertible forces every eigenvalue <span class="math inline">\(&gt; 0\)</span>, so <span class="math inline">\(\det\boldsymbol{\Sigma} &gt; 0\)</span> and <span class="math inline">\(\boldsymbol{\Sigma}^{-1}\)</span> exists. The deck’s <span class="math inline">\(2\times2\)</span> form: <span class="math inline">\(\begin{pmatrix} a^2 &amp; \rho ab \\ \rho ab &amp; b^2 \end{pmatrix}\)</span> with <span class="math inline">\(|\rho| &lt; 1\)</span>; <span class="math inline">\(\begin{pmatrix} 1 &amp; 3 \\ 3 &amp; 1 \end{pmatrix}\)</span> is <em>not</em> a valid covariance (<span class="math inline">\(\rho = 3\)</span> is impossible — compare §7.9’s non-definite <span class="math inline">\(\begin{pmatrix} 1 &amp; 2 \\ 2 &amp; 1 \end{pmatrix}\)</span>).</li>
+</ol>
+<p><strong>Def (Mahalanobis distance).</strong> The exponent’s quadratic form defines <span class="math display">\[\boxed{d_{\boldsymbol{\Sigma}}(\mathbf{x}, \boldsymbol{\mu}) = \sqrt{(\mathbf{x}-\boldsymbol{\mu})^T\boldsymbol{\Sigma}^{-1}(\mathbf{x}-\boldsymbol{\mu})}},\]</span> so <span class="math inline">\(f_{\mathbf{X}}(\mathbf{x}) \propto \exp(-d_{\boldsymbol{\Sigma}}^2/2)\)</span> — the <strong>Mahalanobis form</strong>.</p>
+<ol type="i">
+<li>When <span class="math inline">\(\boldsymbol{\Sigma} = \mathbf{I}\)</span>, this is ordinary Euclidean distance: the standard normal is “Mahalanobis with the identity”.</li>
+<li>Contours <span class="math inline">\(d_{\boldsymbol{\Sigma}} = c\)</span> are <strong>ellipsoids</strong> centered at <span class="math inline">\(\boldsymbol{\mu}\)</span> whose axes point along <span class="math inline">\(\boldsymbol{\Sigma}\)</span>’s eigenvectors (§6.11), with half-lengths <span class="math inline">\(c\sqrt{\lambda_i}\)</span> — the figure’s ellipses, in <span class="math inline">\(d\)</span> dimensions. (Chapter 24’s PCA reads these axes as the principal components.)</li>
+<li>Reading: distance measured in units of <em>spread along each direction</em> — a point <span class="math inline">\(3\)</span> units out along a high-variance direction is “closer” (more likely) than <span class="math inline">\(3\)</span> units along a low-variance one.</li>
+</ol>
+<p><strong>Basically, …</strong> The multivariate normal = “take the round standard-normal hill, stretch it by <span class="math inline">\(\mathbf{A}\)</span>, move it to <span class="math inline">\(\boldsymbol{\mu}\)</span>”. Its density needs only the mean vector and the covariance matrix. The Mahalanobis distance is the ruler that knows about the stretching: points are judged not by raw Euclidean distance from the mean, but by distance <em>relative to how spread out each direction is</em> — which is why the contours are ellipses, not spheres.</p>
+</section>
+<section id="affine-maps-stay-normal-properties" class="level2">
+<h2 class="anchored" data-anchor-id="affine-maps-stay-normal-properties">19.7 Affine maps stay normal: properties</h2>
+<p>The deck lists the key properties; all follow from <span class="math inline">\(\mathbf{X} = \mathbf{A}\mathbf{Z} + \boldsymbol{\mu}\)</span> plus §19.2.</p>
+<p><strong>Theorem (affine closure).</strong> If <span class="math inline">\(\mathbf{X} \sim \mathcal{N}_d(\boldsymbol{\mu}, \boldsymbol{\Sigma})\)</span>, <span class="math inline">\(\mathbf{B}\)</span> is <span class="math inline">\(k \times d\)</span>, and <span class="math inline">\(\mathbf{c} \in \mathbb{R}^k\)</span>, then <span class="math display">\[\boxed{\mathbf{Y} = \mathbf{B}\mathbf{X} + \mathbf{c} \sim \mathcal{N}_k\big(\mathbf{B}\boldsymbol{\mu} + \mathbf{c},\ \mathbf{B}\boldsymbol{\Sigma}\mathbf{B}^T\big)}.\]</span></p>
+<p><em>Why.</em> Write <span class="math inline">\(\mathbf{X} = \mathbf{A}\mathbf{Z} + \boldsymbol{\mu}\)</span>; then <span class="math inline">\(\mathbf{Y} = (\mathbf{B}\mathbf{A})\mathbf{Z} + (\mathbf{B}\boldsymbol{\mu} + \mathbf{c})\)</span> is again “linear map of <span class="math inline">\(\mathbf{Z}\)</span> plus shift” — the <em>definition</em> of a (possibly lower-dimensional) normal. Mean and covariance come from §19.2. ∎</p>
+<ol type="i">
+<li><strong>Linear combinations are (univariate) normal.</strong> For a fixed vector <span class="math inline">\(\mathbf{a}\)</span>: <span class="math inline">\(\boxed{\mathbf{a}^T\mathbf{X} \sim N(\mathbf{a}^T\boldsymbol{\mu},\ \mathbf{a}^T\boldsymbol{\Sigma}\mathbf{a})}\)</span>. In particular the sum of independent normals is normal — §18.6’s MGF result, now as a one-line corollary.</li>
+<li><strong>Standardization / whitening.</strong> With <span class="math inline">\(\boldsymbol{\Sigma} = \mathbf{Q}\boldsymbol{\Lambda}\mathbf{Q}^T\)</span> (§6.11), <span class="math inline">\(\boxed{\mathbf{W} = \boldsymbol{\Sigma}^{-1/2}(\mathbf{X}-\boldsymbol{\mu}) \sim \mathcal{N}_d(\mathbf{0}, \mathbf{I})}\)</span> where <span class="math inline">\(\boldsymbol{\Sigma}^{-1/2} = \mathbf{Q}\boldsymbol{\Lambda}^{-1/2}\mathbf{Q}^T\)</span>; equivalently <span class="math inline">\(\mathbf{Z} = \mathbf{A}^{-1}(\mathbf{X}-\boldsymbol{\mu})\)</span>. The deck’s instance: <span class="math inline">\(\mathbf{B} = \operatorname{diag}(1/a, 1/b)\)</span> turns the general bivariate <span class="math inline">\(\boldsymbol{\Sigma} = \begin{pmatrix} a^2 &amp; \rho ab \\ \rho ab &amp; b^2 \end{pmatrix}\)</span> into the correlation form <span class="math inline">\(\begin{pmatrix} 1 &amp; \rho \\ \rho &amp; 1 \end{pmatrix}\)</span> (check: <span class="math inline">\(\mathbf{B}\boldsymbol{\Sigma}\mathbf{B}^T\)</span> divides row/column <span class="math inline">\(i\)</span> by the <span class="math inline">\(i\)</span>-th scale).</li>
+<li><strong>Zero covariance ⇔ independence (normal only!).</strong> If <span class="math inline">\(\mathbf{X} \sim \mathcal{N}_d(\boldsymbol{\mu}, \boldsymbol{\Sigma})\)</span>, then <span class="math inline">\(X_i \perp X_j\)</span> iff <span class="math inline">\(\Sigma_{ij} = 0\)</span>. The ⇒ direction holds for <em>any</em> variables (§17.9: independence ⇒ <span class="math inline">\(\operatorname{Cov} = 0\)</span>); the ⇐ direction is special to the normal — for general variables, uncorrelated does <em>not</em> imply independent (§17.10’s warning).</li>
+</ol>
+<p><strong>eg 5 (the deck tutorial’s <span class="math inline">\(N_3\)</span> question).</strong> <span class="math inline">\(\mathbf{Y} \sim \mathcal{N}_3(\boldsymbol{\mu}, \boldsymbol{\Sigma})\)</span> with <span class="math inline">\(\boldsymbol{\mu} = (3,\ 1,\ 4)^T\)</span> and <span class="math inline">\(\boldsymbol{\Sigma} = \begin{pmatrix} 6 &amp; 1 &amp; -2 \\ 1 &amp; 13 &amp; 4 \\ -2 &amp; 4 &amp; 4 \end{pmatrix}\)</span>. Find the distribution of <span class="math inline">\(Z = 2Y_1 - Y_2 + 3Y_3 = \mathbf{c}^T\mathbf{Y}\)</span>, <span class="math inline">\(\mathbf{c} = (2, -1, 3)^T\)</span>. By (i): <span class="math inline">\(Z \sim N(\mathbf{c}^T\boldsymbol{\mu},\ \mathbf{c}^T\boldsymbol{\Sigma}\mathbf{c})\)</span>. - Mean: <span class="math inline">\(2(3) + (-1)(1) + 3(4) = 6 - 1 + 12 = 17\)</span>. - <span class="math inline">\(\boldsymbol{\Sigma}\mathbf{c} = \begin{pmatrix} 6 &amp; 1 &amp; -2 \\ 1 &amp; 13 &amp; 4 \\ -2 &amp; 4 &amp; 4 \end{pmatrix}\begin{pmatrix} 2 \\ -1 \\ 3 \end{pmatrix} = \begin{pmatrix} 12-1-6 \\ 2-13+12 \\ -4-4+12 \end{pmatrix} = \begin{pmatrix} 5 \\ 1 \\ 4 \end{pmatrix}\)</span>; variance <span class="math inline">\(= \mathbf{c}^T(\boldsymbol{\Sigma}\mathbf{c}) = 2(5) + (-1)(1) + 3(4) = 10 - 1 + 12 = 21\)</span>. <span class="math display">\[\boxed{Z \sim N(17,\ 21)}\]</span> (the tutorial’s answer A — e.g.&nbsp;<span class="math inline">\(P(Z &gt; 22) = P(Z_{\text{std}} &gt; 5/\sqrt{21}) \approx P(Z_{\text{std}} &gt; 1.091) \approx 0.138\)</span>).</p>
+<p><strong>eg 6 (whitening a diagonal case).</strong> <span class="math inline">\(\mathbf{X} \sim \mathcal{N}_2\big((1,\ 2)^T,\ \operatorname{diag}(4, 9)\big)\)</span>. Standardize coordinate-wise: <span class="math inline">\(W_1 = (X_1 - 1)/2\)</span>, <span class="math inline">\(W_2 = (X_2 - 2)/3\)</span>, i.e.&nbsp;<span class="math inline">\(\mathbf{W} = \operatorname{diag}(1/2, 1/3)(\mathbf{X}-\boldsymbol{\mu})\)</span>. By the theorem, <span class="math inline">\(\mathbf{W} \sim \mathcal{N}_2(\mathbf{0},\ \mathbf{B}\boldsymbol{\Sigma}\mathbf{B}^T)\)</span> with <span class="math inline">\(\mathbf{B}\boldsymbol{\Sigma}\mathbf{B}^T = \operatorname{diag}(1/2,1/3)\operatorname{diag}(4,9)\operatorname{diag}(1/2,1/3) = \mathbf{I}\)</span>. So <span class="math inline">\(\boxed{\mathbf{W} \sim \mathcal{N}_2(\mathbf{0}, \mathbf{I})}\)</span> — Problem 7 does the correlated case via the eigendecomposition.</p>
+<p><strong>Note (degenerate case).</strong> If <span class="math inline">\(\mathbf{B}\boldsymbol{\Sigma}\mathbf{B}^T\)</span> is singular (e.g.&nbsp;<span class="math inline">\(\mathbf{B}\)</span> has fewer rows than <span class="math inline">\(d\)</span>, or maps into a lower-dimensional subspace), <span class="math inline">\(\mathbf{Y}\)</span> is still normal in the “<span class="math inline">\(\mathbf{A}\mathbf{Z} + \boldsymbol{\mu}\)</span>” sense, but it has no density on <span class="math inline">\(\mathbb{R}^k\)</span> — all its mass sits on a lower-dimensional affine subspace. The mean/covariance formulas stay valid; only the PDF formula (§19.6) needs a positive definite covariance.</p>
+<p><strong>Basically, …</strong> “Normal in, normal out”: any affine transformation of a normal vector — a weighted sum, a rescaling, a projection — is still normal, with mean and covariance from §19.2’s formulas. Whitening is the reverse gear: subtract the mean, multiply by <span class="math inline">\(\boldsymbol{\Sigma}^{-1/2}\)</span>, and any normal becomes the round standard one. And the famous freebie: for normals (only for normals), “uncorrelated” and “independent” are the same thing.</p>
+</section>
+<section id="marginal-and-conditional-distributions-in-d-dimensions" class="level2">
+<h2 class="anchored" data-anchor-id="marginal-and-conditional-distributions-in-d-dimensions">19.8 Marginal and conditional distributions in <span class="math inline">\(d\)</span> dimensions</h2>
+<p><strong>Theorem (marginals).</strong> Partition <span class="math inline">\(\mathbf{X} = (\mathbf{X}_{(1)}, \mathbf{X}_{(2)})\)</span> with <span class="math inline">\(\boldsymbol{\mu} = (\boldsymbol{\mu}_1, \boldsymbol{\mu}_2)\)</span> and <span class="math inline">\(\boldsymbol{\Sigma} = \begin{pmatrix} \boldsymbol{\Sigma}_{11} &amp; \boldsymbol{\Sigma}_{12} \\ \boldsymbol{\Sigma}_{21} &amp; \boldsymbol{\Sigma}_{22} \end{pmatrix}\)</span>. Then <span class="math inline">\(\boxed{\mathbf{X}_{(1)} \sim \mathcal{N}(\boldsymbol{\mu}_1, \boldsymbol{\Sigma}_{11})}\)</span> — just keep the matching rows of <span class="math inline">\(\boldsymbol{\mu}\)</span> and the matching block of <span class="math inline">\(\boldsymbol{\Sigma}\)</span>.</p>
+<p><em>Why.</em> <span class="math inline">\(\mathbf{X}_{(1)} = \mathbf{B}\mathbf{X}\)</span> with <span class="math inline">\(\mathbf{B} = [\mathbf{I}\ \ \mathbf{0}]\)</span>; apply §19.7. ∎ (So: any single coordinate <span class="math inline">\(X_i \sim N(\mu_i, \Sigma_{ii})\)</span>.)</p>
+<p><strong>Theorem (conditionals).</strong> With the same partition (<span class="math inline">\(\boldsymbol{\Sigma}_{11}\)</span> invertible), <span class="math display">\[\boxed{\mathbf{X}_{(2)} \mid \mathbf{X}_{(1)} = \mathbf{x}_1 \sim \mathcal{N}\big(\boldsymbol{\mu}_2 + \boldsymbol{\Sigma}_{21}\boldsymbol{\Sigma}_{11}^{-1}(\mathbf{x}_1 - \boldsymbol{\mu}_1),\ \ \boldsymbol{\Sigma}_{22} - \boldsymbol{\Sigma}_{21}\boldsymbol{\Sigma}_{11}^{-1}\boldsymbol{\Sigma}_{12}\big)}.\]</span></p>
+<ol type="i">
+<li>This is the <span class="math inline">\(d\)</span>-dimensional version of §19.5’s <span class="math inline">\(N(\rho x_1, 1-\rho^2)\)</span>: the conditional mean is <em>linear</em> in the observation, and the conditional covariance does <em>not</em> depend on <span class="math inline">\(\mathbf{x}_1\)</span> — observing data shifts the bell but never changes its shape.</li>
+<li>The matrix <span class="math inline">\(\boldsymbol{\Sigma}_{22} - \boldsymbol{\Sigma}_{21}\boldsymbol{\Sigma}_{11}^{-1}\boldsymbol{\Sigma}_{12}\)</span> is the <strong>Schur complement</strong> — the leftover uncertainty in block <span class="math inline">\(2\)</span> after block <span class="math inline">\(1\)</span> explains what it can. It is PSD (it is itself a covariance), and <span class="math inline">\(\le \boldsymbol{\Sigma}_{22}\)</span> in PSD order: conditioning never <em>adds</em> uncertainty.</li>
+<li>Not proved here (the deck doesn’t prove it either): it follows from completing the square in the Mahalanobis exponent after the change of variables <span class="math inline">\(\mathbf{y}_2 = \mathbf{x}_2 - \boldsymbol{\Sigma}_{21}\boldsymbol{\Sigma}_{11}^{-1}\mathbf{x}_1\)</span>, which decorrelates the blocks. The §19.5 bivariate case <em>is</em> the proof for <span class="math inline">\(d = 2\)</span> — check: <span class="math inline">\(\boldsymbol{\Sigma}_{21}\boldsymbol{\Sigma}_{11}^{-1} = \rho/1 = \rho\)</span>, mean <span class="math inline">\(\rho x_1\)</span> ✓, Schur complement <span class="math inline">\(1 - \rho\cdot1\cdot\rho = 1-\rho^2\)</span> ✓.</li>
+</ol>
+<p><strong>eg 7 (conditioning in 3-D).</strong> <span class="math inline">\(\mathbf{X} \sim \mathcal{N}_3(\mathbf{0}, \boldsymbol{\Sigma})\)</span>, <span class="math inline">\(\boldsymbol{\Sigma} = \begin{pmatrix} 4 &amp; 2 &amp; 1 \\ 2 &amp; 3 &amp; 0.5 \\ 1 &amp; 0.5 &amp; 2 \end{pmatrix}\)</span> (PD: leading minors <span class="math inline">\(4 &gt; 0\)</span>, <span class="math inline">\(12-4 = 8 &gt; 0\)</span>, <span class="math inline">\(\det = 14 &gt; 0\)</span> ✓). Find the distribution of <span class="math inline">\(X_3\)</span> given <span class="math inline">\((X_1, X_2) = (x_1, x_2)\)</span>. - Blocks: <span class="math inline">\(\boldsymbol{\Sigma}_{11} = \begin{pmatrix} 4 &amp; 2 \\ 2 &amp; 3 \end{pmatrix}\)</span>, <span class="math inline">\(\boldsymbol{\Sigma}_{11}^{-1} = \frac{1}{8}\begin{pmatrix} 3 &amp; -2 \\ -2 &amp; 4 \end{pmatrix}\)</span>, <span class="math inline">\(\boldsymbol{\Sigma}_{21} = (1,\ 0.5)\)</span>. - <span class="math inline">\(\boldsymbol{\Sigma}_{21}\boldsymbol{\Sigma}_{11}^{-1} = (1,\ 0.5)\begin{pmatrix} 0.375 &amp; -0.25 \\ -0.25 &amp; 0.5 \end{pmatrix} = (0.375-0.125,\ -0.25+0.25) = (0.25,\ 0)\)</span>. - Conditional mean: <span class="math inline">\(0 + 0.25x_1 + 0\cdot x_2 = 0.25x_1\)</span>. Conditional variance: <span class="math inline">\(2 - (1,\ 0.5)\cdot(0.25,\ 0)^T = 2 - 0.25 = 1.75\)</span>. <span class="math display">\[\boxed{X_3 \mid (X_1, X_2) = (x_1, x_2) \sim N(0.25\,x_1,\ 1.75)}.\]</span> <strong>Note.</strong> The <span class="math inline">\(0\)</span> coefficient on <span class="math inline">\(x_2\)</span> says: once <span class="math inline">\(X_1\)</span> is known, <span class="math inline">\(X_2\)</span> tells you <em>nothing more</em> about <span class="math inline">\(X_3\)</span> — the partial correlation of <span class="math inline">\(X_2, X_3\)</span> given <span class="math inline">\(X_1\)</span> is zero. Marginal: <span class="math inline">\((X_1, X_2) \sim \mathcal{N}_2(\mathbf{0}, \boldsymbol{\Sigma}_{11})\)</span> by the marginal theorem.</p>
+<p><strong>Basically, …</strong> Marginals: cross out the rows you don’t want. Conditionals: the mean becomes a <em>linear function</em> of what you observed (<span class="math inline">\(\boldsymbol{\mu}_2 + \text{(regression coefficients)}\times(\text{observation} - \text{its mean})\)</span>), and the leftover covariance is the Schur complement — always smaller than before, never depending on the observed values. The bivariate formulas of §19.5 are exactly this with <span class="math inline">\(1\times1\)</span> blocks.</p>
+</section>
+<section id="why-this-matters-the-normal-workhorse" class="level2">
+<h2 class="anchored" data-anchor-id="why-this-matters-the-normal-workhorse">19.9 Why this matters: the normal workhorse</h2>
+<ol type="i">
+<li><strong>Everything linear stays normal.</strong> §19.7’s affine closure is why the normal is the default noise model in ML: least squares (§5), linear regression (§23), and Gaussian noise assumptions all run on “normal in, normal out”. The deck uses it immediately for linear regression with Gaussian noise (Week 12, part 2 — Chapter 20’s territory).</li>
+<li><strong>Estimation targets these parameters.</strong> Chapter 20’s MLE estimates exactly <span class="math inline">\(\boldsymbol{\mu}\)</span> and <span class="math inline">\(\boldsymbol{\Sigma}\)</span> from data — this chapter defined what is being estimated.</li>
+<li><strong>Mixtures build on it.</strong> Chapter 25’s Gaussian mixture models are weighted sums of the densities defined here (§19.6).</li>
+<li><strong>The CLT explains its ubiquity.</strong> Chapter 21 shows sums of many small independent effects converge to a normal — the reason the bell curve in §16.9 deserved a whole vector-valued upgrade.</li>
+<li><strong>What comes next.</strong> Chapter 20 estimates <span class="math inline">\(\boldsymbol{\mu}, \boldsymbol{\Sigma}\)</span> (MLE/MAP); Chapter 21 explains <em>why</em> normals appear (CLT); Chapter 24 reads <span class="math inline">\(\boldsymbol{\Sigma}\)</span>’s eigenvectors as principal components.</li>
+</ol>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li><span class="math inline">\((X, Y)\)</span> has joint PMF <span class="math inline">\(P(0,0) = 0.1\)</span>, <span class="math inline">\(P(0,1) = 0.2\)</span>, <span class="math inline">\(P(1,0) = 0.3\)</span>, <span class="math inline">\(P(1,1) = 0.4\)</span> (first index <span class="math inline">\(X\)</span>). Find the mean vector <span class="math inline">\(\boldsymbol{\mu}\)</span> and the covariance matrix <span class="math inline">\(\boldsymbol{\Sigma}\)</span>. Verify symmetry and positive semi-definiteness, and compute the correlation coefficient.</li>
+<li>Prove the short form: <span class="math inline">\(\boldsymbol{\Sigma} = E[\mathbf{X}\mathbf{X}^T] - \boldsymbol{\mu}\boldsymbol{\mu}^T\)</span>, where <span class="math inline">\(\boldsymbol{\mu} = E[\mathbf{X}]\)</span>.</li>
+<li><span class="math inline">\(\mathbf{X}\)</span> has <span class="math inline">\(\boldsymbol{\mu} = (1,\ 2)^T\)</span>, <span class="math inline">\(\boldsymbol{\Sigma} = \begin{pmatrix} 4 &amp; 1 \\ 1 &amp; 2 \end{pmatrix}\)</span>. For <span class="math inline">\(\mathbf{Y} = \mathbf{A}\mathbf{X} + \mathbf{b}\)</span> with <span class="math inline">\(\mathbf{A} = \begin{pmatrix} 1 &amp; 1 \\ 1 &amp; -1 \end{pmatrix}\)</span>, <span class="math inline">\(\mathbf{b} = (0,\ 1)^T\)</span>, find <span class="math inline">\(E[\mathbf{Y}]\)</span> and <span class="math inline">\(\operatorname{Cov}(\mathbf{Y})\)</span>.</li>
+<li>Write the full bivariate normal PDF for <span class="math inline">\(\boldsymbol{\mu} = (1,\ -1)^T\)</span>, <span class="math inline">\(\sigma_1 = 2\)</span>, <span class="math inline">\(\sigma_2 = 1\)</span>, <span class="math inline">\(\rho = 0.6\)</span> (give the normalizer numerically and the exponent’s quadratic form explicitly).</li>
+<li><span class="math inline">\((X_1, X_2)\)</span> is bivariate normal with <span class="math inline">\(\mu_1 = \mu_2 = 0\)</span>, <span class="math inline">\(\sigma_1 = \sigma_2 = 1\)</span>, <span class="math inline">\(\rho = 0.5\)</span>. (a) Give the distribution of <span class="math inline">\(X_2 \mid X_1 = 2\)</span>. (b) Compute <span class="math inline">\(P(X_2 &gt; 1.5 \mid X_1 = 2)\)</span>.</li>
+<li><span class="math inline">\(\mathbf{Y} \sim \mathcal{N}_3(\boldsymbol{\mu}, \boldsymbol{\Sigma})\)</span> with <span class="math inline">\(\boldsymbol{\mu} = (2,\ -1,\ 5)^T\)</span>, <span class="math inline">\(\boldsymbol{\Sigma} = \begin{pmatrix} 9 &amp; 2 &amp; -1 \\ 2 &amp; 4 &amp; 1 \\ -1 &amp; 1 &amp; 6 \end{pmatrix}\)</span>. Find the distribution of <span class="math inline">\(Z = Y_1 + 2Y_2 - Y_3\)</span>.</li>
+<li><span class="math inline">\(\mathbf{X} \sim \mathcal{N}_2\big((1,\ 2)^T,\ \begin{pmatrix} 5 &amp; 3 \\ 3 &amp; 5 \end{pmatrix}\big)\)</span>. Find <span class="math inline">\(\boldsymbol{\Sigma}^{-1/2}\)</span> via the eigendecomposition and write the whitened vector <span class="math inline">\(\mathbf{W} = \boldsymbol{\Sigma}^{-1/2}(\mathbf{X}-\boldsymbol{\mu})\)</span>; verify <span class="math inline">\(\operatorname{Cov}(\mathbf{W}) = \mathbf{I}\)</span>.</li>
+<li><span class="math inline">\(\mathbf{X} \sim \mathcal{N}_3(\mathbf{0}, \boldsymbol{\Sigma})\)</span>, <span class="math inline">\(\boldsymbol{\Sigma} = \begin{pmatrix} 4 &amp; 0 &amp; 1.5 \\ 0 &amp; 9 &amp; -2 \\ 1.5 &amp; -2 &amp; 16 \end{pmatrix}\)</span>. (a) Which pairs of coordinates are independent? (b) Compute the correlation coefficients <span class="math inline">\(\rho_{13}\)</span> and <span class="math inline">\(\rho_{23}\)</span>.</li>
+<li><span class="math inline">\(\mathbf{X} \sim \mathcal{N}_3(\boldsymbol{\mu}, \boldsymbol{\Sigma})\)</span> with <span class="math inline">\(\boldsymbol{\mu} = (1,\ 0,\ 2)^T\)</span>, <span class="math inline">\(\boldsymbol{\Sigma} = \begin{pmatrix} 2 &amp; 1 &amp; 0.5 \\ 1 &amp; 2 &amp; 0.5 \\ 0.5 &amp; 0.5 &amp; 1 \end{pmatrix}\)</span>. Find the distribution of <span class="math inline">\(X_3\)</span> given <span class="math inline">\(X_1 = 3\)</span>, <span class="math inline">\(X_2 = -1\)</span>.</li>
+<li><span class="math inline">\(\mathbf{X} \sim \mathcal{N}_2\big((1,\ 2)^T,\ \begin{pmatrix} 4 &amp; 1 \\ 1 &amp; 1 \end{pmatrix}\big)\)</span>. Compute the squared Mahalanobis distance of <span class="math inline">\(\mathbf{x} = (3,\ 3)^T\)</span> from <span class="math inline">\(\boldsymbol{\mu}\)</span>, and hence the density value <span class="math inline">\(f_{\mathbf{X}}(3, 3)\)</span>.</li>
+</ol>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — Marginals of <span class="math inline">\(X\)</span>: <span class="math inline">\(P(X=0) = 0.1+0.2 = 0.3\)</span>, <span class="math inline">\(P(X=1) = 0.3+0.4 = 0.7\)</span>; of <span class="math inline">\(Y\)</span>: <span class="math inline">\(P(Y=0) = 0.1+0.3 = 0.4\)</span>, <span class="math inline">\(P(Y=1) = 0.2+0.4 = 0.6\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li><span class="math inline">\(\boldsymbol{\mu} = (E[X], E[Y])^T = (0.7,\ 0.6)^T\)</span>.</li>
+<li><span class="math inline">\(E[X^2] = 0^2(0.3) + 1^2(0.7) = 0.7\)</span>, so <span class="math inline">\(\operatorname{Var}(X) = 0.7 - 0.49 = 0.21\)</span>. <span class="math inline">\(E[Y^2] = 0.6\)</span>, <span class="math inline">\(\operatorname{Var}(Y) = 0.6 - 0.36 = 0.24\)</span>.</li>
+<li><span class="math inline">\(E[XY] = \sum x y\,P(x,y) = 1\cdot1\cdot0.4 = 0.4\)</span> (all other terms have <span class="math inline">\(x = 0\)</span> or <span class="math inline">\(y = 0\)</span>). <span class="math inline">\(\operatorname{Cov}(X,Y) = 0.4 - 0.7\cdot0.6 = -0.02\)</span>.</li>
+</ul>
+<p><span class="math display">\[\boxed{\boldsymbol{\Sigma} = \begin{pmatrix} 0.21 &amp; -0.02 \\ -0.02 &amp; 0.24 \end{pmatrix}}.\]</span></p>
+<p>Symmetry: off-diagonals equal ✓. PSD: diagonal entries <span class="math inline">\(&gt; 0\)</span> and <span class="math inline">\(\det = 0.21\cdot0.24 - (-0.02)^2 = 0.0504 - 0.0004 = 0.05 &gt; 0\)</span>, so by §7.9’s <span class="math inline">\(2\times2\)</span> test the matrix is positive definite (hence PSD) ✓. Correlation: <span class="math inline">\(\rho = -0.02/\sqrt{0.21\cdot0.24} = -0.02/\sqrt{0.0504} \approx -0.02/0.2245 \approx \boxed{-0.089}\)</span>.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+## Solution 2 — $$
+<span class="math display">\[\begin{aligned}
+
+\boldsymbol{\Sigma} &amp;= E\big[(\mathbf{X}-\boldsymbol{\mu})(\mathbf{X}-\boldsymbol{\mu})^T\big] \\
+&amp;= E\big[\mathbf{X}\mathbf{X}^T - \mathbf{X}\boldsymbol{\mu}^T - \boldsymbol{\mu}\mathbf{X}^T + \boldsymbol{\mu}\boldsymbol{\mu}^T\big] \\
+&amp;= E[\mathbf{X}\mathbf{X}^T] - E[\mathbf{X}]\boldsymbol{\mu}^T - \boldsymbol{\mu}E[\mathbf{X}]^T + \boldsymbol{\mu}\boldsymbol{\mu}^T \qquad\text{(linearity, $\boldsymbol{\mu}$ constant)} \\
+&amp;= E[\mathbf{X}\mathbf{X}^T] - \boldsymbol{\mu}\boldsymbol{\mu}^T - \boldsymbol{\mu}\boldsymbol{\mu}^T + \boldsymbol{\mu}\boldsymbol{\mu}^T \\
+&amp;= \boxed{E[\mathbf{X}\mathbf{X}^T] - \boldsymbol{\mu}\boldsymbol{\mu}^T}.
+\end{aligned}\]</span>
+<p>$$</p>
+<p>This is the matrix version of <span class="math inline">\(\operatorname{Var}(X) = E[X^2] - (E[X])^2\)</span> (§16.6).</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — <span class="math inline">\(E[\mathbf{Y}] = \mathbf{A}\boldsymbol{\mu} + \mathbf{b} = \begin{pmatrix} 1 &amp; 1 \\ 1 &amp; -1 \end{pmatrix}\begin{pmatrix} 1 \\ 2 \end{pmatrix} + \begin{pmatrix} 0 \\ 1 \end{pmatrix} = \begin{pmatrix} 3 \\ -1 \end{pmatrix} + \begin{pmatrix} 0 \\ 1 \end{pmatrix} = \boxed{\begin{pmatrix} 3 \\ 0 \end{pmatrix}}\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math inline">\(\operatorname{Cov}(\mathbf{Y}) = \mathbf{A}\boldsymbol{\Sigma}\mathbf{A}^T\)</span>. First <span class="math inline">\(\boldsymbol{\Sigma}\mathbf{A}^T = \begin{pmatrix} 4 &amp; 1 \\ 1 &amp; 2 \end{pmatrix}\begin{pmatrix} 1 &amp; 1 \\ 1 &amp; -1 \end{pmatrix} = \begin{pmatrix} 5 &amp; 3 \\ 3 &amp; -1 \end{pmatrix}\)</span>; then <span class="math display">\[\mathbf{A}(\boldsymbol{\Sigma}\mathbf{A}^T) = \begin{pmatrix} 1 &amp; 1 \\ 1 &amp; -1 \end{pmatrix}\begin{pmatrix} 5 &amp; 3 \\ 3 &amp; -1 \end{pmatrix} = \boxed{\begin{pmatrix} 8 &amp; 2 \\ 2 &amp; 4 \end{pmatrix}}.\]</span></p>
+<p>Checks: <span class="math inline">\(\operatorname{Var}(Y_1) = \operatorname{Var}(X_1+X_2) = 4 + 2 + 2(1) = 8\)</span> ✓; symmetric ✓; <span class="math inline">\(\det = 32-4 = 28 &gt; 0\)</span>, PSD ✓. Note <span class="math inline">\(Y_1 = X_1 + X_2 + 0\)</span> and <span class="math inline">\(Y_2 = X_1 - X_2 + 1\)</span> — the shift <span class="math inline">\(1\)</span> appears only in the mean.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — <span class="math inline">\(\boldsymbol{\Sigma} = \begin{pmatrix} \sigma_1^2 &amp; \rho\sigma_1\sigma_2 \\ \rho\sigma_1\sigma_2 &amp; \sigma_2^2 \end{pmatrix} = \begin{pmatrix} 4 &amp; 1.2 \\ 1.2 &amp; 1 \end{pmatrix}\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li><span class="math inline">\(\det\boldsymbol{\Sigma} = 4\cdot1 - 1.44 = 2.56\)</span>; <span class="math inline">\(\sqrt{\det\boldsymbol{\Sigma}} = 1.6\)</span>. Normalizer: <span class="math inline">\(\boxed{(2\pi)\cdot1.6 = 3.2\pi \approx 10.053}\)</span>.</li>
+<li><span class="math inline">\(\boldsymbol{\Sigma}^{-1} = \frac{1}{2.56}\begin{pmatrix} 1 &amp; -1.2 \\ -1.2 &amp; 4 \end{pmatrix} = \begin{pmatrix} 0.390625 &amp; -0.46875 \\ -0.46875 &amp; 1.5625 \end{pmatrix}\)</span>.</li>
+</ul>
+<p><span class="math display">\[\boxed{f(x_1,x_2) = \frac{1}{3.2\pi}\exp\!\left(-\frac{1}{2}\Big[0.390625\,(x_1-1)^2 - 0.9375\,(x_1-1)(x_2+1) + 1.5625\,(x_2+1)^2\Big]\right)}\]</span> (the cross term: <span class="math inline">\(2\cdot(-0.46875)(x_1-1)(x_2+1) = -0.9375\,(x_1-1)(x_2+1)\)</span>).</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — (a) By §19.5: <span class="math inline">\(X_2 \mid X_1 = x_1 \sim N(\rho x_1,\ 1-\rho^2)\)</span>. With <span class="math inline">\(\rho = 0.5\)</span>, <span class="math inline">\(x_1 = 2\)</span>:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[\boxed{X_2 \mid X_1 = 2 \sim N(1,\ 0.75)}.\]</span></p>
+<ol start="2" type="a">
+<li>Standardize: <span class="math inline">\(P(X_2 &gt; 1.5 \mid X_1 = 2) = P\!\left(Z &gt; \frac{1.5-1}{\sqrt{0.75}}\right) = P(Z &gt; 0.5774) = 1 - \Phi(0.5774)\)</span>. <span class="math inline">\(\Phi(0.5774) \approx 0.71815\)</span>, so the answer is <span class="math inline">\(\boxed{\approx 0.282}\)</span>.</li>
+</ol>
+<p>Compare with the marginal: <span class="math inline">\(P(X_2 &gt; 1.5) = 1 - \Phi(1.5) \approx 0.0668\)</span> — conditioning on the large <span class="math inline">\(X_1\)</span> more than quadruples the probability.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — <span class="math inline">\(Z = \mathbf{c}^T\mathbf{Y}\)</span> with <span class="math inline">\(\mathbf{c} = (1,\ 2,\ -1)^T\)</span>. By §19.7(i), <span class="math inline">\(Z \sim N(\mathbf{c}^T\boldsymbol{\mu},\ \mathbf{c}^T\boldsymbol{\Sigma}\mathbf{c})\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>Mean: <span class="math inline">\(1(2) + 2(-1) + (-1)(5) = 2 - 2 - 5 = \boxed{-5}\)</span>.</li>
+<li><span class="math inline">\(\boldsymbol{\Sigma}\mathbf{c} = \begin{pmatrix} 9 &amp; 2 &amp; -1 \\ 2 &amp; 4 &amp; 1 \\ -1 &amp; 1 &amp; 6 \end{pmatrix}\begin{pmatrix} 1 \\ 2 \\ -1 \end{pmatrix} = \begin{pmatrix} 9+4+1 \\ 2+8-1 \\ -1+2-6 \end{pmatrix} = \begin{pmatrix} 14 \\ 9 \\ -5 \end{pmatrix}\)</span>; variance <span class="math inline">\(= \mathbf{c}^T(\boldsymbol{\Sigma}\mathbf{c}) = 1(14) + 2(9) + (-1)(-5) = 14 + 18 + 5 = \boxed{37}\)</span>.</li>
+</ul>
+<p><span class="math display">\[\boxed{Z \sim N(-5,\ 37)}.\]</span> (Sanity: <span class="math inline">\(\boldsymbol{\Sigma}\)</span> is PD — leading minors <span class="math inline">\(9 &gt; 0\)</span>, <span class="math inline">\(36-4 = 32 &gt; 0\)</span>, <span class="math inline">\(\det = 175 &gt; 0\)</span> — so it is a valid covariance.)</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — Eigendecomposition of <span class="math inline">\(\boldsymbol{\Sigma} = \begin{pmatrix} 5 &amp; 3 \\ 3 &amp; 5 \end{pmatrix}\)</span>: characteristic equation <span class="math inline">\((5-\lambda)^2 - 9 = 0\)</span> gives <span class="math inline">\(\boxed{\lambda_1 = 8,\ \lambda_2 = 2}\)</span>. Unit eigenvectors: <span class="math inline">\(\mathbf{q}_1 = (1,1)^T/\sqrt{2}\)</span> (for <span class="math inline">\(\lambda = 8\)</span>: <span class="math inline">\((5-8)x + 3y = 0 \Rightarrow y = x\)</span>), <span class="math inline">\(\mathbf{q}_2 = (1,-1)^T/\sqrt{2}\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><span class="math display">\[\boldsymbol{\Sigma}^{-1/2} = \frac{1}{\sqrt{8}}\mathbf{q}_1\mathbf{q}_1^T + \frac{1}{\sqrt{2}}\mathbf{q}_2\mathbf{q}_2^T = \frac{1}{2\sqrt{2}}\cdot\frac{1}{2}\begin{pmatrix} 1 &amp; 1 \\ 1 &amp; 1 \end{pmatrix} + \frac{1}{\sqrt{2}}\cdot\frac{1}{2}\begin{pmatrix} 1 &amp; -1 \\ -1 &amp; 1 \end{pmatrix}.\]</span></p>
+<p>Combining over the common denominator <span class="math inline">\(4\sqrt{2}\)</span>: <span class="math display">\[\boxed{\boldsymbol{\Sigma}^{-1/2} = \frac{1}{4\sqrt{2}}\begin{pmatrix} 3 &amp; -1 \\ -1 &amp; 3 \end{pmatrix} \approx \begin{pmatrix} 0.5303 &amp; -0.1768 \\ -0.1768 &amp; 0.5303 \end{pmatrix}}.\]</span></p>
+<p>Verification: <span class="math inline">\(\operatorname{Cov}(\mathbf{W}) = \boldsymbol{\Sigma}^{-1/2}\boldsymbol{\Sigma}\boldsymbol{\Sigma}^{-1/2}\)</span>. Since <span class="math inline">\(\boldsymbol{\Sigma}^{-1/2}\)</span> is symmetric and <span class="math inline">\(\boldsymbol{\Sigma}^{-1/2}\boldsymbol{\Sigma}\boldsymbol{\Sigma}^{-1/2} = \boldsymbol{\Sigma}^{-1/2}(\boldsymbol{\Sigma}^{1/2}\boldsymbol{\Sigma}^{1/2})\boldsymbol{\Sigma}^{-1/2} = \mathbf{I}\)</span> (both built from the same <span class="math inline">\(\mathbf{Q}\)</span>), <span class="math inline">\(\boxed{\operatorname{Cov}(\mathbf{W}) = \mathbf{I}}\)</span> — and by §19.7, <span class="math inline">\(\mathbf{W} \sim \mathcal{N}_2(\mathbf{0}, \mathbf{I})\)</span>. Numerically, <span class="math inline">\(\boldsymbol{\Sigma}^{-1/2}\boldsymbol{\Sigma}\boldsymbol{\Sigma}^{-1/2} = \begin{pmatrix} 1 &amp; 0 \\ 0 &amp; 1 \end{pmatrix}\)</span> to machine precision ✓.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 8 — (a) For a normal vector, <span class="math inline">\(X_i \perp X_j \iff \Sigma_{ij} = 0\)</span> (§19.7(iii)). The only zero off-diagonal is <span class="math inline">\(\Sigma_{12} = \Sigma_{21} = 0\)</span>, so <span class="math inline">\(\boxed{X_1 \perp X_2}\)</span>; the other two pairs are dependent (nonzero covariance).
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol start="2" type="a">
+<li><span class="math inline">\(\rho_{13} = \Sigma_{13}/\sqrt{\Sigma_{11}\Sigma_{33}} = 1.5/\sqrt{4\cdot16} = 1.5/8 = \boxed{0.1875}\)</span>. <span class="math inline">\(\rho_{23} = \Sigma_{23}/\sqrt{\Sigma_{22}\Sigma_{33}} = -2/\sqrt{9\cdot16} = -2/12 = \boxed{-1/6 \approx -0.1667}\)</span>.</li>
+</ol>
+<p>(Validity: <span class="math inline">\(\det\boldsymbol{\Sigma} = 539.75 &gt; 0\)</span> with positive leading minors, so <span class="math inline">\(\boldsymbol{\Sigma}\)</span> is PD ✓.)</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 9 — Partition with <span class="math inline">\(\mathbf{X}_{(1)} = (X_1, X_2)\)</span>, <span class="math inline">\(\mathbf{X}_{(2)} = X_3\)</span>: <span class="math inline">\(\boldsymbol{\mu}_1 = (1, 0)^T\)</span>, <span class="math inline">\(\mu_2 = 2\)</span>, <span class="math inline">\(\boldsymbol{\Sigma}_{11} = \begin{pmatrix} 2 &amp; 1 \\ 1 &amp; 2 \end{pmatrix}\)</span>, <span class="math inline">\(\boldsymbol{\Sigma}_{21} = (0.5,\ 0.5)\)</span>, <span class="math inline">\(\Sigma_{22} = 1\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li><span class="math inline">\(\boldsymbol{\Sigma}_{11}^{-1} = \frac{1}{3}\begin{pmatrix} 2 &amp; -1 \\ -1 &amp; 2 \end{pmatrix}\)</span>.</li>
+<li>Regression coefficients: <span class="math inline">\(\boldsymbol{\Sigma}_{21}\boldsymbol{\Sigma}_{11}^{-1} = (0.5,\ 0.5)\cdot\frac{1}{3}\begin{pmatrix} 2 &amp; -1 \\ -1 &amp; 2 \end{pmatrix} = \frac{1}{3}(0.5,\ 0.5) = (1/6,\ 1/6)\)</span>.</li>
+<li>Conditional mean: <span class="math inline">\(2 + \frac{1}{6}(3 - 1) + \frac{1}{6}(-1 - 0) = 2 + \frac{1}{3} - \frac{1}{6} = 2 + \frac{1}{6} = \boxed{13/6 \approx 2.1667}\)</span>.</li>
+<li>Conditional variance (Schur complement): <span class="math inline">\(1 - (0.5,\ 0.5)\cdot(1/6,\ 1/6)^T = 1 - \frac{1}{6} = \boxed{5/6 \approx 0.8333}\)</span>.</li>
+</ul>
+<p><span class="math display">\[\boxed{X_3 \mid X_1 = 3,\ X_2 = -1 \sim N(13/6,\ 5/6)}.\]</span></p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 10 — <span class="math inline">\(\mathbf{d} = \mathbf{x} - \boldsymbol{\mu} = (3-1,\ 3-2)^T = (2,\ 1)^T\)</span>. <span class="math inline">\(\det\boldsymbol{\Sigma} = 4\cdot1 - 1 = 3\)</span>, so <span class="math inline">\(\boldsymbol{\Sigma}^{-1} = \frac{1}{3}\begin{pmatrix} 1 &amp; -1 \\ -1 &amp; 4 \end{pmatrix}\)</span>.
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Squared Mahalanobis distance: <span class="math display">\[d_{\boldsymbol{\Sigma}}^2 = \mathbf{d}^T\boldsymbol{\Sigma}^{-1}\mathbf{d} = \frac{1}{3}(2,\ 1)\begin{pmatrix} 1 &amp; -1 \\ -1 &amp; 4 \end{pmatrix}\begin{pmatrix} 2 \\ 1 \end{pmatrix} = \frac{1}{3}(2,\ 1)\begin{pmatrix} 1 \\ 2 \end{pmatrix} = \frac{1}{3}(2 + 2) = \boxed{\frac{4}{3}}.\]</span></p>
+<p>Density: <span class="math inline">\(f_{\mathbf{X}}(3,3) = \frac{1}{2\pi\sqrt{3}}\exp(-d_{\boldsymbol{\Sigma}}^2/2) = \frac{1}{2\pi\sqrt{3}}e^{-2/3} \approx \frac{0.51342}{10.88280} \approx \boxed{0.0472}\)</span>.</p>
+<p>(Reading: Euclidean distance from <span class="math inline">\(\boldsymbol{\mu}\)</span> is <span class="math inline">\(\sqrt{5} \approx 2.236\)</span>, but the Mahalanobis distance is <span class="math inline">\(\sqrt{4/3} \approx 1.155\)</span> — the point lies mostly along the high-variance direction, so the density judges it “closer” than raw distance suggests.)</p>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./18-joint-continuous-distributions.html" class="pagination-link" aria-label="18. Joint continuous distributions">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">18. Joint continuous distributions</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./20-estimation-mle-map.html" class="pagination-link" aria-label="20. Estimation: MLE and Bayesian/MAP">
+        <span class="nav-page-text"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

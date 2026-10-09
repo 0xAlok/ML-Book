@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Chapter 37: scikit-learn: regression workflows – Foundations to Deep Learning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./38-sklearn-classification.html" rel="next">
+<link href="./36-numpy-pandas.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-968ddd4980072ae063619731fc79ef1d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./36-numpy-pandas.html">Part V — Machine Learning in Practice</a></li><li class="breadcrumb-item"><a href="./37-sklearn-regression.html"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Foundations to Deep Learning</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Foundations to Deep Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I — Mathematical Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-sets-functions-preliminaries.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 1 — Sets, functions, and mathematical preliminaries</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-vectors-and-matrices.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">2. Vectors and matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-linear-systems-determinants-inverses.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">3. Linear systems, determinants, inverses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-vector-spaces-four-subspaces.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">4. Vector spaces and the four fundamental subspaces</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-orthogonality-projections-least-squares.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">5. Orthogonality, projections, least squares</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-eigenvalues-eigenvectors-diagonalization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">6. Eigenvalues, eigenvectors, diagonalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-svd-positive-definite.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">7. SVD and positive definite matrices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./08-single-variable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">8. Single-variable calculus: continuity, differentiability, derivatives</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./09-multivariable-calculus.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">9. Multivariable calculus: partial derivatives, gradients, Taylor series</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./10-unconstrained-optimization-gradient-descent.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">10. Unconstrained optimization and gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./11-constrained-optimization-lagrange.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">11. Constrained optimization: Lagrange multipliers, projected gradient descent</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./12-convex-sets-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">12. Convex sets and convex functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./13-duality-kkt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">13. Duality and KKT conditions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II — Probability and Statistics</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./14-probability-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">14. Probability basics: experiments, sample spaces, Bayes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./15-discrete-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">15. Discrete random variables and key distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./16-continuous-random-variables.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">16. Continuous random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./17-joint-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">17. Joint distributions: two random variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./18-joint-continuous-distributions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">18. Joint continuous distributions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./19-random-vectors-multivariate-normal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">19. Random vectors and the multivariate normal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./20-estimation-mle-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">20. Estimation: MLE and Bayesian/MAP</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./21-inequalities-clt.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">21. Inequalities and the central limit theorem</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part III — Machine Learning Foundations</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./22-what-is-ml.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">22. What is ML: data, models, tasks; supervised vs unsupervised</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./23-linear-polynomial-regression.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">23. Linear and polynomial regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./24-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">24. PCA: variance maximization, eigendecomposition, kernel PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./25-gmm-em.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">25. GMMs and the EM algorithm</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part IV — Machine Learning Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./26-k-means.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">26. K-means clustering</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./27-kernel-methods.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">27. Kernel methods and kernel regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./28-regularization.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">28. Regularization: ridge and lasso</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./29-knn-trees.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">29. KNN and decision trees</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./30-naive-bayes.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">30. Naive Bayes: generative vs discriminative models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./31-perceptron-logistic.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">31. Perceptron and logistic regression</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./32-hard-margin-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 32: Hard-margin SVM</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./33-soft-margin-kernel-svm.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 33: Soft-margin SVM and the kernel trick</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./34-ensembles.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 34: Ensembles — bagging, boosting, AdaBoost</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./35-loss-functions.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 35: Loss functions for classification</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part V — Machine Learning in Practice</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./36-numpy-pandas.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./37-sklearn-regression.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./38-sklearn-classification.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./39-model-evaluation-cv.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 39: Model evaluation, cross-validation, hyperparameter tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./40-end-to-end-debugging.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 40: End-to-end model training and debugging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part VI — Bridge to Deep Learning</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./41-neuron-mlp-scratch.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 41: The artificial neuron and MLPs from scratch</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./42-backpropagation.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 42: Backpropagation, worked end-to-end</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./43-optimization-neural-nets.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 43: Optimization for neural nets — SGD variants, init, normalization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./44-cnns.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 44: CNNs — convolution, pooling, transfer learning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./45-rnns-sequences-vanishing-gradients.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 45: RNNs — sequences and vanishing gradients</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./46-attention-and-transformers.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 46: Attention and the transformer</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./47-generative-models-gans-diffusion.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Chapter 47: Generative models: GANs and diffusion</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#the-estimator-contract-fit-predict-score" id="toc-the-estimator-contract-fit-predict-score" class="nav-link active" data-scroll-target="#the-estimator-contract-fit-predict-score">37.1 The estimator contract: <code>fit</code>, <code>predict</code>, <code>score</code></a></li>
+  <li><a href="#the-workflow-split-first-then-fit" id="toc-the-workflow-split-first-then-fit" class="nav-link" data-scroll-target="#the-workflow-split-first-then-fit">37.2 The workflow: split first, then fit</a></li>
+  <li><a href="#two-engines-for-the-same-line" id="toc-two-engines-for-the-same-line" class="nav-link" data-scroll-target="#two-engines-for-the-same-line">37.3 Two engines for the same line</a></li>
+  <li><a href="#model-inspection-reading-the-weights-back-out" id="toc-model-inspection-reading-the-weights-back-out" class="nav-link" data-scroll-target="#model-inspection-reading-the-weights-back-out">37.4 Model inspection: reading the weights back out</a></li>
+  <li><a href="#polynomial-regression-expand-the-features-keep-the-machine" id="toc-polynomial-regression-expand-the-features-keep-the-machine" class="nav-link" data-scroll-target="#polynomial-regression-expand-the-features-keep-the-machine">37.6 Polynomial regression: expand the features, keep the machine</a></li>
+  <li><a href="#regularization-in-sklearn-the-alpha-dial" id="toc-regularization-in-sklearn-the-alpha-dial" class="nav-link" data-scroll-target="#regularization-in-sklearn-the-alpha-dial">37.7 Regularization in sklearn: the <code>alpha</code> dial</a></li>
+  <li><a href="#transformers-and-pipelines-learn-on-train-apply-everywhere" id="toc-transformers-and-pipelines-learn-on-train-apply-everywhere" class="nav-link" data-scroll-target="#transformers-and-pipelines-learn-on-train-apply-everywhere">37.8 Transformers and pipelines: learn on train, apply everywhere</a></li>
+  <li><a href="#choosing-the-dial-validation-briefly" id="toc-choosing-the-dial-validation-briefly" class="nav-link" data-scroll-target="#choosing-the-dial-validation-briefly">37.9 Choosing the dial: validation, briefly</a></li>
+  <li><a href="#where-this-goes-next" id="toc-where-this-goes-next" class="nav-link" data-scroll-target="#where-this-goes-next">37.10 Where this goes next</a></li>
+  <li><a href="#problem-set" id="toc-problem-set" class="nav-link" data-scroll-target="#problem-set">Problem set</a></li>
+  <li><a href="#solutions" id="toc-solutions" class="nav-link" data-scroll-target="#solutions">Solutions</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./36-numpy-pandas.html">Part V — Machine Learning in Practice</a></li><li class="breadcrumb-item"><a href="./37-sklearn-regression.html"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">Chapter 37: scikit-learn: regression workflows</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Everything in §§37.1–37.7 comes from the MLP course’s regression weeks — the Week-3 “Linear Regression” and Week-4 “Polynomial Regression” slide decks (Dr.&nbsp;Ashish Tendulkar, IIT Madras) — and §§37.8–37.9 from the Week-2 “Data Preprocessing” slides, the Week-2 programming-questions notebook, and the “Notes by Sejal” Week-2 summary (pipeline construction, <code>set_params</code>, grid search with pipelines). (The MLT TA colab’s “Week 2 Programming Assignment” was checked — it is about kernel matrices, not sklearn workflows, and is not used.) This is the code for Chapter 23’s equations: §23.5 derived <span class="math inline">\(\hat\theta = (X^TX)^{-1}X^Ty\)</span> on paper; here something calls <code>.fit()</code> and returns it.</p>
+<p><strong>A word on what was actually run.</strong> sklearn is not installed on this machine (see the chapter task note), so no <code>sklearn</code> call below was executed here. The code blocks are transcribed from the course slides and notebooks — verbatim unless a slide typo forced a fix (each fix is logged in <code>reviews/37-sklearn-regression.md</code>). Every <em>number</em> beside the code is either <strong>[recorded]</strong> — printed as output in the course material itself — or <strong>[verified-NumPy]</strong> — computed in this session through the mathematically identical closed form (§23.5’s normal equations, §28.4’s ridge form, the scaler/imputer definitions the slides give), which is provably what the sklearn call computes. The two kinds are marked wherever they could be confused.</p>
+<p><strong>Notation.</strong> The book’s standing convention (chapters 31–36): <span class="math inline">\(X \in \mathbb{R}^{n \times d}\)</span> holds the points <span class="math inline">\(x^{(1)}, \dots, x^{(n)}\)</span> as rows, <span class="math inline">\(y \in \mathbb{R}^n\)</span> holds the labels. sklearn uses the same convention — its Week-12 slide writes it out: training data shape <span class="math inline">\(\to\)</span> <code>(n_samples, n_features)</code>, labels <span class="math inline">\(\to\)</span> <code>(n_samples,)</code>.</p>
+<section id="the-estimator-contract-fit-predict-score" class="level2">
+<h2 class="anchored" data-anchor-id="the-estimator-contract-fit-predict-score">37.1 The estimator contract: <code>fit</code>, <code>predict</code>, <code>score</code></h2>
+<p><strong>Def (estimator).</strong> An <strong>estimator</strong> = any sklearn object that learns parameters from data. Every estimator honors the same three-method contract:</p>
+<ol type="i">
+<li><code>fit(X_train, y_train)</code> — learn the parameters from the training data. For regression, this is §23.5’s job: find <span class="math inline">\(\hat\theta\)</span>.</li>
+<li><code>predict(X_test)</code> — apply the learned parameters to new data: <span class="math inline">\(\hat y = X_{\text{test}}\hat\theta\)</span> (§23.1’s model, row by row).</li>
+<li><code>score(X_test, y_test)</code> — evaluate on held-out data (§37.5: for regressors this returns <span class="math inline">\(R^2\)</span>).</li>
+</ol>
+<p>The Week-3 slide’s remark, kept because it is the whole point of the chapter: <em>“These code snippets work for both LinearRegression and SGDRegressor, and for that matter to all regression estimators that we will study in this module. Why? All of them are estimators.”</em> Learn the contract once; every regressor from here on is a new object with the same three verbs.</p>
+<p><strong>eg 1 (the contract, on the §36.8 house data).</strong> Features = area, rooms; label = price. The 10-row table of §36.8, rooms imputed with the median <span class="math inline">\(4.0\)</span>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LinearRegression</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>lin_reg <span class="op">=</span> LinearRegression()      <span class="co"># i)   choose the estimator</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>lin_reg.fit(X_train, y_train)     <span class="co"># ii)  learn:  theta-hat = (X^T X)^{-1} X^T y</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>lin_reg.predict(X_test)           <span class="co"># iii) apply:  y-hat = X_test @ theta-hat</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>lin_reg.score(X_test, y_test)     <span class="co"># iv)  evaluate: R^2 on the test set</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Replace <code>LinearRegression()</code> with <code>Ridge(alpha=1e-3)</code> or <code>SGDRegressor()</code> and nothing else changes — the contract is the API.</p>
+<p><strong>Basically, …</strong> “An sklearn estimator is a machine with three buttons: <code>fit</code> learns the weights, <code>predict</code> uses them, <code>score</code> grades them. <code>LinearRegression</code>, <code>Ridge</code>, <code>Lasso</code>, <code>SGDRegressor</code> are all the same machine with different engines inside — which is why the Week-3 slide keeps reusing one code shape for all of them.”</p>
+</section>
+<section id="the-workflow-split-first-then-fit" class="level2">
+<h2 class="anchored" data-anchor-id="the-workflow-split-first-then-fit">37.2 The workflow: split first, then fit</h2>
+<p>The slide’s four steps, in order — and the order is load-bearing:</p>
+<ol type="i">
+<li><strong>Split</strong> the data into train and test <em>before anything learns anything</em>:</li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(X, y, random_state<span class="op">=</span><span class="dv">42</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>random_state=42</code> fixes the shuffle, the same reproducibility discipline as §36.6’s seed (the SGD slide repeats it: “It’s a good idea to use a random seed of your choice… it helps us get reproducible results”). ii) <strong>Fit</strong> the estimator on the <em>training</em> set only. iii) <strong>Training error</strong> (a.k.a. <em>empirical error</em>) — how the model does on data it saw. iv) <strong>Test error</strong> (a.k.a. <em>generalization error</em>) — how it does on data it didn’t. Compare the two: close together is healthy; train tiny + test large is §23.9’s overfitting signature.</p>
+<p><strong>Note (the baseline habit).</strong> Before any real model, the slide builds a <code>DummyRegressor</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.dummy <span class="im">import</span> DummyRegressor</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>dummy_regr <span class="op">=</span> DummyRegressor(strategy<span class="op">=</span><span class="st">"mean"</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>dummy_regr.fit(X_train, y_train)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>dummy_regr.predict(X_test)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>dummy_regr.score(X_test, y_test)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>It predicts the training-set mean (strategies: <code>mean</code>, <code>median</code>, <code>quantile</code>, <code>constant</code>) for every input — the “constant model” of §37.5. Any model that cannot beat this on the test set is not a model, it is a rounding error with extra steps.</p>
+<p><strong>Note (the discipline, again).</strong> The imputation rule of §36.7 — learn the imputer on the training set, apply it everywhere — generalizes: <em>every</em> learning step (imputer, scaler, polynomial expansion, the regressor itself) is fitted on the training split and merely applied to the test split. §37.8 shows the machinery (<code>fit</code> vs <code>transform</code>) that enforces this; Chapter 39 makes it a full evaluation doctrine.</p>
+</section>
+<section id="two-engines-for-the-same-line" class="level2">
+<h2 class="anchored" data-anchor-id="two-engines-for-the-same-line">37.3 Two engines for the same line</h2>
+<p>The slide offers two estimators for linear regression — same contract, different internals:</p>
+<p><strong>Option A — the normal equation.</strong> <code>LinearRegression()</code> solves §23.5’s closed form. The appendix is explicit: it uses an SVD-based solve, cost <span class="math inline">\(O(m^2)\)</span> in the number of features <span class="math inline">\(m\)</span> — “if we double the number of features, the training computation grows roughly 4 times” — and it is linear in <span class="math inline">\(n\)</span> “as long as the training set fits in the memory.” Same optimum §23.3 proves, computed directly.</p>
+<p><strong>Option B — iterative optimization.</strong> <code>SGDRegressor()</code> walks downhill the way Chapter 10 does, one sample (or mini-batch) at a time: cost <span class="math inline">\(O(knp)\)</span> for <span class="math inline">\(k\)</span> epochs and <span class="math inline">\(p\)</span> average nonzero features per sample — linear in <span class="math inline">\(n\)</span>, which is why the slide says <em>“Use for large training set up (&gt; 10k samples)”</em>, and adds: <em>“For learning problems with small number of training examples, sklearn user guide recommends Ridge or Lasso.”</em></p>
+<p><strong>Note (SGD’s one demand: scale your features).</strong> “SGD is sensitive to feature scaling, so it is highly recommended to scale input feature matrix.” The slide’s fix is a two-step pipeline (full pipeline machinery in §37.8):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> SGDRegressor</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.pipeline <span class="im">import</span> Pipeline</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>sgd <span class="op">=</span> Pipeline([</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    (<span class="st">'feature_scaling'</span>, StandardScaler()),</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    (<span class="st">'sgd_regressor'</span>, SGDRegressor())])</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>sgd.fit(X_train, y_train)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>(Exceptions the slide carves out: word frequencies and indicator features “have intrinsic scale” and skip this.)</p>
+<p>The SGD knobs, as the slides record them (defaults per the slides — <code>random_state</code> is deliberately set in real code even though the slides omit it “for sake of brevity”): i) <code>random_state=42</code> — reproducibility (§36.6’s whole sermon, in one argument). ii) <code>max_iter=100</code> — one epoch is one full pass over the training data; default is 1000. The slide’s rule of thumb: “SGD converges after observing approximately <span class="math inline">\(10^6\)</span> training samples,” so a first guess is <code>max_iter = np.ceil(1e6 / n)</code>. iii) <code>learning_rate</code> — <code>'invscaling'</code> (the slide’s stated default), <code>'constant'</code>, or <code>'adaptive'</code>; <code>eta0</code> sets the starting rate. Invscaling decays as <span class="math inline">\(\eta(t) = \eta_0 / t^{\text{power\_t}}\)</span>. iv) Stopping — either watch the training loss (<code>tol</code>, <code>n_iter_no_change</code>: stop when the loss fails to improve by <code>tol</code> for <code>n_iter_no_change</code> epochs) or hold out a validation fraction and watch the <em>validation score</em> (<code>early_stopping=True, validation_fraction=0.2</code>). v) <code>loss='squared_error'</code> — “studied in this course”; <code>'huber'</code> is the robust alternative. <code>average=True</code> switches on averaged SGD (the returned <code>coef_</code> is the average of the iterates, which “works best with a larger number of features and a higher eta0”). vi) <code>warm_start=True</code> — resume from the previous run’s weights instead of re-initializing; the slide’s monitoring recipe fits one epoch at a time in a loop and evaluates the validation MSE after each.</p>
+<p><strong>Basically, …</strong> “<code>LinearRegression</code> does the algebra (§23.5) in one shot — exact, but the matrix inverse gets expensive as features grow. <code>SGDRegressor</code> does Chapter 10’s hill-walking — cheap per step, scales to millions of rows, but needs scaled features, a seed, and a few knobs set. Same line out the other end.”</p>
+</section>
+<section id="model-inspection-reading-the-weights-back-out" class="level2">
+<h2 class="anchored" data-anchor-id="model-inspection-reading-the-weights-back-out">37.4 Model inspection: reading the weights back out</h2>
+<p>After <code>fit</code>, the learned parameters live in two attributes — for <em>every</em> linear estimator in this chapter:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>linear_regressor.coef_       <span class="co"># w1, ..., wm  (the weights)</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>linear_regressor.intercept_  <span class="co"># w0          (the bias term)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The model is §23.1’s, written the slide’s way: <span class="math inline">\(\hat y = w_0 + w_1x_1 + w_2x_2 + \cdots + w_mx_m = w^Tx\)</span>. And inference is one line on a properly shaped matrix — “Step 1: arrange data for prediction in a feature matrix of shape (#samples, #features)” — the <span class="math inline">\((n, d)\)</span> convention doing its job:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Predict labels for feature matrix X_test</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>linear_regressor.predict(X_test)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>eg 2 (the §36.8 houses, inspected) [verified-NumPy].</strong> OLS on all 10 rows (rooms NaN <span class="math inline">\(\to\)</span> median <span class="math inline">\(4.0\)</span>, per §36.8), solved through §23.5’s normal equations — the identical computation <code>LinearRegression().fit(X, y)</code> performs:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>lin_reg.coef_       <span class="co"># [0.0643, 1.7601]   (area, rooms)</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>lin_reg.intercept_  <span class="co"># -14.805</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Read it as the book reads equations: each extra square foot adds <span class="math inline">\(0.0643\)</span> to the price, each extra room adds <span class="math inline">\(1.7601\)</span>, from a base of <span class="math inline">\(-14.805\)</span>. A <span class="math inline">\(1000\)</span>-sqft, <span class="math inline">\(3\)</span>-room house: <span class="math inline">\(\hat y = -14.805 + 0.0643 \times 1000 + 1.7601 \times 3 = 54.8\)</span>. (Units are §36.8’s; the arithmetic is what matters — <code>coef_</code> <em>is</em> §23.5’s <span class="math inline">\(\hat\theta\)</span>, <code>intercept_</code> its <span class="math inline">\(\theta_0\)</span>.) ## 37.5 Evaluation: scores, errors, and <span class="math inline">\(R^2\)</span></p>
+<p><strong>Def (score vs error).</strong> The slide draws the line once, and it never moves: a <strong>score</strong> is a metric where <em>higher is better</em>; an <strong>error</strong> is one where <em>lower is better</em>. sklearn converts any error into a score by negating it — the <code>neg_</code> prefix: <code>neg_mean_squared_error</code>, <code>neg_mean_absolute_error</code>, <code>neg_root_mean_squared_error</code>, and so on (needed because cross-validation and grid search always <em>maximize</em>). The slide’s table:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>error function</th>
+<th>scoring name</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>mean_absolute_error</code></td>
+<td><code>neg_mean_absolute_error</code></td>
+</tr>
+<tr class="even">
+<td><code>mean_squared_error</code></td>
+<td><code>neg_mean_squared_error</code> / <code>neg_root_mean_squared_error</code></td>
+</tr>
+<tr class="odd">
+<td><code>mean_squared_log_error</code></td>
+<td><code>neg_mean_squared_log_error</code></td>
+</tr>
+<tr class="even">
+<td><code>median_absolute_error</code></td>
+<td><code>neg_median_absolute_error</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Def (<span class="math inline">\(R^2\)</span>, the coefficient of determination).</strong> <code>estimator.score(X_test, y_test)</code> returns <span class="math display">\[\boxed{R^2 = 1 - \frac{u}{v}}, \qquad u = (Xw - y)^T(Xw - y), \quad v = (y - \hat y_{\text{mean}})^T(y - \hat y_{\text{mean}}).\]</span> <span class="math inline">\(u\)</span> = residual sum of squares (how far the model’s predictions miss); <span class="math inline">\(v\)</span> = total sum of squares (how far the labels miss their <em>own mean</em>). So <span class="math inline">\(R^2\)</span> = “what fraction of the label’s variance the model explains.” Three landmarks, straight from the slides: i) Best possible: <span class="math inline">\(1.0\)</span> — <span class="math inline">\(u = 0\)</span>, the model nails every point. ii) <span class="math inline">\(0.0\)</span> — <span class="math inline">\(u = v\)</span>: the model is exactly as good as always predicting the mean. (This is why §37.2’s <code>DummyRegressor(strategy="mean")</code> is the baseline to beat.) iii) Negative — “the model can be arbitrarily worse” than predicting the mean. A negative <span class="math inline">\(R^2\)</span> is the model telling on itself.</p>
+<p><strong>eg 3 (<span class="math inline">\(R^2\)</span> by the numbers, on eg 2’s fit) [verified-NumPy].</strong> Training residuals <span class="math inline">\(u = 160.4\)</span>, label variance <span class="math inline">\(v = 4214.1\)</span>: <span class="math inline">\(R^2 = 1 - 160.4/4214.1 = 0.9619\)</span>. Mean squared error <span class="math inline">\(= u/n = 16.04\)</span>. Ninety-six percent of the price variance is explained by area and rooms — on the data it was fitted to, so read it as a goodness-of-fit, not a generalization claim (§37.2’s step iv is what earns that).</p>
+<p>The <code>sklearn.metrics</code> shelf, with the slide’s one-line character for each: i) <code>mean_absolute_error(y_test, y_predicted)</code> — average <span class="math inline">\(|y - \hat y|\)</span>, in the label’s own units. ii) <code>mean_squared_error</code> — the slide’s appendix lists MSE and RMSE as <em>the</em> evaluation measures; note the slide text once misspells the import as <code>mean_squarred_error</code> — the real name is <code>mean_squared_error</code> (fix logged in the review). iii) <code>r2_score</code> — “same as output of score.” iv) <code>mean_squared_log_error</code> — “useful for targets with exponential growths like population, sales growth”; “penalizes under-estimation heavier than the over-estimation.” v) <code>mean_absolute_percentage_error</code> — “sensitive to relative error.” vi) <code>median_absolute_error</code> — “robust to outliers” (the median shrugs at the one wild point). vii) <code>max_error</code> — the worst case, “only for single output regression.”</p>
+<p><strong>Basically, …</strong> “<span class="math inline">\(R^2\)</span> answers ‘how much better than just guessing the average?’ — <span class="math inline">\(1\)</span> is perfect, <span class="math inline">\(0\)</span> is the average-guesser, negative is worse than guessing. Everything else on the shelf is a different way of averaging the misses: squared (MSE) punishes big misses hardest, absolute (MAE) reads in plain units, median (MedAE) ignores outliers, max tells you the worst single embarrassment.”</p>
+</section>
+<section id="polynomial-regression-expand-the-features-keep-the-machine" class="level2">
+<h2 class="anchored" data-anchor-id="polynomial-regression-expand-the-features-keep-the-machine">37.6 Polynomial regression: expand the features, keep the machine</h2>
+<p>§23.8’s move, as code: polynomial regression = polynomial <em>transformation</em> + linear regression. “The only difference with respect to regular linear regression is that we are transforming the features and then performing regression” — §23.8’s lecture line, which the MLP slide re-implements:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LinearRegression</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.pipeline <span class="im">import</span> Pipeline</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> PolynomialFeatures</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Two steps:</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Polynomial features of desired degree (here degree=2)</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Linear regression</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>poly_model <span class="op">=</span> Pipeline([</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    (<span class="st">'polynomial_transform'</span>, PolynomialFeatures(degree<span class="op">=</span><span class="dv">2</span>)),</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    (<span class="st">'linear_regression'</span>, LinearRegression())])</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Train with feature matrix X_train and label vector y_train</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>poly_model.fit(X_train, y_train)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Swap the engine to SGD — “notice that there is a single line code change in two code snippets” (the slide’s words):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>poly_model <span class="op">=</span> Pipeline([</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    (<span class="st">'polynomial_transform'</span>, PolynomialFeatures(degree<span class="op">=</span><span class="dv">2</span>)),</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    (<span class="st">'sgd_regression'</span>, SGDRegressor())])</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>poly_model.fit(X_train, y_train)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>eg 4 (what <code>PolynomialFeatures</code> actually builds) [recorded].</strong> The slide’s example, output printed in the deck:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> PolynomialFeatures</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.arange(<span class="dv">6</span>).reshape(<span class="dv">3</span>, <span class="dv">2</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>poly <span class="op">=</span> PolynomialFeatures(degree<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>poly.fit_transform(X)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Data matrix:</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co"># [[0 1]</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co">#  [2 3]</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="co">#  [4 5]]</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="co"># After transformation:</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="co"># [[ 1.  0.  1.  0.  0.  1.]</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="co">#  [ 1.  2.  3.  4.  6.  9.]</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="co">#  [ 1.  4.  5. 16. 20. 25.]]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><span class="math inline">\([x_1, x_2] \to [1, x_1, x_2, x_1^2, x_1x_2, x_2^2]\)</span> — exactly §23.8’s <span class="math inline">\(\phi(x) = (1, x, x^2, \dots)^T\)</span>, now with the interaction term <span class="math inline">\(x_1x_2\)</span>. Two variants: <code>interaction_only=True</code> gives <span class="math inline">\([1, x_1, x_2, x_1x_2]\)</span> (“<span class="math inline">\([x_1^2, x_2^2]\)</span> are excluded” — the slide’s note); <code>include_bias=False</code> drops the leading <span class="math inline">\(1\)</span> when the estimator already fits its own intercept.</p>
+<p><strong>Note (capacity bites back).</strong> The slide’s appendix warns: “Since the polynomial regression uses more parameters (due to polynomial representation of the input), it is more prone to overfitting. We will study how to detect overfitting with learning curves and use of regularization to mitigate the risk of overfitting.” §23.9 said it on paper; here is the code version.</p>
+<p><strong>eg 5 (overfitting, caught red-handed) [verified-NumPy].</strong> Ten noisy points from the smooth curve <span class="math inline">\(f(x) = 4x^3 - 6x^2 + 3x\)</span> on <span class="math inline">\([0, 1]\)</span> (seed <span class="math inline">\(0\)</span>; noise <span class="math inline">\(\sigma = 0.15\)</span>), judged on <span class="math inline">\(500\)</span> fresh points. Each row is the sklearn pipeline shown above, its numbers verified through the identical closed form:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>model</th>
+<th><span class="math inline">\(\lVert w\rVert_2\)</span></th>
+<th>train MSE</th>
+<th>test MSE</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>linear (degree 1)</td>
+<td><span class="math inline">\(0.85\)</span></td>
+<td><span class="math inline">\(0.027\)</span></td>
+<td><span class="math inline">\(0.048\)</span></td>
+</tr>
+<tr class="even">
+<td>poly, degree 9</td>
+<td><span class="math inline">\(84441.82\)</span></td>
+<td><span class="math inline">\(0.000\)</span></td>
+<td><span class="math inline">\(0.226\)</span></td>
+</tr>
+<tr class="odd">
+<td>poly 9 + Ridge(<span class="math inline">\(\alpha=0.5\)</span>)</td>
+<td><span class="math inline">\(0.38\)</span></td>
+<td><span class="math inline">\(0.031\)</span></td>
+<td><span class="math inline">\(0.044\)</span></td>
+</tr>
+<tr class="even">
+<td>poly 9 + Ridge(<span class="math inline">\(\alpha=50\)</span>)</td>
+<td><span class="math inline">\(0.03\)</span></td>
+<td><span class="math inline">\(0.088\)</span></td>
+<td><span class="math inline">\(0.056\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Read it the §23.9 way: degree 9 memorizes the ten training points (train MSE <span class="math inline">\(0.000\)</span>) with absurd weights (<span class="math inline">\(\lVert w\rVert_2 = 84442\)</span> — the wiggle between points from §23.9’s figure, now as a number) and pays on fresh data. Ridge with <span class="math inline">\(\alpha = 0.5\)</span> shrinks the weights two-hundred-thousand-fold and wins on the test set; <span class="math inline">\(\alpha = 50\)</span> squeezes too hard and underfits. This is §28.6’s “<span class="math inline">\(\lambda\)</span> dial” with the dial labeled <code>alpha</code> — §37.7 names the translation.</p>
+<p><strong>Basically, …</strong> “A degree-9 polynomial on 10 points is a student who memorized the practice test: <span class="math inline">\(0.000\)</span> training error, nonsense elsewhere, weights in the tens of thousands. Regularization is the teacher confiscating the cheat sheet — smaller weights, slightly worse practice score, much better real score.”</p>
+</section>
+<section id="regularization-in-sklearn-the-alpha-dial" class="level2">
+<h2 class="anchored" data-anchor-id="regularization-in-sklearn-the-alpha-dial">37.7 Regularization in sklearn: the <code>alpha</code> dial</h2>
+<p>Chapter 28 derived ridge and lasso with the penalty dial called <span class="math inline">\(\lambda\)</span>. sklearn calls it <strong><code>alpha</code></strong> — same role, and for ridge the translation is exact:</p>
+<p><strong>Note (the <code>alpha</code> <span class="math inline">\(\leftrightarrow\)</span> <span class="math inline">\(\lambda\)</span> convention).</strong> The book’s ridge (§28.3) minimizes <span class="math inline">\(\tfrac{1}{2}\lVert Xw - y\rVert^2 + \tfrac{\lambda}{2}\lVert w\rVert^2\)</span>; sklearn’s <code>Ridge</code> minimizes <span class="math inline">\(\lVert Xw - y\rVert^2 + \alpha\lVert w\rVert^2\)</span>. Multiply the book’s objective by 2 and the two are the same problem — so <strong>book-<span class="math inline">\(\lambda\)</span> = sklearn-<code>alpha</code>, exactly</strong>, for ridge. (For lasso the objectives differ in normalization — sklearn’s <code>Lasso</code> divides the squared error by <span class="math inline">\(2n\)</span> — so treat its <code>alpha</code> as its own dial, not a port of the book’s <span class="math inline">\(\lambda\)</span>.)</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> Ridge</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>ridge <span class="op">=</span> Ridge(alpha<span class="op">=</span><span class="fl">1e-3</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co"># fit, score, predict work exactly like other linear regression estimators</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>or, equivalently, the SGD route (<code>penalty='l2'</code> is even SGDRegressor’s default):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> SGDRegressor</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>sgd <span class="op">=</span> SGDRegressor(alpha<span class="op">=</span><span class="fl">1e-3</span>, penalty<span class="op">=</span><span class="st">'l2'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Lasso, the same shape (§28.7’s feature-selector):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> Lasso</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>lasso <span class="op">=</span> Lasso(alpha<span class="op">=</span><span class="fl">1e-3</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co"># or: SGDRegressor(alpha=1e-3, penalty='l1')</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Both at once — elastic net, “a convex combination of L1 (Lasso) and L2 (Ridge)”: <code>SGDRegressor(penalty='elasticnet', l1_ratio=0.3)</code> means <span class="math inline">\(0.3 \times \text{L1} + 0.7 \times \text{L2}\)</span> (“L2 takes higher weightage in this formulation” — the slide’s words).</p>
+<p>Regularization meets the polynomial pipeline — the slide’s recipe for §37.6’s overfit:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> Ridge</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.pipeline <span class="im">import</span> Pipeline</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> PolynomialFeatures</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>poly_model <span class="op">=</span> Pipeline([</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    (<span class="st">'polynomial_transform'</span>, PolynomialFeatures(degree<span class="op">=</span><span class="dv">2</span>)),</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    (<span class="st">'ridge'</span>, Ridge(alpha<span class="op">=</span><span class="fl">1e-3</span>))])</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>poly_model.fit(X_train, y_train)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>(Replace <code>Ridge</code> with <code>Lasso</code> for the lasso version; the slide gives both.)</p>
+<p><strong>Choosing <code>alpha</code>.</strong> Two course-sanctioned routes (§28.10’s validation discipline, as code): the built-in path — <code>RidgeCV</code> / <code>LassoCV</code> / <code>ElasticNetCV</code>, which “fit data for a range of values of some parameter almost as efficiently as fitting the estimator for a single value” (<code>RidgeCV(alphas=[...])</code> tries a list; the winner is reported in its <code>alpha_</code> attribute) — or plain cross-validation over a <code>Ridge</code>/<code>Lasso</code> grid. The full cross-validation machinery is Chapter 39’s subject; the one-line version lives here because the dial is useless without a way to set it.</p>
+<p><strong>Basically, …</strong> “sklearn’s <code>alpha</code> <em>is</em> the book’s <span class="math inline">\(\lambda\)</span> wearing a different name tag (exactly, for ridge). <code>RidgeCV</code> is the lazy-good way to pick it: hand it a list of candidates, it cross-validates each, and tells you the winner. The polynomial that memorized your data in eg 5 gets fixed by exactly this.”</p>
+</section>
+<section id="transformers-and-pipelines-learn-on-train-apply-everywhere" class="level2">
+<h2 class="anchored" data-anchor-id="transformers-and-pipelines-learn-on-train-apply-everywhere">37.8 Transformers and pipelines: learn on train, apply everywhere</h2>
+<p>The Week-2 preprocessing slides give the second contract of the chapter — the <strong>transformer</strong> contract:</p>
+<p><strong>Def (transformer).</strong> <code>fit(X)</code> <em>learns</em> parameters from data; <code>transform(X)</code> <em>applies</em> the learned transformation to (new) data; <code>fit_transform(X)</code> does both at once. The slide’s discipline, verbatim in spirit: the same preprocessing must be applied to train and test, so fit on the training set and transform both.</p>
+<ol type="i">
+<li><strong>Scaling.</strong> <code>StandardScaler</code> learns <span class="math inline">\(\mu, \sigma\)</span> per feature and maps <span class="math inline">\(x' = (x - \mu)/\sigma\)</span> [recorded]:</li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>ss <span class="op">=</span> StandardScaler()          <span class="co"># (the slide prints StandardScalar(); the class is StandardScaler)</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> [[<span class="dv">4</span>],[<span class="dv">3</span>],[<span class="dv">2</span>],[<span class="dv">5</span>],[<span class="dv">6</span>]]      <span class="co"># mu = 4, sigma = sqrt(2)</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>ss.fit_transform(x)            <span class="co"># [[0],[-1/sqrt(2)],[-2/sqrt(2)],[1/sqrt(2)],[2/sqrt(2)]]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>transformed mean <span class="math inline">\(0\)</span>, std <span class="math inline">\(1\)</span>. Siblings: <code>MinMaxScaler</code> (<span class="math inline">\(x' = (x - x_{\min})/(x_{\max} - x_{\min})\)</span>, range <span class="math inline">\([0,1]\)</span>), <code>MaxAbsScaler</code> (range <span class="math inline">\([-1,1]\)</span>). ii) <strong>Imputation.</strong> <code>SimpleImputer(strategy='mean'|'median'|'most_frequent'|'constant')</code> [recorded]:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>si <span class="op">=</span> SimpleImputer(strategy<span class="op">=</span><span class="st">'mean'</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co"># X = [[7,1],[nan,8],[2,nan],[9,6]]  -&gt;  col means 6 and 5</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>si.fit_transform(X)   <span class="co"># [[7,1],[6,8],[2,5],[9,6]]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>KNNImputer(n_neighbors=k)</code> fills each gap with the mean of the <span class="math inline">\(k\)</span> nearest rows by Euclidean distance (the slide works one by hand: <span class="math inline">\([1, 2, \text{nan}]\)</span>’s two nearest rows give <span class="math inline">\((3+5)/2 = 4\)</span>); <code>MissingIndicator</code> adds the binary “was missing” columns (§36.7’s discipline: <em>recorded-but-absent</em> <span class="math inline">\(\to\)</span> impute, and learn the statistics on train only).</p>
+<p><strong>Def (pipeline).</strong> A <code>Pipeline</code> chains transformers and ends in an estimator: <code>fit</code> calls <code>fit_transform</code> down the chain and <code>fit</code> on the last step; <code>predict</code>/<code>score</code> transform-then-predict. The Week-2 programming notebook’s real pipeline (blood-donation data, 5 features; verbatim, lightly trimmed):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.impute <span class="im">import</span> SimpleImputer, KNNImputer</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler, OrdinalEncoder</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.compose <span class="im">import</span> ColumnTransformer</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.pipeline <span class="im">import</span> Pipeline, FeatureUnion</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>num_pipe <span class="op">=</span> Pipeline([(<span class="st">"colselect"</span>, ColumnTransformer([(<span class="st">"select"</span>, <span class="st">"passthrough"</span>, [<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>])])),</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>                     (<span class="st">"impute"</span>, SimpleImputer()),</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>                     (<span class="st">"scale"</span>, StandardScaler())])</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>cat_pipe <span class="op">=</span> ColumnTransformer([(<span class="st">"encode"</span>, OrdinalEncoder(), [<span class="dv">4</span>])])</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>pipe <span class="op">=</span> FeatureUnion([(<span class="st">"numerical"</span>, num_pipe),</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>                     (<span class="st">"categorical"</span>, cat_pipe)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>ColumnTransformer</code> applies <em>different</em> transformers to <em>different</em> columns and concatenates; <code>FeatureUnion</code> runs transformers in parallel and glues the outputs side by side. Steps are reached by name — <code>pipe.set_params(pca__n_components=2)</code> — the double underscore addressing that §37.9’s grid search relies on.</p>
+<p><strong>Note (the leak this machinery exists to prevent).</strong> <code>fit_transform(X_all)</code> before the split learns the scaler’s <span class="math inline">\(\mu, \sigma\)</span> (or the imputer’s medians) from the test points too — test information leaking into training statistics. The pipeline fixes it structurally: <code>pipe.fit(X_train)</code> then <code>pipe.predict(X_test)</code> — the test set only ever sees <code>transform</code>. This is §36.7’s imputation note grown into an architecture.</p>
+<p><strong>eg 6 (the full workflow, one object).</strong> Impute <span class="math inline">\(\to\)</span> scale <span class="math inline">\(\to\)</span> polynomial <span class="math inline">\(\to\)</span> ridge, on the §36.8 houses (the NaN in row 9’s rooms is real this time), fitted on the §36.6 split (seed 42, <code>test_size=0.2</code>: test = ids 9 and 2 — “the same two, every run”):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.impute <span class="im">import</span> SimpleImputer</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler, PolynomialFeatures</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> Ridge</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.pipeline <span class="im">import</span> Pipeline</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>pipe <span class="op">=</span> Pipeline([</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    (<span class="st">'impute'</span>,  SimpleImputer(strategy<span class="op">=</span><span class="st">'median'</span>)),   <span class="co"># learns medians on TRAIN only</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    (<span class="st">'scale'</span>,   StandardScaler()),                    <span class="co"># learns mu, sigma on TRAIN only</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    (<span class="st">'poly'</span>,    PolynomialFeatures(degree<span class="op">=</span><span class="dv">2</span>)),        <span class="co"># [1, x1, x2, x1^2, x1*x2, x2^2]</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    (<span class="st">'ridge'</span>,   Ridge(alpha<span class="op">=</span><span class="fl">1e-3</span>))])                   <span class="co"># book-lambda = 1e-3</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>pipe.fit(X_train, y_train)</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>pipe.score(X_test, y_test)      <span class="co"># R^2 on the held-out rows</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>What each step learned on the 8 training rows [verified-NumPy]: rooms median <span class="math inline">\(4.0\)</span> (area median <span class="math inline">\(1250.0\)</span>, unused — no NaNs there); scaler <span class="math inline">\(\mu = (1243.75,\ 4.125)\)</span>, <span class="math inline">\(\sigma = (236.43,\ 0.78)\)</span>; the first training row’s polynomial expansion <span class="math inline">\([1,\ -0.61,\ -0.16,\ 0.37,\ 0.10,\ 0.03]\)</span>. None of these numbers saw the test rows — that is the entire point of the object.</p>
+<p><strong>Basically, …</strong> “A pipeline is the §37.2 workflow with the discipline built in: <code>fit</code> learns every step’s parameters from the training data in order, <code>predict</code> replays the same transformations on new data. <code>ColumnTransformer</code> says ‘different columns, different treatment’; <code>FeatureUnion</code> says ‘run these side by side and glue.’ Write the workflow once, and the leak the book keeps warning about becomes un-writable.”</p>
+</section>
+<section id="choosing-the-dial-validation-briefly" class="level2">
+<h2 class="anchored" data-anchor-id="choosing-the-dial-validation-briefly">37.9 Choosing the dial: validation, briefly</h2>
+<p>Two recurring questions now have code answers; both get their full treatment in Chapter 39, and both already appeared on paper in §§23.9 and 28.10:</p>
+<ol type="i">
+<li><strong>Which degree?</strong> <code>GridSearchCV</code> over the pipeline’s own parameter — the double underscore reaches inside the named steps (the slide’s code, typo <code>POlynomialFeatures</code> fixed):</li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> GridSearchCV</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>param_grid <span class="op">=</span> [{<span class="st">'poly__degree'</span>: [<span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">7</span>, <span class="dv">8</span>, <span class="dv">9</span>]}]</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>pipeline <span class="op">=</span> Pipeline(steps<span class="op">=</span>[(<span class="st">'poly'</span>, PolynomialFeatures()),</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>                           (<span class="st">'sgd'</span>, SGDRegressor())])</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>grid_search <span class="op">=</span> GridSearchCV(pipeline, param_grid, cv<span class="op">=</span><span class="dv">5</span>,</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>                           scoring<span class="op">=</span><span class="st">'neg_mean_squared_error'</span>,</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>                           return_train_score<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>grid_search.fit(X_train, y_train)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ol start="2" type="i">
+<li><strong>Which <code>alpha</code>?</strong> <code>RidgeCV</code>/<code>LassoCV</code> (built-in, §37.7), or the same grid search with <code>'ridge__alpha'</code>.</li>
+<li><strong>Am I over- or underfitting?</strong> <code>learning_curve</code> plots training vs cross-validated error against training-set size — the code version of §23.9’s train/test comparison: both errors high means underfit, a gap that won’t close means overfit.</li>
+</ol>
+<p><strong>Note (the HPT data split).</strong> The slide is explicit about the three-way split this machinery assumes: tune on train/validation, retrain the winner on train+validation, and report <em>once</em> on the test set — “note that the test set was not used in hyper-parameter search and model retraining.” The test set is spent exactly once.</p>
+</section>
+<section id="where-this-goes-next" class="level2">
+<h2 class="anchored" data-anchor-id="where-this-goes-next">37.10 Where this goes next</h2>
+<ol type="i">
+<li><strong>Classification, same contract.</strong> Chapter 38 replays this chapter with labels instead of numbers: the Week-2 notebook already used <code>LogisticRegression()</code> inside <code>RFE</code>/<code>SequentialFeatureSelector</code> — <code>fit</code>/<code>predict</code>/<code>score</code> unchanged, only the estimators and the metrics change.</li>
+<li><strong>The dial-setting machinery, properly.</strong> Chapter 39 takes §37.9’s sketch — cross-validation iterators (<code>KFold</code>, <code>ShuffleSplit</code>, <code>LeaveOneOut</code>), <code>cross_val_score</code>/<code>cross_validate</code>, grid vs randomized search — and makes it a subject.</li>
+<li><strong>The neural turn.</strong> The Week-12 slide’s <code>MLPRegressor</code> “trains using backpropagation… uses the square error as the loss function, and the output is a set of continuous values” — a regressor honoring the same <code>fit</code>/<code>predict</code> contract, whose insides are Chapter 41’s neurons. The contract outlives linear models.</li>
+<li><strong>Debugging the workflow.</strong> Chapter 40: when <code>score</code> is negative and the pipeline looks right, the discipline for finding out why.</li>
+</ol>
+</section>
+<section id="problem-set" class="level2">
+<h2 class="anchored" data-anchor-id="problem-set">Problem set</h2>
+<ol type="1">
+<li><p><strong>The contract.</strong> The Week-3 slide claims the <code>fit</code>/<code>predict</code>/<code>score</code>/<code>coef_</code>/<code>intercept_</code> snippets “work for both LinearRegression and SGDRegressor, and for that matter to all regression estimators that we will study in this module.” (i) In one line each, say what <code>fit</code>, <code>predict</code>, and <code>score</code> compute for a regressor, in §23.1’s notation (<span class="math inline">\(\hat\theta\)</span>, <span class="math inline">\(\hat y = X\hat\theta\)</span>). (ii) Which of the three methods does a <em>transformer</em> (e.g.&nbsp;<code>StandardScaler</code>) not have, and which does it have instead?</p></li>
+<li><p><strong><span class="math inline">\(R^2\)</span> by hand.</strong> <span class="math inline">\(y = (2, 4, 5, 4, 5)\)</span>, predictions <span class="math inline">\(\hat y = (1, 5, 4, 4, 6)\)</span>. (i) Compute <span class="math inline">\(u\)</span> and <span class="math inline">\(v\)</span> and hence <span class="math inline">\(R^2\)</span>. (ii) What would a <code>DummyRegressor(strategy="mean")</code> score on this data, and why — answer from the definition of <span class="math inline">\(v\)</span>?</p></li>
+<li><p><strong>Pick the metric.</strong> For each situation, name the slide’s metric and say why in one line: (i) house prices with a few misrecorded mansions in the data; (ii) a model whose contract penalizes the single worst prediction; (iii) forecasting user counts that grow exponentially; (iv) reporting error as “typically off by <span class="math inline">\(x\)</span>%”.</p></li>
+<li><p><strong>Course-sourced.</strong> The slide’s <code>PolynomialFeatures</code> example (eg 4) transforms <code>[[0,1],[2,3],[4,5]]</code> with <code>degree=2</code>. (i) Write the transformed matrix by hand and check against the recorded output. (ii) Repeat with <code>interaction_only=True</code>. (iii) In §23.8’s notation, what is <span class="math inline">\(\phi(x)\)</span> for each variant?</p></li>
+<li><p><strong>Score or error?</strong> <code>cross_val_score</code> is maximizing something. (i) Why does sklearn need the <code>neg_</code> versions of error metrics at all? (ii) If <code>cross_val_score(..., scoring='neg_mean_squared_error')</code> returns <span class="math inline">\(-16.04\)</span>, what is the MSE? (iii) Why is there no <code>neg_r2_score</code>?</p></li>
+<li><p><strong>Spot the leak.</strong> A classmate writes:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>X_imp <span class="op">=</span> SimpleImputer(strategy<span class="op">=</span><span class="st">'median'</span>).fit_transform(X)   <span class="co"># X has NaNs</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(X_imp, y, random_state<span class="op">=</span><span class="dv">42</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ol type="i">
+<li>Name the discipline this violates (§36.7 / §37.8’s Note) and say what leaks where. (ii) Rewrite it as a <code>Pipeline</code> so the leak is structurally impossible.</li>
+</ol></li>
+<li><p><strong>The <code>alpha</code> translation.</strong> The book’s ridge (§28.3) minimizes <span class="math inline">\(\tfrac{1}{2}\lVert Xw-y\rVert^2 + \tfrac{\lambda}{2}\lVert w\rVert^2\)</span>; sklearn’s <code>Ridge</code> minimizes <span class="math inline">\(\lVert Xw-y\rVert^2 + \alpha\lVert w\rVert^2\)</span>. (i) Show the two minimizers coincide when <span class="math inline">\(\alpha = \lambda\)</span>. (ii) Why can’t you port a tuned <code>alpha</code> from sklearn’s <code>Lasso</code> straight into the book’s §28.7 formula as <span class="math inline">\(\lambda\)</span>?</p></li>
+<li><p><strong>Diagnose the fit.</strong> A degree-9 polynomial pipeline reports train MSE <span class="math inline">\(0.000\)</span>, test MSE <span class="math inline">\(0.226\)</span>, <span class="math inline">\(\lVert w\rVert_2 = 84442\)</span> (eg 5’s numbers). (i) Diagnose in §23.9’s vocabulary. (ii) Name two fixes from this chapter and say which hyperparameter each one tunes (<code>degree</code> via <code>GridSearchCV</code>, or <code>alpha</code> via <code>RidgeCV</code>).</p></li>
+</ol>
+</section>
+<section id="solutions" class="level2">
+<h2 class="anchored" data-anchor-id="solutions">Solutions</h2>
+<p>Attempt each problem first, then click a problem to reveal its worked solution.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 1 — The contract
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>In §23.1’s notation: <code>fit(X_train, y_train)</code> computes <span class="math inline">\(\hat\theta\)</span> — the parameter vector minimizing the training loss (for <code>LinearRegression</code>, §23.5’s <span class="math inline">\((X^TX)^{-1}X^Ty\)</span>). <code>predict(X_test)</code> computes <span class="math inline">\(\hat y = X_{\text{test}}\hat\theta\)</span>, one prediction per row. <code>score(X_test, y_test)</code> returns <span class="math inline">\(R^2 = 1 - u/v\)</span> on the held-out pair (§37.5).</p></li>
+<li><p>A transformer has no <code>predict</code> — it transforms features, it doesn’t model labels. Instead of <code>predict</code> it has <code>transform(X)</code>: apply the <em>learned</em> transformation. (<code>fit</code> learns e.g.&nbsp;<span class="math inline">\(\mu, \sigma\)</span>; <code>transform</code> maps <span class="math inline">\(x' = (x - \mu)/\sigma\)</span>; <code>fit_transform</code> does both.)</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 2 — <span class="math inline">\(R^2\)</span> by hand
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>Residuals <span class="math inline">\(y - \hat y = (1, -1, 1, 0, -1)\)</span>: <span class="math inline">\(u = 1 + 1 + 1 + 0 + 1 = 4\)</span>. Mean <span class="math inline">\(\bar y = 20/5 = 4\)</span>; deviations <span class="math inline">\((-2, 0, 1, 0, 1)\)</span>: <span class="math inline">\(v = 4 + 0 + 1 + 0 + 1 = 6\)</span>. <span class="math inline">\(R^2 = 1 - 4/6 = 1/3 \approx 0.333\)</span>.</p></li>
+<li><p>It scores exactly <span class="math inline">\(0.0\)</span>. The dummy predicts <span class="math inline">\(\bar y = 4\)</span> for every point, so its residual sum of squares <em>is</em> <span class="math inline">\(v = 6\)</span> (each residual is <span class="math inline">\(y_i - \bar y\)</span>), and <span class="math inline">\(R^2 = 1 - v/v = 0\)</span>. That is the §37.5 landmark: the constant model sits at <span class="math inline">\(R^2 = 0\)</span> by construction — <span class="math inline">\(v\)</span> is literally “how far the labels miss their own mean.”</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 3 — Pick the metric
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><code>median_absolute_error</code> — the median shrugs at the misrecorded mansions (“robust to outliers”); MSE would square them and let them dominate.</p></li>
+<li><p><code>max_error</code> — the worst-case metric, by definition the single largest <span class="math inline">\(|y - \hat y|\)</span>.</p></li>
+<li><p><code>mean_squared_log_error</code> — the slide’s pick for “targets with exponential growths”; it also “penalizes under-estimation heavier than the over-estimation,” which is the right asymmetry when missing growth hurts more than overshooting it.</p></li>
+<li><p><code>mean_absolute_percentage_error</code> — “sensitive to relative error”: <span class="math inline">\(|y - \hat y|/|y|\)</span> averaged, i.e.&nbsp;“typically off by <span class="math inline">\(x\)</span>%”.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 4 — Course-sourced
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><span class="math inline">\([x_1, x_2] \to [1, x_1, x_2, x_1^2, x_1x_2, x_2^2]\)</span>: row <span class="math inline">\([0,1] \to [1, 0, 1, 0, 0, 1]\)</span>; row <span class="math inline">\([2,3] \to [1, 2, 3, 4, 6, 9]\)</span>; row <span class="math inline">\([4,5] \to [1, 4, 5, 16, 20, 25]\)</span> — matches the deck’s recorded output exactly.</p></li>
+<li><p><code>interaction_only=True</code> drops the pure powers: <span class="math inline">\([x_1, x_2] \to [1, x_1, x_2, x_1x_2]\)</span>: <span class="math inline">\([1, 0, 1, 0]\)</span>, <span class="math inline">\([1, 2, 3, 6]\)</span>, <span class="math inline">\([1, 4, 5, 20]\)</span>.</p></li>
+<li><p>§23.8’s <span class="math inline">\(\phi(x) = (1, x, x^2, \dots)^T\)</span> generalized: full variant <span class="math inline">\(\phi(x_1, x_2) = (1, x_1, x_2, x_1^2, x_1x_2, x_2^2)^T\)</span>; interaction-only <span class="math inline">\(\phi(x_1, x_2) = (1, x_1, x_2, x_1x_2)^T\)</span>. Both are “linear in <span class="math inline">\(\theta\)</span>” models (§23.8’s Note) — the curvature lives in <span class="math inline">\(\phi\)</span>, not in the fit.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 5 — Score or error?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p><code>cross_val_score</code> (and <code>GridSearchCV</code>) always <em>maximize</em> the scoring value. An error is “lower is better,” so maximizing raw MSE would pick the <em>worst</em> model; the <code>neg_</code> prefix flips it into a score where higher is better, and the argmax then does the right thing.</p></li>
+<li><p>MSE <span class="math inline">\(= 16.04\)</span> — negate back.</p></li>
+<li><p><span class="math inline">\(R^2\)</span> is already a score (higher is better: <span class="math inline">\(1.0\)</span> best, <span class="math inline">\(0.0\)</span> baseline, negative bad), so negating it would invert the ordering — <code>scoring='r2'</code> is used as-is.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 6 — Spot the leak
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>It violates the never-learn-on-full-data discipline (§36.7’s imputation note, §37.8’s Note): <code>fit_transform(X)</code> learns the column medians from <em>all</em> rows, including the ones that will become the test set. Test information (the medians) leaks into the training data — the test set is no longer unseen.</p></li>
+<li></li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.impute <span class="im">import</span> SimpleImputer</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LinearRegression</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.pipeline <span class="im">import</span> Pipeline</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>pipe <span class="op">=</span> Pipeline([</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    (<span class="st">'impute'</span>, SimpleImputer(strategy<span class="op">=</span><span class="st">'median'</span>)),</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    (<span class="st">'regressor'</span>, LinearRegression())])</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(X, y, random_state<span class="op">=</span><span class="dv">42</span>)</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>pipe.fit(X_train, y_train)   <span class="co"># medians learned on train only</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>pipe.score(X_test, y_test)   <span class="co"># test rows only ever see transform</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The split happens on the raw <span class="math inline">\(X\)</span> (NaNs and all); the imputer is fitted inside <code>pipe.fit</code> on the training rows alone. The leak is now unwritable — there is no call sequence that fits the imputer on the test rows.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 7 — The <code>alpha</code> translation
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>The book minimizes <span class="math inline">\(J(w) = \tfrac{1}{2}\lVert Xw - y\rVert^2 + \tfrac{\lambda}{2}\lVert w\rVert^2\)</span>; sklearn minimizes <span class="math inline">\(J_{\text{sk}}(w) = \lVert Xw - y\rVert^2 + \alpha\lVert w\rVert^2\)</span>. But <span class="math inline">\(J(w) = \tfrac{1}{2}J_{\text{sk}}(w)\)</span> when <span class="math inline">\(\alpha = \lambda\)</span> — multiplying an objective by the positive constant <span class="math inline">\(\tfrac{1}{2}\)</span> does not move its minimizer. Same argmin, so book-<span class="math inline">\(\lambda\)</span> = sklearn-<code>alpha</code> exactly (for ridge).</p></li>
+<li><p>sklearn’s <code>Lasso</code> minimizes <span class="math inline">\(\tfrac{1}{2n}\lVert y - Xw\rVert^2 + \alpha\lVert w\rVert_1\)</span> — the squared error is <em>averaged over the <span class="math inline">\(n\)</span> samples</em> before the penalty is added. The book’s §28.7 objective, <span class="math inline">\(\tfrac{1}{2}\lVert Xw - y\rVert^2 + \tfrac{\lambda}{2}\lVert w\rVert_1\)</span>, has no <span class="math inline">\(1/n\)</span>. Dividing the book’s objective by <span class="math inline">\(n\)</span> shows the two coincide only when <span class="math inline">\(\alpha = \lambda/(2n)\)</span> — so the same numeric dial is a <span class="math inline">\(2n\)</span>-times-stronger penalty in the book’s formulation. You cannot copy the number across; re-tune it.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Solution 8 — Diagnose the fit
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ol type="i">
+<li><p>Overfitting, textbook (§23.9): training error <span class="math inline">\(0.000\)</span> — the degree-9 curve memorizes the ten points — while test error <span class="math inline">\(0.226\)</span> is an order of magnitude worse, and <span class="math inline">\(\lVert w\rVert_2 = 84442\)</span> is the §28.1 signature of fitting noise with huge canceling weights.</p></li>
+<li><p>Fix 1: shrink the hypothesis class — <code>GridSearchCV</code> over <code>poly__degree</code> (tunes <code>degree</code>; §23.9’s “choose a smaller <span class="math inline">\(m\)</span> by validation”). Fix 2: keep degree 9 but penalize the weights — <code>RidgeCV</code> over <code>ridge__alpha</code> (tunes <code>alpha</code>, the book’s <span class="math inline">\(\lambda\)</span>; §28.10’s validation discipline). Either is legitimate; eg 5 shows Fix 2 dropping test MSE from <span class="math inline">\(0.226\)</span> to <span class="math inline">\(0.044\)</span>.</p></li>
+</ol>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./36-numpy-pandas.html" class="pagination-link" aria-label="Chapter 36: NumPy and Pandas for ML">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Chapter 36: NumPy and Pandas for ML</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./38-sklearn-classification.html" class="pagination-link" aria-label="Chapter 38: scikit-learn: classification workflows">
+        <span class="nav-page-text"><span class="chapter-title">Chapter 38: scikit-learn: classification workflows</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

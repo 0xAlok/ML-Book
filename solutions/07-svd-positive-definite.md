@@ -1,0 +1,25 @@
+# Chapter 7 — Solutions
+
+1. $A = \begin{bmatrix} 2 & 0 \\ 0 & 3 \end{bmatrix}$. $A^TA = \begin{bmatrix} 4 & 0 \\ 0 & 9 \end{bmatrix}$ — already diagonal, eigenvalues $9$ and $4$ (trace $= 13$, determinant $= 36$ ✓). Ordered: $\lambda_1 = 9$, $\lambda_2 = 4$; singular values $\sigma_1 = 3$, $\sigma_2 = 2$. Eigenvectors: for $\lambda_1 = 9$, $(0,1)^T$; for $\lambda_2 = 4$, $(1,0)^T$ — already orthonormal. $V = \begin{bmatrix} 0 & 1 \\ 1 & 0 \end{bmatrix}$, $\Sigma = \begin{bmatrix} 3 & 0 \\ 0 & 2 \end{bmatrix}$.
+   $$\mathbf{u}_1 = \frac{1}{3}A(0,1)^T = \frac{1}{3}(0,3)^T = (0,1)^T, \qquad \mathbf{u}_2 = \frac{1}{2}A(1,0)^T = \frac{1}{2}(2,0)^T = (1,0)^T,$$
+   $U = \begin{bmatrix} 0 & 1 \\ 1 & 0 \end{bmatrix}$. Verify: $U\Sigma = \begin{bmatrix} 0 & 2 \\ 3 & 0 \end{bmatrix}$, $U\Sigma V^T = \begin{bmatrix} 0 & 2 \\ 3 & 0 \end{bmatrix}\begin{bmatrix} 0 & 1 \\ 1 & 0 \end{bmatrix} = \begin{bmatrix} 2 & 0 \\ 0 & 3 \end{bmatrix} = A$ ✓.
+
+2. $A = \begin{bmatrix} 0 & 1 \\ 1 & 0 \end{bmatrix}$. $A^TA = I$, so $\lambda_1 = \lambda_2 = 1$, $\sigma_1 = \sigma_2 = 1$. Take $V = I$ (the standard basis is already orthonormal), $\Sigma = I$. Then $U = AV\Sigma^{-1} = A$. Check $U^TU = A^TA = I$ ✓, and $U\Sigma V^T = A I I = A$ ✓.
+
+3. $U = \begin{bmatrix} \sqrt{2/3} & 1/\sqrt{3} \\ 1/\sqrt{3} & -\sqrt{2/3} \end{bmatrix}$. $U^TU$: $(1,1)$: $(\sqrt{2/3})^2 + (1/\sqrt{3})^2 = \tfrac{2}{3} + \tfrac{1}{3} = 1$; $(2,2)$: $(1/\sqrt{3})^2 + (\sqrt{2/3})^2 = 1$; $(1,2)$: $\sqrt{2/3}\cdot\tfrac{1}{\sqrt{3}} + \tfrac{1}{\sqrt{3}}\cdot(-\sqrt{2/3}) = \tfrac{\sqrt{2}}{3} - \tfrac{\sqrt{2}}{3} = 0$. So $U^TU = I$ ✓. $\det(U) = -\tfrac{2}{3} - \tfrac{1}{3} = -1$. Geometrically: an orthogonal matrix with determinant $-1$ is a reflection (orientation-reversing) rather than a pure rotation — still length- and angle-preserving, so it qualifies as one of the SVD's "turns".
+
+4. Columns: $\mathbf{x}_1 = \tfrac{1}{\sqrt{6}}(1,1,2)^T$, $\mathbf{x}_2 = \tfrac{1}{\sqrt{2}}(1,-1,0)^T$, $\mathbf{x}_3 = \tfrac{1}{\sqrt{3}}(1,1,-1)^T$. Unit lengths: $\lVert\mathbf{x}_1\rVert^2 = (1+1+4)/6 = 1$; $\lVert\mathbf{x}_2\rVert^2 = (1+1)/2 = 1$; $\lVert\mathbf{x}_3\rVert^2 = (1+1+1)/3 = 1$ ✓. Orthogonality: $\mathbf{x}_1^T\mathbf{x}_2 = (1-1+0)/\sqrt{12} = 0$; $\mathbf{x}_1^T\mathbf{x}_3 = (1+1-2)/\sqrt{18} = 0$; $\mathbf{x}_2^T\mathbf{x}_3 = (1-1+0)/\sqrt{6} = 0$ ✓. The $(i,j)$ entry of $V^TV$ is $\mathbf{x}_i^T\mathbf{x}_j$, so $V^TV = I$ ✓.
+
+5. Rank $= 2$. By §7.6, $\operatorname{rank}(A)$ equals the number of *nonzero* singular values — $\sigma_3 = 0$ contributes a zero outer product to the sum, adding no new direction.
+
+6. $A_1 = \sigma_1\mathbf{u}_1\mathbf{v}_1^T = 2\begin{bmatrix} \sqrt{2/3} \\ 1/\sqrt{3} \end{bmatrix}\tfrac{1}{\sqrt{3}}\begin{bmatrix} 1 & \sqrt{2} \end{bmatrix} = 2\begin{bmatrix} \sqrt{2}/3 & 2/3 \\ 1/3 & \sqrt{2}/3 \end{bmatrix} = \begin{bmatrix} 2\sqrt{2}/3 & 4/3 \\ 2/3 & 2\sqrt{2}/3 \end{bmatrix}.$ Numerically $A_1 \approx \begin{bmatrix} 0.943 & 1.333 \\ 0.667 & 0.943 \end{bmatrix}$ vs $A \approx \begin{bmatrix} 1.414 & 1 \\ 0 & 1.414 \end{bmatrix}$. Note $\operatorname{rank}(A_1) = 1$: both columns are multiples of $\mathbf{u}_1$.
+
+7. For any $\mathbf{x}$: $\mathbf{x}^TA^TA\mathbf{x} = (A\mathbf{x})^T(A\mathbf{x}) = \lVert A\mathbf{x}\rVert^2 \ge 0$. So $A^TA$ is positive semi-definite (the inequality is not strict, since $A\mathbf{x} = \mathbf{0}$ is possible for $\mathbf{x} \ne \mathbf{0}$). If $A^TA\mathbf{x} = \lambda\mathbf{x}$ with $\mathbf{x} \ne \mathbf{0}$, then $\lambda = \mathbf{x}^TA^TA\mathbf{x}/\lVert\mathbf{x}\rVert^2 = \lVert A\mathbf{x}\rVert^2/\lVert\mathbf{x}\rVert^2 \ge 0$ — eigenvalues of $A^TA$ are never negative.
+
+8. (a) $a = 4 > 0$; $\det(A) = 12 - 4 = 8 > 0$. Both $2 \times 2$ conditions hold → positive definite. (b) $\det(A - \lambda I) = (4-\lambda)(3-\lambda) - 4 = \lambda^2 - 7\lambda + 8 = 0$, so $\lambda = \frac{7 \pm \sqrt{49-32}}{2} = \frac{7 \pm \sqrt{17}}{2} \approx 5.56,\ 1.44$. Both $> 0$ → positive definite ✓ (agrees with (a)).
+
+9. $\det(B - \lambda I) = (1-\lambda)^2 - 4 = \lambda^2 - 2\lambda - 3 = 0$ → $\lambda = 3, -1$. Mixed signs → not positive definite. Explicitly, for $\mathbf{x} = (1,-1)^T$: $\mathbf{x}^TB\mathbf{x} = \begin{bmatrix} 1 & -1 \end{bmatrix}\begin{bmatrix} 1 & 2 \\ 2 & 1 \end{bmatrix}\begin{bmatrix} 1 \\ -1 \end{bmatrix} = \begin{bmatrix} 1 & -1 \end{bmatrix}\begin{bmatrix} -1 \\ 1 \end{bmatrix} = -2 < 0$. (Equivalently, $\det(B) = -3 < 0$ fails the $2 \times 2$ test.)
+
+10. $x^2 + 4xy + 5y^2 = (x^2 + 4xy + 4y^2) + y^2 = (x+2y)^2 + y^2$. This is a sum of squares, zero only when $x + 2y = 0$ and $y = 0$, i.e. only at $(0,0)$ — hence positive definite. Coefficient matrix: $A = \begin{bmatrix} 1 & 2 \\ 2 & 5 \end{bmatrix}$ ($f = \mathbf{x}^TA\mathbf{x} = x^2 + 2\cdot 2xy + 5y^2$ ✓). $a = 1 > 0$, $\det(A) = 5 - 4 = 1 > 0$ ✓.
+
+11. By the eigenvalue test (§7.9), all eigenvalues $\lambda_1, \ldots, \lambda_n$ of $A$ are $> 0$. By §6.4, $\det(A) = \lambda_1\lambda_2\cdots\lambda_n$ — a product of positive numbers, hence $> 0$.

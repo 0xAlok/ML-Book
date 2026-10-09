@@ -1,0 +1,52 @@
+# Review log — Chapter 28: Regularization: ridge and lasso
+
+## Sources read (before writing)
+- `MLT-20261009T001607Z-1-001/MLT/Slides - Ashish Tendulkar/Week 3/MLT Week 3 Slides.pdf` (42 pp) — the regularization block (lecture slides ~97–116). Full text extracted with `pdftotext`; pages 31–42 (slides 105–116) additionally rendered with `pdftoppm -png -r 110` and read as images to capture the degree-9 fit figures, the λ-vs-CV-error bowl chart (best λ = 0.1), and the closing "Why does ridge and lasso work?" discussion-prompt slide (no content — a prompt only). Sourced verbatim: $J(w) = \tfrac12(Xw-y)^T(Xw-y) + \lambda\cdot\text{penalty}$; the two components (penalty, regularization rate λ); the three types (ridge/L2, lasso/L1, elastic net); ridge objective with $\frac{\lambda}{2}\lVert w\rVert_2^2$; the term-by-term gradient derivation; normal equations $(X^TX+\lambda I)w = X^Ty$; λ→0 = OLS, λ→∞ = 0; the GD update $w := w - \alpha(X^T(Xw-y)+\lambda w)$; "as λ increases the model loses its capacity… underfits"; the 4-step λ-selection procedure (candidates → validation error → retrain on full train → report on test); bowl-shaped CV curve; lasso objective with $\frac{\lambda}{2}\lVert w\rVert_1$ plus the explicit "specialized optimization beyond scope / use sklearn in ML practice course" disclaimer; the overfitting diagnosis (degree-9 weights $w_4=-3332.88$, $w_5=2993.67$, $w_6=-1304.04$; "overfitting is caused by larger weights on higher order polynomial terms").
+- `MLP-20261009T001612Z-1-001/MLP/Slides/Week 4/MLP Week 4 Slides.pdf` — `Ridge(alpha=1e-3)` (alpha = regularization rate), `SGDRegressor(alpha, penalty='l2')`, `RidgeCV`/`LassoCV`/`ElasticNetCV` for built-in cross-validated λ search, GridSearchCV/RandomizedSearchCV. Full text extracted.
+- `MLT/.../Transcripts` — empty; no transcripts exist. Not blocking (slides are self-contained).
+- `chapters/23-linear-polynomial-regression.md` §§23.9–23.10 (overfitting/validation discipline; the ridge remark with the λ-bookkeeping note; the lecture quote "too small λ → overfitting, too large λ → underfitting"); `chapters/27-kernel-methods.md` §27.4 (the $\frac{\lambda}{2}$ convention, flagged the same way) and §27.10(i) (the promise this chapter fulfills); `chapters/20-estimation-mle-map.md` §20.11(ii) (the forward pointer — see verdict 1 below).
+
+## Numbers recomputed (twice each: exact rationals + numpy floats)
+§28.11 dataset $x_1=(1,2,3)^T$, $x_2=(1,1.9,3.1)^T$, $y=(2,4.3,5.7)^T$:
+- $X^TX = \bigl(\begin{smallmatrix}14&14.1\\14.1&14.22\end{smallmatrix}\bigr)$, $X^Ty=(27.7,27.84)^T$, $\det = 27/100 = 0.27$ — exact fractions and numpy agree.
+- OLS: $\hat w=(5,-3)^T$ exactly (numerators $1.35/0.27$, $-0.81/0.27$); residuals exactly $0$; MSE $=0$; column correlation $0.9966$.
+- Ridge λ=1: $\det=29.49$; $\hat w=(29.05/29.49,\ 27.03/29.49)=(0.98508,0.91658)$; MSE $=0.121716$ (residuals $(-0.0983,-0.5883,0.0966)$).
+- Ridge λ=5: $\det=166.37$; $\hat w=(0.84060,0.83182)$; MSE $=0.514986$.
+- Lasso λ=1 (coordinate descent, threshold $\lambda/2=0.5$): $w_1=(27.7-0.5)/14=68/35\approx1.9429$; $z_2=78/175\approx0.4457<0.5\Rightarrow w_2=0$; converged after 2 sweeps; KKT check $X^T(X\hat w-y)=(-0.5,-0.4457)^T$ satisfies subgradient conditions; MSE $=67/1050\approx0.06381$.
+- Problem 4: $X^TX=5$, $X^Ty=8$, one GD step $w_1=0.8$, exact ridge $\hat w=8/7\approx1.1429$ — hand and numpy agree.
+- Lecture figures quoted (§28.1 weights; §28.10's "most appropriate λ = 0.1") are copied verbatim from the slide text/images, not recomputed.
+
+## Derivations double-checked
+- Ridge gradient $\nabla_wJ=X^TXw-X^Ty+\lambda w$ from the $\frac{\lambda}{2}$-convention objective: term-by-term differentiation matches the lecture's slide-104 steps (verified against §23.3's recipe and §10.1).
+- Normal equations $(X^TX+\lambda I)w=X^Ty$; PD/invertibility argument $z^T(X^TX+\lambda I)z=\lVert Xz\rVert^2+\lambda\lVert z\rVert^2>0$ — same as §23.10's homework.
+- λ→0 / λ→∞ endpoint arguments (dominance reasoning) — checked.
+- 1-D lasso soft-thresholding $\hat w=\mathrm{sign}(\rho)(|\rho|-\lambda/2)_+/\lVert x\rVert^2$ via subdifferential cases — re-derived; threshold $\lambda/2$ consistent with the chapter's convention; dead-zone claim verified numerically in §28.11 ($z_2=0.4457<0.5\Rightarrow$ exact zero).
+- Problem 3's ridge contrast $\rho/(\lVert x\rVert^2+\lambda)\ne0$ for $\rho\ne0$ — trivially true.
+
+## Cross-references verified
+- Script-checked every `§X.Y` in `chapters/28-regularization.md` and `solutions/28-regularization.md` against actual `## X.Y` headers in `chapters/*.md`: all resolve (10.1, 20.11, 22.10, 23.3, 23.9, 23.10, 27.4, 27.6, 27.10, 28.x).
+- §20.11 exists and contains the ridge=MAP forward pointer (see verdict 1).
+- Figures `assets/28-ridge-effect.png`, `assets/28-l1-l2-balls.png`, `assets/28-lambda-cv-curve.png` exist in `chapters/assets/`, resolve relative to `chapters/` (ch23/27 convention), each marked original in an HTML comment; all three viewed as rendered PNGs — legible, captions match content (λ values 0/1e-4/1e-1; diamond-corner vs circle-curve touch; U-curve minimum marked).
+- Notation: lecture's $w/X/y$ used throughout (flagged against §23.10's $\theta/A$); the $\frac{\lambda}{2}$ vs §23.10's absorbed-2 convention flagged explicitly in §28.3, matching §27.4's handling.
+
+## Thin / contradictory / beyond-lecture points (flagged, not invented)
+1. **Ridge = MAP-with-Gaussian-prior: NOT in the MLT sources — verdict: excluded.** Full-text search of all MLT/MLP/MLF slide PDFs: zero occurrences of "prior"/"MAP" anywhere near regularization (the only hit was the substring "mappings"). §20.11(ii)'s forward pointer ("Chapter 28's ridge regression turns out to be MAP estimation with a Gaussian prior") is therefore unfulfillable from the assigned sources. Per instructions the claim is NOT made in the chapter; §28.12(iii) acknowledges the pointer as flagged-not-derived. (The ISLR textbook sits in `sources/course materials/` but is background reading, not the MLT lectures — not mined, to respect the task's source scope.)
+2. **"MLT Week 6" vs reality: the material is in MLT Week 3.** In the shared materials, `MLT/.../Week 6/` contains Naive Bayes; the entire regularization block (slides ~97–116) is in `MLT/.../Week 3/MLT Week 3 Slides.pdf`. The chapter's intro cites Week 3 (the actual location). The task's "Week 6" label appears to come from a different term's numbering.
+3. **Bias–variance: qualitative only.** No MLT/MLP/MLF source writes a bias–variance decomposition or even uses the words "bias"/"variance" for this trade-off. §28.9 therefore gives the qualitative reading the sources do support (small λ = noise-sensitive / memorizer; large λ = capacity loss / underfit; U-curve as the visible trade-off), introduces the names as the standard label for that sourced content, and carries an explicit scope Note disclaiming the formal $\mathbb{E}=\mathrm{bias}^2+\mathrm{variance}+\mathrm{noise}$ decomposition. This fulfills §27.10(i)'s promise without inventing.
+4. **Diamond-vs-ball geometry: not in the slides.** The lecture gives no geometric sparsity argument (slide 116 is a discussion prompt with no content). The §28.7 figure and the constrained-optimum intuition are original illustrations of standard material, marked original; the algebraic sparsity claim is independently proved (Problem 3) and numerically demonstrated (§28.11 KKT check).
+5. **Lasso optimization: beyond scope, per the lecture.** The chapter repeats the lecture's own disclaimer (specialized algorithms beyond the course; sklearn in MLP) and does not present a general lasso solver — only the 1-D soft-thresholding derivation and coordinate-descent sweeps on the worked example, both fully verified.
+6. **Elastic net: one line, as sourced.** The lecture names it as "combination of L1 and L2" with no detail; the chapter says exactly that plus the MLP slides' `ElasticNetCV` pointer — nothing more.
+
+## Coordinator's pre-merge fixes (2026-10-09, independent review)
+
+1. **Ridge = MAP-with-Gaussian-prior: book-level inconsistency resolved.** Chapter 20 §20.12(ii) asserts as fact that "Chapter 28's ridge regression turns out to be MAP estimation with a Gaussian prior" — but the draft chapter refused to derive it (correctly: the MLT lectures never state it). Leaving it unfulfilled would make the book contradict itself. Resolution: added a "Bayesian reading" Note to §28.4 deriving it in four lines from in-book definitions only (Gaussian likelihood + Gaussian prior → MAP objective = ridge objective with λ = σ²/τ²), explicitly marked as the book's own derivation, not a lecture claim. This is a proof from established definitions, not invented content. Also fixed the wrong section citation in §28.12(iii): "§20.11(ii)" → "§20.12(ii)" (the pointer is at §20.12, not §20.11), and rewrote (iii) to point at the new derivation.
+2. **All §28.11 numbers independently recomputed in numpy** — OLS (5,−3)/MSE 0, ridge λ=1 (0.9851, 0.9166)/MSE 0.1217, ridge λ=5 (0.841, 0.832)/MSE 0.515, lasso (1.9429, 0)/MSE 0.0638, KKT gradient (−0.5, −0.4457) — all match.
+3. **Source location verified**: the regularization block is genuinely in `MLT/Slides - Ashish Tendulkar/Week 3/MLT Week 3 Slides.pdf` (14 "regulariz" hits via pdftotext); `MLT/PPT/Week 6/` is Naive Bayes. The chapter's "Week 3" citation is correct; OUTLINE.md's "MLT W6" label updated to "MLT W3" to match reality.
+- Regenerated `assets/28-l1-l2-balls.png` twice: first for a y-axis label rendering artifact, second for a broken mathtext annotation ("both $\ne 0$" → plain "both nonzero").
+- Recomputed every §28.11 and Problem 4 number with exact `Fraction` arithmetic after the initial numpy pass; corrected nothing (all matched) but confirmed the lasso MSE as the exact fraction $67/1050$.
+- Cross-reference script initially flagged nothing; manually confirmed §20.11's header exists before citing it in §28.12(iii).
+
+## Fixes made during self-review (chapter worker)
+- Regenerated `assets/28-l1-l2-balls.png` twice: first for a y-axis label rendering artifact, second for a broken mathtext annotation ("both $\ne 0$" → plain "both nonzero").
+- Recomputed every §28.11 and Problem 4 number with exact `Fraction` arithmetic after the initial numpy pass; corrected nothing (all matched) but confirmed the lasso MSE as the exact fraction $67/1050$.
+- Cross-reference script initially flagged nothing; manually confirmed the cited header exists before citing it in §28.12(iii).

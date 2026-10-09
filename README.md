@@ -1,7 +1,5 @@
 # Foundations to Deep Learning
 
-*From foundations to deep learning*
-
 47 chapters taking you from mathematical foundations (linear algebra, calculus,
 probability) through classical machine learning to neural networks and
 transformers, everything needed before the core deep learning and AI courses.

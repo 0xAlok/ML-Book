@@ -1,0 +1,49 @@
+# Review log — Chapter 9: Multivariable calculus
+
+## Sources used
+
+1. **Primary:** `sources/course materials/MLF-20261009T001559Z-1-001/MLF/Transcripts/Week 2/5. Multivariate Calculus- Lines and planes in higher dimensional space.pdf` (read via `muse.read`). Used: partial-derivative limit definition ($\partial f/\partial x_i(\mathbf{v}) = \lim_{\alpha\to0}(f(\mathbf{v}+\alpha\mathbf{e}_i)-f(\mathbf{v}))/\alpha$ with coordinate vectors $\mathbf{e}_i$), the "freeze other variables" reading, gradient as the column vector of partials (transpose of the row vector $\partial f/\partial\mathbf{x}$), worked example $f = x_1^2+x_2^2 \Rightarrow \nabla f = (2x_1, 2x_2)^T$, worked example $f = x_1+2x_2+3x_3 \Rightarrow \nabla f = (1,2,3)^T$ (constant gradient ⟺ linear function), hyperplane normal facts ($\{\mathbf{x} : \mathbf{w}^T\mathbf{x} = b\}$ has normal $\mathbf{w}$).
+2. **Primary:** `Transcripts/Week 2/6. Multivariate Calculus- Linear approximation and applications.pdf` (read via `muse.read`). Used: linear approximation $f(\mathbf{x}) \approx f(\mathbf{v}) + \nabla f(\mathbf{v})^T(\mathbf{x}-\mathbf{v})$ (and its component sum), the "move one variable, then the other, add the changes" derivation, worked example $f = x_1^2+x_2^2$ around $(6,2)$ giving $40 + 12(x_1-6) + 4(x_2-2) = 12x_1+4x_2-40$ (exactness at the point, dependence on the expansion point), tangent-plane interpretation (graph of $L_{\mathbf{v}}(f)$ tangent to graph of $f$ at $(\mathbf{v}, f(\mathbf{v}))$), gradient ⊥ level set (stated; easy version proved via the linearized level set $\nabla f(\mathbf{v})^T\mathbf{x} = \nabla f(\mathbf{v})^T\mathbf{v}$), example at $(-6,2)$ with $\nabla f = (-12,4)$ ⊥ the circle $f = 40$, directional-derivative definition and derivation $D_{\mathbf{u}}f(\mathbf{v}) = \nabla f(\mathbf{v})^T\mathbf{u}$, Cauchy–Schwarz inequality with equality conditions, steepest-ascent direction $\mathbf{u} = \nabla f/\lVert\nabla f\rVert$ (unit), steepest descent $-\nabla f$, descent directions $\{\mathbf{u} : \nabla f(\mathbf{v})^T\mathbf{u} < 0\}$, quadratic approximation $f(\mathbf{x}) \approx f(\mathbf{v}) + \nabla f(\mathbf{v})^T(\mathbf{x}-\mathbf{v}) + \tfrac{1}{2}(\mathbf{x}-\mathbf{v})^T\mathbf{H}(\mathbf{v})(\mathbf{x}-\mathbf{v})$ with $\mathbf{H}$ the Hessian, first-order necessary condition ($\nabla f(\mathbf{v}) = \mathbf{0}$ at minima/maxima; critical points; converse fails).
+3. **Problems source:** `PPT/Week 2/Week 2 Tutorial.pdf` (read via `muse.read`). Used: Problem 5 ($f(x,y) = xe^{xy}$ at $(1,0)$: partials $\partial f/\partial x = xye^{xy}+e^{xy}$, $\partial f/\partial y = x^2e^{xy}$; values $1,1$ at $(1,0)$; $L = x+y$; $f(1.1,-0.1) \approx 1.0$ vs true $0.98542$) → eg 2/eg 11; Problem 6 ($f = x\cos y$, $\mathbf{u}=[2,1]$ → $D = \tfrac{2}{\sqrt5}\cos y - \tfrac{1}{\sqrt5}x\sin y$) → eg 6; Problem 7 ($f = x^2-xy$ at $(2,-3)$, $\mathbf{u} = 0.6\mathbf{i}+0.8\mathbf{j}$ → $D = 2.6$) → eg 7/eg 13. Also borrowed the *functions* (not the questions) from Problems 6–7 for fresh problems (4, 10).
+4. **Continuity hooks:** `chapters/08-single-variable-calculus.md` §8.5 (chain rule, backprop pointer, derivative table) and §8.6 (linear approximation $f(x^*)+f'(x^*)(x-x^*)$, "exact at the point / degrades away" honesty note, $0.99^7$ check style) — the §9.6 tie-in mirrors that section's voice; §8.8's forward pointers. `chapters/02-vectors-and-matrices.md` §2.5 (dot product = weighted agreement; $\lVert\mathbf{v}\rVert = \sqrt{\mathbf{v}\cdot\mathbf{v}}$; angle formula) — used for $D_{\mathbf{u}}f = \nabla f \cdot \mathbf{u}$ and the perpendicularity checks.
+5. **Cross-check anchors (correctness only, nothing copied):** d2l.ai appendix `chapter_appendix-mathematics-for-deep-learning/multivariable-calculus` — verified the quadratic Taylor form $f(\mathbf{x}) = f(\mathbf{x}_0) + \nabla f(\mathbf{x}_0)\!\cdot\!(\mathbf{x}-\mathbf{x}_0) + \tfrac{1}{2}(\mathbf{x}-\mathbf{x}_0)^\top \mathbf{H}f(\mathbf{x}_0)(\mathbf{x}-\mathbf{x}_0)$ matches the source lecture's sketch; MML book ch. 5 level material (gradient = steepest ascent direction, $D_{\mathbf{u}}f = \nabla f \cdot \mathbf{u}$ for unit $\mathbf{u}$, Hessian = matrix of second partials, symmetry of mixed partials) used only to sanity-check statements.
+
+## Source gaps handled
+
+- **Multivariable chain rule along a curve ($\frac{dz}{dt}$ for $z = f(x(t),y(t))$) is not stated verbatim in the sources.** The lecture derives only the straight-line case (the directional derivative $D_{\mathbf{u}}f = \nabla f^T\mathbf{u}$) and says "advanced rules" are skimmed. §9.7 presents the curve version as the *same* linear-approximation argument with continuous motion ("each moving coordinate contributes; add the changes" — the lecture's own §9.6 derivation logic). This is a small, standard extension, flagged here and described honestly in the chapter ("at the level the source gives it" = derived from the directional-derivative machinery). The vector/matrix chain rule is explicitly deferred to Chapter 42.
+- **Hessian entries are never defined in the sources** (the lecture only names $\mathbf{H}$ and sketches the quadratic term). The chapter defines $\mathbf{H}_{ij} = \partial^2 f/\partial x_i\partial x_j$ — the standard definition, cross-checked against d2l/MML — and flags it as a definition, not a source quote.
+- **Symmetry of mixed partials** ($\partial^2 f/\partial x\partial y = \partial^2 f/\partial y\partial x$) is standard (MML ch. 5) but not stated in the sources; presented as a standard fact and verified numerically in eg 13 ($-1 = -1$).
+- **PPTs 5–6 were not separately extracted** — per the task, transcripts were preferred (PPT text extraction of math-heavy slides is garbled); the Week 2 Tutorial PPT was read and used for its problem content.
+
+## What was double-checked
+
+- eg 1: partials of $x_1^2+x_2^2$ → $(2x_1, 2x_2)$.
+- eg 2: $f = xe^{xy}$: $f_x = e^{xy}(1+xy)$, $f_y = x^2e^{xy}$; at $(1,0)$: $(1,1)$ — matches tutorial Problem 5.
+- eg 3: $f = x^2-xy$: $f_x = 2x-y$, $f_y = -x$ — matches tutorial Problem 7.
+- eg 4: $\nabla f(6,2) = (12,4)$ — matches lecture. eg 5: $\nabla(x_1+2x_2+3x_3) = (1,2,3)^T$ — matches lecture.
+- eg 6: $D_{\hat{\mathbf{u}}}f = \tfrac{2}{\sqrt5}\cos y - \tfrac{1}{\sqrt5}x\sin y$ — matches tutorial Problem 6. eg 7: $D = 4.2-1.6 = 2.6$ — matches tutorial Problem 7.
+- eg 8: at $(3,1)$: $\nabla f = (6,2)$, $\lVert\cdot\rVert = \sqrt{40}$, $\mathbf{u}^* = (3,1)/\sqrt{10}$, $D_{\max} = \sqrt{40} \approx 6.32$; check $D_{(1,0)} = 6 < 6.32$ ✓.
+- eg 9: $\nabla f(-6,2) = (-12,4) = 2(-6,2)$ ∥ radius ⟹ ⊥ circle — matches lecture's claim.
+- eg 10: $L = 40 + 12(x_1-6) + 4(x_2-2) = 12x_1+4x_2-40$ — matches lecture; $L(6,2) = 40$ ✓; $L(6.1,2.05) = 41.4$ vs true $41.4125$ ✓.
+- eg 11: $L = x+y$; $f(1.1,-0.1) \approx 1.0$ vs true $1.1e^{-0.11} \approx 0.98542$ — matches tutorial Problem 5.
+- eg 12: chain rule $20t-2$ both by substitution and by $\frac{\partial z}{\partial x_i}\frac{dx_i}{dt}$ ✓.
+- eg 13: Hessian $\begin{pmatrix}2&-1\\-1&0\end{pmatrix}$; quadratic term $(x-2)^2-(x-2)(y+3)$; full expansion re-verified to equal $x^2-xy$ exactly ✓.
+- eg 14: critical point $(0,0)$ from $(2v_1, 2v_2) = \mathbf{0}$ ✓.
+- Figure `chapters/assets/ch09-tangent-plane-gradient.png`: rendered and visually inspected — left panel shows surface $z=x_1^2+x_2^2$ with plane $4x_1+2x_2-5$ touching at red dot $(2,1,5)$; right panel shows concentric contours with red gradient arrows pointing outward, visually perpendicular to level sets. Tangent-plane coefficients re-verified: $f(2,1) = 5$, $\nabla f(2,1) = (4,2)$, $L = 5 + 4(x_1-2) + 2(x_2-1) = 4x_1+2x_2-5$ ✓. This is an **original** matplotlib illustration (no external diagram reused; nothing suitable was verified linkable, so per the task the original figure stands in).
+- Solutions 1–12 recomputed independently (see solutions file); numeric checks: Sol 5 $5.6$ vs true $5.605$ ✓; Sol 6 $(2t-3t^2)e^{t^2-t^3}$ both ways ✓; Sol 10 dot product $8-8 = 0$ ✓; Sol 11 $(1,-2)$, cross-checked via completing the square $(x-1)^2+(y+2)^2-5$ ✓.
+
+## Discrepancies / judgment calls
+
+- The transcript writes the linearized level set proof with a small garble ("$\nabla f(\mathbf{v})^T \mathbf{x} = \nabla f(\mathbf{v})^T \mathbf{v}$" is the correct reading); the chapter presents the cleaned version.
+- The lecture's Cauchy–Schwarz statement uses Euclidean norm defined earlier; the chapter uses it without redefining the norm (Chapter 2 covers norms; the lecture's definition $\lVert\mathbf{a}\rVert = \sqrt{a_1^2+\cdots+a_d^2}$ is restated inline for safety).
+- The chapter states the perpendicularity for the *true* level set "at the point of contact" while the lecture only proves it for the linearized one (noting the general statement needs "extra regularity assumptions") — the chapter is honest about which version is proved.
+- Problem 4 deliberately reuses tutorial Problem 7's function at the same point but a different direction ($ (4,3) $ normalized to $(0.8,0.6)$ instead of $(0.6,0.8)$), so the answer ($4.4$) is fresh but the arithmetic pattern is source-grounded.
+- No external links are included — nothing reached the "dire situations" bar; the d2l/MML anchors were verification-only.
+
+## Deliberate omissions
+
+- **Optimization / gradient descent** — Chapter 10's territory; only the steepest-descent direction and descent-direction set (both in the source lecture) are given here, plus forward pointers.
+- **Hessian-based classification of critical points** — the source only gives the first-order necessary condition; the second-order test is Chapter 10.
+- **Chain rule for vector-valued functions / Jacobians** — not in the sources; deferred to Chapter 42 with an explicit forward pointer.
+- **Lagrange multipliers, constrained optimization, convexity** — Chapters 11–13.
+- **Higher-order (cubic+) Taylor terms** — the sources stop at quadratic.

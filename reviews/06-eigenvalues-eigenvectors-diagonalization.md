@@ -1,0 +1,48 @@
+# Review log — Chapter 6. Eigenvalues, eigenvectors, diagonalization
+
+## Sources used (all committed in the repo)
+
+1. **Primary:** `sources/course materials/MLF-20261009T001559Z-1-001/MLF/Transcripts/Week 4/`:
+   - `2.Eigenvalues and Eigenvectors.pdf` — ODE motivation ($\dot v = 4v - 5w$, $\dot w = 2v - 3w \to \dot{\mathbf u} = A\mathbf u$, trial solution $e^{\lambda t}\mathbf x$ leading to $A\mathbf x = \lambda \mathbf x$); definition $A\mathbf x = \lambda \mathbf x$, $\mathbf x \ne \mathbf 0$; geometric meaning (stretch/shrink, no direction change); $\lambda = 0 \iff \mathbf x \in N(A)$; projection-matrix example ($\lambda = 1$ in-plane, $\lambda = 0$ perpendicular); permutation matrix ($\lambda = 1$, $\mathbf x = [1,1]^T$; $\lambda = -1$, $\mathbf x = [1,-1]^T$); characteristic equation $\det(A - \lambda I) = 0$; eigenvectors from $N(A - \lambda I)$; worked example with $\lambda^2 - 6\lambda + 8 = 0$, eigenvalues $4, 2$, eigenvectors $[1,1]^T$, $[1,-1]^T$ (I recovered the matrix as $\begin{bmatrix}3&1\\1&3\end{bmatrix}$ from the trace/det/eigenvector constraints — see §"Discrepancies"); trace = sum of eigenvalues, det = product (2×2); the $B + 3I = A$ shift example and homework (eigenvectors of $B$ = eigenvectors of $A$); the $(A+B)$ warning (different eigenvectors, cannot add eigenvalues); rotation matrix with $\lambda^2 + 1 = 0$ eigenvalues $\pm i$ (complex eigenvalues exist); defective-matrix example ($\lambda_1 = \lambda_2 = 3$, only eigenvector $[1,0]^T$ — I identified it as $\begin{bmatrix}3&1\\0&3\end{bmatrix}$, verified consistent); forward pointer that $n$ independent eigenvectors $\iff$ diagonalizable.
+   - `3.Diagonalization of a matrix1.pdf` — definition $S^{-1}AS = \Lambda$; the $AS = S\Lambda$ construction with eigenvectors as columns of $S$; distinct-eigenvalues $\Rightarrow$ independent eigenvectors (proof for 2, stated for $n$ as homework); worked example $A = \begin{bmatrix}1&4\\2&3\end{bmatrix}$, eigenvalues $5, -1$, eigenvectors $[1,1]^T$, $[-2,1]^T$, $S = \begin{bmatrix}1&-2\\1&1\end{bmatrix}$, verification $S^{-1}AS = \Lambda$; remark: $S$ not unique (column scaling), $\Lambda$ unique (diagonal entries are the eigenvalues); powers: $A\mathbf x = \lambda \mathbf x \Rightarrow A^2\mathbf x = \lambda^2\mathbf x$, $S^{-1}A^2S = \Lambda^2$, general $A^k = S\Lambda^kS^{-1}$; a non-diagonalizable example exists (referenced from lecture 2).
+   - `4.Solving Fibonacci Sequence using diagonalization.pdf` — recurrence as $\mathbf u_{k+1} = A\mathbf u_k$ with $A = \begin{bmatrix}0&1\\1&1\end{bmatrix}$, $\mathbf u_0 = [0,1]^T$; characteristic $\lambda^2 - \lambda - 1 = 0$; eigenvectors $[1,\lambda_1]^T$, $[1,\lambda_2]^T$ (verified via $\lambda^2 = \lambda + 1$); $\mathbf u_0 = c_1\mathbf x_1 + c_2\mathbf x_2$ with $c_1 = 1/\sqrt{5}$, $c_2 = -1/\sqrt{5}$; $\mathbf u_k = c_1\lambda_1^k\mathbf x_1 + c_2\lambda_2^k\mathbf x_2$; $|\lambda_2| < 1$ so $F_k \approx \lambda_1^k/\sqrt{5}$; $F_{100}$ estimate; the "works because the recurrence is linear" bottom line.
+   - `5.Orthogonally diagonalizable matrices.pdf` — spectral theorem (real case) stated as fact: real symmetric $\Rightarrow$ (i) real eigenvalues, (ii) eigenvectors for distinct eigenvalues independent, (iii) orthogonally diagonalizable $A = Q\Lambda Q^T$, $Q^TQ = I$, $Q^{-1} = Q^T$; example with eigenvalues $5, 2$, eigenvectors $[1,2]^T$, $[-2,1]^T$, normalized by $\sqrt{5}$, the $Q^TQ = I$ sanity check, and $Q\Lambda Q^T = A$ verification; note that unnormalized eigenvectors diagonalize but not orthogonally.
+2. **Consistency:** `chapters/04-vector-spaces-four-subspaces.md` §4.4 (independence), §4.5 (basis/dimension), §4.7 ($N(A)$); `chapters/05-orthogonality-projections-least-squares.md` §5.2 (orthogonal $\Rightarrow$ independent), §5.4 ($Q^TQ = I$). Voice/style per `STYLE.md`.
+3. PPT decks (`PPT/Week 4/` 2–5) were **not** read — they are picture-only PDFs and the transcripts cover the same lectures completely; the task said to prefer transcripts.
+4. **Cross-check anchors (correctness only, nothing copied):** the mml-book.github.io Chapter 4 landing page was noted but its content was not needed — every derivation here comes from the transcripts and was recomputed by hand twice.
+
+## What was double-checked (all recomputed by hand a second time)
+
+- §6.4 $A = \begin{bmatrix}3&1\\1&3\end{bmatrix}$: char poly $\lambda^2-6\lambda+8 = (\lambda-4)(\lambda-2)$ ✓; $N(A-4I) = \operatorname{span}\{[1,1]^T\}$ ✓; $N(A-2I) = \operatorname{span}\{[1,-1]^T\}$ ✓; both $A\mathbf x = \lambda \mathbf x$ verifications ✓; trace $6 = 4+2$ ✓, det $8 = 4\cdot 2$ ✓.
+- §6.5 shift: $B + 3I = A$ entrywise ✓; $(B+3I)\mathbf x = (\mu+3)\mathbf x$ argument ✓; $B$'s eigenvalues $1, -1$ shift to $4, 2$ ✓.
+- §6.6 independence proof: subtraction step $c_1(\lambda_1-\lambda_2)\mathbf x_1 = \mathbf 0$ ✓ (matches lecture's eqn2 − λ2·eqn1).
+- §6.7 diagonalization of $\begin{bmatrix}1&4\\2&3\end{bmatrix}$: char poly $\lambda^2-4\lambda-5 = (\lambda-5)(\lambda+1)$ ✓; eigenvectors $[1,1]^T$, $[-2,1]^T$ ✓; $S^{-1} = \frac13\begin{bmatrix}1&2\\-1&1\end{bmatrix}$ ✓; $AS = \begin{bmatrix}5&2\\5&-1\end{bmatrix}$ ✓; $S^{-1}AS = \operatorname{diag}(5,-1)$ ✓.
+- §6.8 powers: $A^2 = S\Lambda^2S^{-1} = \begin{bmatrix}9&16\\8&17\end{bmatrix}$ matches direct multiplication ✓.
+- §6.9 Fibonacci: characteristic $\lambda^2-\lambda-1 = 0$ ✓; eigenvector check $1 + \lambda - \lambda^2 = 0$ via $\lambda^2 = \lambda + 1$ ✓; $c_1 = 1/\sqrt{5}$, $c_2 = -1/\sqrt{5}$ from $c_1 + c_2 = 0$, $c_1(\lambda_1-\lambda_2) = 1$ ✓; Binet $F_k = (\lambda_1^k - \lambda_2^k)/\sqrt{5}$ ✓; $|\lambda_2| \approx 0.618 < 1$ ✓; $F_{100} \approx \lambda_1^{100}/\sqrt{5} \approx 3.54224848179 \times 10^{20}$ vs exact $354224848179261915075$ ✓ (agrees to all displayed digits).
+- §6.10 defective: $(A-3I)\mathbf x = \mathbf 0 \iff x_2 = 0$ ✓, one-dimensional eigenspace ✓.
+- §6.11 orthogonal diagonalization: $Q^TQ = I$ ✓; $Q\Lambda Q^T = A$ entrywise ✓ (both recomputed: $\frac12\begin{bmatrix}6&2\\2&6\end{bmatrix}$).
+- Figure `assets/ch06-eigenvectors.png`: $A[1,1]^T = [4,4]^T$ stays on the dashed line; $A[1,-0.4]^T = [2.6, -0.2]^T$ leaves $w$'s line ✓ (rendered and inspected).
+- All 10 problem solutions verified numerically; Problem 2's false claim ($\lambda = 2$, $[1,-1]^T$ for $\begin{bmatrix}2&2\\1&3\end{bmatrix}$) fails as designed; Problem 6's $A^3 = \begin{bmatrix}14&13\\13&14\end{bmatrix}$ matches direct multiplication; Problem 10's neglected term $|\lambda_2|^{20}/\sqrt{5} \approx 2.96\times10^{-5}$.
+
+## Discrepancies / source issues
+
+1. Transcript 2's worked example never states the matrix $A$ explicitly (extraction garbles the matrix display); it only gives the characteristic polynomial $\lambda^2 - 6\lambda + 8$, trace $3 + 3 = 6$, eigenvalues $4, 2$, and eigenvectors $[1,1]^T$, $[1,-1]^T$. I reconstructed $A = \begin{bmatrix}3&1\\1&3\end{bmatrix}$ from these constraints (the unique matrix with trace 6, det 8, and those eigenpairs — verified $A[1,1]^T = 4[1,1]^T$, $A[1,-1]^T = 2[1,-1]^T$). Flagged here since the matrix itself is my reconstruction, not a direct quote.
+2. Transcript 2's defective-matrix example is likewise garbled (only "$\lambda_1 = \lambda_2 = 3$", "only possible eigenvector $[1,0]^T$"). I used the standard $\begin{bmatrix}3&1\\0&3\end{bmatrix}$, which satisfies exactly those properties — verified.
+3. Transcript 5's orthogonal-diagonalization example has garbled matrix display but gives eigenvalues $5, 2$ and eigenvectors $[1,2]^T$, $[-2,1]^T$; from these $A = \frac15\begin{bmatrix}13&6\\6&22\end{bmatrix}$ (verified $Q\Lambda Q^T = A$, $\operatorname{tr} = 7 = 5+2$, $\det = 10 = 5\cdot 2$). For readability I used the lecture's other symmetric matrix $\begin{bmatrix}3&1\\1&3\end{bmatrix}$ (from transcript 2) for the worked orthogonal example instead — the orthonormalization/verification steps are my own computations following the lecture's procedure.
+4. Transcript 4's equations are heavily garbled by extraction (matrices render as empty boxes); the Fibonacci derivation was reconstructed from the readable fragments (characteristic equation, $\lambda_1, \lambda_2$, $c_1 = 1/\sqrt{5}$, $c_2 = -1/\sqrt{5}$, $|\lambda_2| < 1$ argument, $F_{100}$) and verified end-to-end numerically.
+5. Transcript 3, page 8 is a picture (could not be read as text) — its content (the $S^{-1}AS = \Lambda$ worked check) is fully covered by the surrounding text pages.
+
+## Uncertainties
+
+- None material. Every formula and number used traces to a transcript and was recomputed twice.
+
+## Deliberate omissions
+
+- **Proof of the spectral theorem:** the lecture explicitly defers it (needs complex matrices / Hermitian case, promised in later lectures). Stated as fact at the level the source gives it.
+- **Orthogonality (not just independence) of symmetric-matrix eigenvectors:** the lecture claims only linear independence for distinct eigenvalues at this point; I did not add the orthogonality proof.
+- **General $n$-eigenvalue independence proof:** the lecture gives the $n = 2$ proof and leaves the extension as homework; the chapter does the same.
+- **Complex eigenvectors** for the rotation matrix: only eigenvalues $\pm i$ are computed (as in the lecture); complex eigenvectors not developed.
+- **Jordan form / generalized eigenvectors:** not in the sources; defective case kept to one paragraph as instructed.
+- **Quadratic forms, covariance/PCA detail, SVD derivation:** forward pointers only, as instructed (§6.12–6.13).
+- **External links / reused diagrams:** none — the one figure is original, drawn with matplotlib for this chapter and stated as such above the image.
+- Deck 1 (linear/polynomial regression) was not touched — it belongs to Chapter 23.

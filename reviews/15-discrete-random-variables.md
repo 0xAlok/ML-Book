@@ -1,0 +1,37 @@
+# Review log — Chapter 15. Discrete random variables and key distributions
+
+## Sources used (all committed under `sources/course materials/Stats2/PPTs-Slides/`)
+
+1. `Week 0 Part 3_ Discrete Random Variables.pptx` (28 slides; the main deck) — RV definition (function $S \to \mathbb{R}$, "usually meaningful functions are considered"; the technical condition that $(X < x)$ be an event for all real $x$); range definition; IPL examples (runs/deliveries/wickets/boundaries/dot balls and their ranges); discrete-set examples (finite, integers, integer multiples, subsets; intervals not discrete); PMF definition + the two properties ($0 \le f_X \le 1$, sums to $1$); the "study RVs without much mention of experiment" note; 3-coin-toss questions (how many heads? first heads?); the 3-digit lottery example; both "working with PMF" examples (partial table; $c/3^k$ with $P(X>10)$, $P(X>10\mid X>5)$); all six named distributions with ranges, PMFs, PMF-validity checks (Uniform, Bernoulli, Binomial, Geometric incl. the $\{0,1,2,\dots\}$ convention note, Negative Binomial, Poisson, Hypergeometric incl. the three range examples).
+2. `Week 0 Part 3 _ Discrete Random Variables.pptx` (12 slides; the companion deck) — Poisson motivation (constant arrival rate, next-arrival independent of past → number of arrivals in fixed period is Poisson); radioactive-decay data ($\lambda = 3.8673$, fractions, PMF fit); fireballs data ($\lambda = 2.5217$); functions of one RV ($f(X)$ as composition, PMF of $f(X)$ formula, the $X^2$-of-uniform example, the capped-geometric example).
+3. `distribution-explorer.github.io` (named cross-check resource in GOAL.md) — used to verify PMFs, means, variances of all seven distributions (§§15.10–15.16), the Binomial→Poisson limit (stated on its Binomial page; linked in §15.15's Note), the relations $\mathrm{Binomial}(1,p)=\mathrm{Bernoulli}(p)$ and $\mathrm{NegBin}(1,p)=\mathrm{Geometric}(p)$. Linked once, in the Poisson Note. No diagram reused; the figure is original.
+
+## What was checked
+
+- **All § cross-references (automated):** every `§N.M` in the chapter and solutions resolves to a real section header in the actual chapter files — 0 missing. Forward `Chapter NN` refs (14, 16, 17, 20, 21, 30) all match OUTLINE.md's chapter list. `§14.6` (axioms), `§14.8` (uniform/equally-likely), `§14.9` (conditional/shrinking denominator), `§14.12` (independence), `§14.13` (repeated trials/counting) all verified against `chapters/14-probability-basics.md`.
+- **Every derivation re-derived:** RV/PMF/CDF definitions vs deck slides; lottery $27/1000$ counting ($3 \times 9$); $c=2$ for $c/3^k$; geometric mean $1/p$ via $\sum kx^{k-1}=1/(1-x)^2$; geometric variance via the $E[X(X-1)]$ trick; Poisson mean/variance; binomial mean/variance via indicators (incl. the $E[X_iX_j]=p^2$ independence step); neg-binomial via sums of geometrics; hypergeometric mean via indicators; uniform $\{1,\dots,n\}$ mean/variance sums; Poisson-as-binomial-limit algebra (three limits named).
+- **Worked-example numerics (41 automated checks, all OK):** lottery $E=740$; eg 2 table ($0.125$, $0.75$); eg 3 ($(1/3)^{10}$, $(1/3)^5$); eg 4 CDF differences; eg 5/eg 6 PMF sums $=1$; eg 8 linearity both ways ($2.0$); eg 9 ($E[X^2]=3.25$, Var $=3.0$); eg 10 die (direct $17.5/6 = 35/12$); eg 11 binomial thirds; eg 12 ($1/32$); eg 13 ($3/16$); eg 14 Poisson-decay $P(X=3) = 0.2016$ vs observed $0.201$; eg 15 $e^{-2.5217}=0.0803$ vs $0.087$; eg 16 hypergeometric $P(X=10)=0.1969$, Var $=400/99$.
+- **Problem-set solutions (all 12 recomputed independently):** P2 ($c=1$, $3/4$); P3 ($E=0.9$, Var $=0.49$); P4 (piecewise CDF, $0.7$); P5 ($53$); P6 ($18$); P7 ($80/243$); P8 ($0.7^6=0.117649$); P9 ($135/2048$); P10 ($0.1018$ vs observed $0.100$); P11 ($10$, $400/99$); P12 (PMF $1/2,1/4,1/4$; $E[Y]=1.75$).
+- **Figure:** original matplotlib (`chapters/assets/15-discrete-random-variables.png`, 1875×1275, renders cleanly); panels (a)–(d) match the caption; the Poisson-vs-data panel reproduces the deck's observed fractions exactly. Marked with the original-work HTML comment, per ch-14 convention.
+- **Scope boundary:** no continuous RVs (Chapter 16 territory); the joint-PMF object in §15.8's sum-rule proof is used but not developed (deferred to Chapter 17, stated).
+- **Style:** `=` definitions, i)/ii)/iii), `Note:` callouts, `eg` blocks (16), "Basically, ..." after every complex topic (12), all math in LaTeX (byte-checked: doubled backslashes only inside `cases` line breaks; the non-ASCII set matches ch 14's), no emojis, English.
+
+## What was fixed during review
+
+- Intro said "six named discrete distributions"; the chapter covers seven (Uniform, Bernoulli, Binomial, Geometric, Negative Binomial, Poisson, Hypergeometric) — corrected to "seven".
+- §15.15 had an awkward phrase "$E[X] = E[X(X-1)]$'s sibling" — reworded to "Similarly, $E[X] = \dots$".
+- Draft of Problem 7's answer was $40/243$ (arithmetic slip: $10 \cdot 8 / 243 = 80/243$, not $40/243$) — caught in the automated audit, final text says $80/243 \approx 0.3292$.
+
+## Thin / contradictory source points (not invented; reported here)
+
+1. **Expectation, linearity, variance, CDF are not in the Part 3 decks.** Verified by full-text extraction (0 hits for "expectation"/"variance"/"linearity"/"CDF"/"cumulative"). They are required by the chapter scope (task brief) and by Chapter 14's framing (means and standard deviations of IPL data, §14.13's deferred counting). All are standard, proved in the text, and means/variances were cross-checked against distribution-explorer. Flagging per the house rule.
+2. **"Memorylessness" is never named in the decks**, but the deck's own example (eg 3: $P(X>10\mid X>5) = (1/3)^5 = P(X>5)$) *is* an instance of it, and the property is a one-line consequence of the deck's PMF. Included as a Note with proof; the word itself is standard literature.
+3. **Poisson-as-limit-of-binomial is not in the decks.** The task scope allowed it "if sources support it": distribution-explorer's Binomial page states exactly this limit, so it is included as a compact Note with the three limits made explicit. The decks' Poisson motivation (constant rate + independence) is used as the primary story.
+4. **Hypergeometric variance proof skipped.** The decks give only the PMF; the mean is derived (indicators, short), the variance stated with the finite-population-correction explanation. A full covariance proof would be ~a page for one formula — noted here rather than bloating the chapter.
+5. **The $\{0,1,2,\dots\}$ geometric convention** is flagged in the deck (slide 22) and covered in one Note; the chapter standardizes on the trials-until-success convention.
+6. **The two Part 3 files are different decks, not duplicates** (12 vs 28 slides, different md5). The smaller one is Poisson-heavy (used for §§15.15–15.16's real-data examples and §15.6); the larger is the main discrete-RV deck. No contradiction between them; together they cover the chapter.
+
+## Concerns for the coordinator
+
+- None blocking. The four judgment calls above (1–4) are all standard-literature additions clearly marked as such, required or permitted by the task's scope ruling; if the house rule tightens to "source decks only", the memorylessness Note, the Poisson-limit Note, and the CDF section are the cut candidates (expectation/variance are load-bearing for the rest of Part II and should stay).
+- Errata convention: `book/errata.md` exists; nothing in this chapter's review rose to errata level (the $40/243$ slip was caught pre-commit). No errata entry added.

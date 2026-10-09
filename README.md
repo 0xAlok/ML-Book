@@ -1,10 +1,10 @@
 # Foundations to Deep Learning
 
-*From foundations to deep learning — a one-stop study book*
+*From foundations to deep learning*
 
 47 chapters taking you from mathematical foundations (linear algebra, calculus,
 probability) through classical machine learning to neural networks and
-transformers — everything needed before the core deep learning and AI courses.
+transformers, everything needed before the core deep learning and AI courses.
 
 **Read it:** [web book](https://0xAlok.github.io/ML-Book/) · [PDF](./docs/foundations-to-deep-learning.pdf)
 

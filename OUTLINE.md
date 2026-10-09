@@ -1,9 +1,8 @@
-# Book Outline — APPROVED by Alok as-is, 2026-10-09 (47 chapters; GenAI Part VI in scope; course sequencing kept)
+# Book Outline
 
 Derived from the source dump inventory (`sources/`) and the 6-phase spine in
 GOAL.md. Each chapter = one topic, with worked `eg` blocks, a problem set in
-`chapters/`, and full worked solutions in `solutions/`. Standard explanation
-first, then a "Basically, ..." ELI10/15 simplification for complex topics.
+`chapters/`, and full worked solutions in `solutions/`.
 Diagrams reused from standard resources with attribution comments.
 
 ## Part I — Mathematical Foundations (Maths 1, Maths 2, MLF W2–W9)
